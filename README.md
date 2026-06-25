@@ -43,53 +43,41 @@ Build-time variables:
 
 ---
 
-## 🛠️ Building
+## 🐧 Install on Linux (recommended — clone & run)
 
-### Windows (`.exe`)
-```bat
-flutter build windows --release ^
-  --dart-define=CRMS_APP_KEY=YOUR_KEY ^
-  --dart-define=CRMS_GOOGLE_CLIENT_ID=YOUR_ID ^
-  --dart-define=CRMS_GOOGLE_CLIENT_SECRET=YOUR_SECRET
-:: then compile the installer with Inno Setup:
-"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\crms.iss
-```
+On the target PC (Ubuntu 22.04+):
 
-### macOS (`.dmg`) — must run on a Mac
-See [`installer/macos/BUILD_MACOS.md`](installer/macos/BUILD_MACOS.md).
-
-### Linux (`.AppImage`) — must run on Linux (or use CI below)
-See [`installer/linux/BUILD_LINUX.md`](installer/linux/BUILD_LINUX.md). One command:
 ```bash
-export CRMS_APP_KEY=YOUR_KEY CRMS_GOOGLE_CLIENT_ID=YOUR_ID CRMS_GOOGLE_CLIENT_SECRET=YOUR_SECRET
-bash installer/linux/build_appimage.sh
-# → installer/output/crms-setup-<version>.AppImage
+# one-time: Flutter Linux toolchain (see installer/linux/BUILD_LINUX.md §1)
+git clone https://github.com/bharatsonawane601/crsm.git
+cd crsm
+cp crms.env.sample crms.env     # then edit crms.env with the real keys
+./install.sh
 ```
 
-### Linux via GitHub Actions (no Linux machine needed)
-1. In the repo: **Settings → Secrets and variables → Actions → New repository
-   secret** and add `CRMS_APP_KEY`, `CRMS_GOOGLE_CLIENT_ID`,
-   `CRMS_GOOGLE_CLIENT_SECRET` (and optionally `CRMS_API_BASE_URL`).
-2. **Actions → Build Linux AppImage → Run workflow** — or push a tag `vX.Y.Z`
-   to also publish a GitHub Release with the `.AppImage` attached.
-3. Download the AppImage from the run's **Artifacts** (or the Release).
+`install.sh` builds the release, installs to `/opt/crms`, and adds a launcher
+(`crms`) plus an **application-menu icon** — so it shows up and runs like normal
+installed software. Remove it with `./uninstall.sh`.
 
----
+> Without a filled-in `crms.env` the app still builds, but in **dev mode**
+> (access gate open). Fill in `CRMS_APP_KEY` (and the Google keys) for a build
+> that talks to your live server.
 
-## 📦 Installing (end users)
+### Other Linux build options
+- **Portable `.AppImage`** (no install): see
+  [`installer/linux/BUILD_LINUX.md`](installer/linux/BUILD_LINUX.md) /
+  `installer/linux/build_appimage.sh`.
+- **GitHub Actions** (no local Linux machine): add `CRMS_APP_KEY`,
+  `CRMS_GOOGLE_CLIENT_ID`, `CRMS_GOOGLE_CLIENT_SECRET` as repo **Settings →
+  Secrets → Actions**, then run the **Build Linux AppImage** workflow (or push a
+  `vX.Y.Z` tag to publish a Release with the AppImage attached).
 
-- **Windows:** run `crms-setup-<version>.exe`. If SmartScreen warns, click
-  *More info → Run anyway* (the installer is unsigned until a code-signing
-  certificate is added).
-- **macOS:** open the `.dmg` and drag CRMS to Applications.
-- **Linux:**
-  ```bash
-  chmod +x crms-setup-<version>.AppImage
-  ./crms-setup-<version>.AppImage
-  ```
-  On Ubuntu 22.04 install FUSE2 once if needed: `sudo apt install libfuse2`.
+### macOS (`.dmg`)
+Built separately on a Mac — see
+[`installer/macos/BUILD_MACOS.md`](installer/macos/BUILD_MACOS.md).
 
-After install, the app auto-updates from the admin panel's published releases.
+> **Windows** builds are produced from the developer machine (the `windows/`
+> project files are kept out of this Linux-focused repo).
 
 ---
 

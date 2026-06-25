@@ -60,3 +60,11 @@ ios/build/
 macos/build/
 linux/build/
 windows/build/
+
+# This repo is Linux-only — Windows build files stay on the dev machine, not here.
+/windows/
+/installer/crms.iss
+/installer/redist/
+
+# Local build secrets for install.sh (real keys live here, never committed).
+crms.env
