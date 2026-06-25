@@ -39,11 +39,21 @@ jobs:
           CRMS_GOOGLE_CLIENT_SECRET: ${{ secrets.CRMS_GOOGLE_CLIENT_SECRET }}
         run: bash installer/linux/build_appimage.sh
 
-      - name: Upload AppImage artifact
+      - name: Assemble USB installer folder
+        run: |
+          mkdir -p dist/crms-linux-usb
+          cp installer/output/*.AppImage dist/crms-linux-usb/
+          cp installer/linux/usb/install.sh \
+             installer/linux/usb/run-portable.sh \
+             installer/linux/usb/README.txt \
+             dist/crms-linux-usb/
+          chmod +x dist/crms-linux-usb/*.sh
+
+      - name: Upload USB installer artifact (AppImage + scripts)
         uses: actions/upload-artifact@v4
         with:
-          name: crms-linux-appimage
-          path: installer/output/*.AppImage
+          name: crms-linux-usb
+          path: dist/crms-linux-usb/**
           if-no-files-found: error
 
       - name: Publish GitHub Release (tag builds only)

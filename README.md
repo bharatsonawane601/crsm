@@ -43,8 +43,20 @@ Build-time variables:
 
 ---
 
-## 🐧 Install on Linux (recommended — clone & run)
+## 🐧 Install on Linux
 
+### Easiest — USB / pendrive (no Flutter, no internet, no admin)
+Build the app **once** in the cloud, then carry it on a pendrive to every PC:
+1. Add the repo secrets (**Settings → Secrets and variables → Actions**):
+   `CRMS_APP_KEY`, `CRMS_GOOGLE_CLIENT_ID`, `CRMS_GOOGLE_CLIENT_SECRET`.
+2. **Actions → Build Linux AppImage → Run workflow**, then download the
+   **`crms-linux-usb`** artifact and unzip it onto a pendrive.
+3. On each office PC: plug in → open the folder → run **`./install.sh`**.
+   It installs CRMS for that user (menu icon + launcher) and launches it — no
+   Flutter, internet or admin needed. `./run-portable.sh` runs it without
+   installing. Details: [`installer/linux/usb/README.txt`](installer/linux/usb/README.txt).
+
+### From source — clone & build
 On the target PC (Ubuntu 22.04+):
 
 ```bash
