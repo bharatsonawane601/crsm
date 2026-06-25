@@ -1,0 +1,53 @@
+name: Build Linux AppImage
+
+# Builds the CRMS Linux .AppImage in the cloud so no local Linux machine is
+# needed. Run it manually (Actions tab → "Run workflow"), or push a version tag
+# like v1.4.0 to also publish a GitHub Release with the AppImage attached.
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    # Build on 22.04 so the binary runs on Ubuntu 22.04 clients (and newer).
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config \
+            libgtk-3-dev liblzma-dev libstdc++-12-dev curl libfuse2
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Enable Linux desktop
+        run: flutter config --enable-linux-desktop
+
+      - name: Build AppImage
+        env:
+          CRMS_APP_KEY: ${{ secrets.CRMS_APP_KEY }}
+          CRMS_API_BASE_URL: ${{ secrets.CRMS_API_BASE_URL }}
+          CRMS_GOOGLE_CLIENT_ID: ${{ secrets.CRMS_GOOGLE_CLIENT_ID }}
+          CRMS_GOOGLE_CLIENT_SECRET: ${{ secrets.CRMS_GOOGLE_CLIENT_SECRET }}
+        run: bash installer/linux/build_appimage.sh
+
+      - name: Upload AppImage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: crms-linux-appimage
+          path: installer/output/*.AppImage
+          if-no-files-found: error
+
+      - name: Publish GitHub Release (tag builds only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: installer/output/*.AppImage

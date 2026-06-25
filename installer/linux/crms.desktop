@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=CRMS
+GenericName=Crime Records Management System
+Comment=Chhatrapati Sambhaji Nagar Police — Crime Records Management System
+Exec=crms
+Icon=crms
+Categories=Office;Utility;
+Terminal=false
+StartupWMClass=crms

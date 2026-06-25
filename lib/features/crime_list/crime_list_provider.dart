@@ -1,0 +1,23 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../crime_entry/crime_repository.dart';
+import 'models/crime_list_item.dart';
+
+/// Live stream of all crimes for the list/search screen. Filtering and search
+/// are applied in-memory in the screen (station-scale data) so the underlying
+/// stream stays simple and reactive.
+final crimeListProvider = StreamProvider<List<CrimeListItem>>((ref) {
+  return ref.watch(crimeRepositoryProvider).watchCrimeList();
+});
+
+/// Global crime search query — driven by the top-bar search field, read by the
+/// crime list. Lives in a provider so the shell top bar and the section can
+/// share it.
+class CrimeSearchController extends Notifier<String> {
+  @override
+  String build() => '';
+  void set(String value) => state = value;
+}
+
+final crimeSearchProvider =
+    NotifierProvider<CrimeSearchController, String>(CrimeSearchController.new);
