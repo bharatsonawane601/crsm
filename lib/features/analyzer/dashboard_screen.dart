@@ -119,6 +119,10 @@ class _AnalyticsDashboardBodyState extends State<AnalyticsDashboardBody> {
           onClear: () => setState(() => _filter = const AnalyticsFilter()),
         ),
         const SizedBox(height: 8),
+        if (s.chargesheetDue.isNotEmpty) ...[
+          _DueAlertsCard(cases: s.chargesheetDue),
+          const SizedBox(height: 8),
+        ],
         _kpis(context, s),
         const SizedBox(height: 8),
         _ChartGrid(summary: s),
@@ -137,13 +141,15 @@ class _AnalyticsDashboardBodyState extends State<AnalyticsDashboardBody> {
         KpiCard(label: 'analyzer.kpi.month'.tr(), value: '${s.thisMonth}'),
         KpiCard(label: 'analyzer.kpi.year'.tr(), value: '${s.thisYear}'),
         KpiCard(
-          label: 'crime.status.pending'.tr(),
-          value: '${s.statusCounts['pending'] ?? 0}',
+          label: 'crime.status.undetected'.tr(),
+          value:
+              '${(s.statusCounts['undetected'] ?? 0) + (s.statusCounts['pending'] ?? 0) + (s.statusCounts['open'] ?? 0)}',
           color: Colors.orange,
         ),
         KpiCard(
-          label: 'crime.status.solved'.tr(),
-          value: '${s.statusCounts['solved'] ?? 0}',
+          label: 'crime.status.detected'.tr(),
+          value:
+              '${(s.statusCounts['detected'] ?? 0) + (s.statusCounts['solved'] ?? 0) + (s.statusCounts['chargesheeted'] ?? 0)}',
           color: Colors.green,
         ),
         KpiCard(
@@ -166,7 +172,106 @@ class _AnalyticsDashboardBodyState extends State<AnalyticsDashboardBody> {
               ? '—'
               : s.avgDaysToChargesheet!.toStringAsFixed(0),
         ),
+        KpiCard(
+          label: 'analyzer.kpi.chargesheetOverdue'.tr(),
+          value:
+              '${(s.chargesheetOverdue['60'] ?? 0) + (s.chargesheetOverdue['90'] ?? 0)}',
+          color: Colors.red,
+        ),
       ],
+    );
+  }
+}
+
+/// Deadline alerts: pending chargesheets that are overdue or due within
+/// [kChargesheetDueSoonDays], named by FIR so officers can act on them.
+class _DueAlertsCard extends StatelessWidget {
+  const _DueAlertsCard({required this.cases});
+
+  final List<ChargesheetDueCase> cases;
+
+  static const _maxShown = 8;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final overdueCount = cases.where((c) => c.overdue).length;
+    final accent = overdueCount > 0 ? Colors.red : Colors.orange;
+
+    String badge(ChargesheetDueCase c) {
+      if (c.daysLeft < 0) {
+        return 'analyzer.due.overdueBy'
+            .tr(namedArgs: {'days': '${-c.daysLeft}'});
+      }
+      if (c.daysLeft == 0) return 'analyzer.due.today'.tr();
+      return 'analyzer.due.dueIn'.tr(namedArgs: {'days': '${c.daysLeft}'});
+    }
+
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: accent.withValues(alpha: 0.5)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(PhosphorIconsRegular.warningCircle,
+                    size: 20, color: accent),
+                const SizedBox(width: 8),
+                Text(
+                  'analyzer.due.title'
+                      .tr(namedArgs: {'count': '${cases.length}'}),
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w700),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final c in cases.take(_maxShown))
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: (c.overdue ? Colors.red : Colors.orange)
+                          .withValues(alpha: 0.08),
+                      border: Border.all(
+                        color: (c.overdue ? Colors.red : Colors.orange)
+                            .withValues(alpha: 0.35),
+                      ),
+                    ),
+                    child: Text(
+                      '${c.label} · ${badge(c)} · ${_dateFmt.format(c.deadline)}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: scheme.onSurface,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ),
+                if (cases.length > _maxShown)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Text(
+                      'analyzer.due.more'.tr(
+                          namedArgs: {'count': '${cases.length - _maxShown}'}),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -194,14 +299,36 @@ class _ChartGrid extends StatelessWidget {
 
     final crimeRanked = _sorted(summary.crimeTypeCounts);
     final crimeTypeLabels = [for (final e in crimeRanked) e.key];
-    final solvedLabel = 'crime.status.solved'.tr();
-    final openLabel = 'crime.status.open'.tr();
-    final solvedTotal = (summary.statusCounts['solved'] ?? 0) +
+    final solvedLabel = 'crime.status.detected'.tr();
+    final openLabel = 'crime.status.undetected'.tr();
+    final solvedTotal = (summary.statusCounts['detected'] ?? 0) +
+        (summary.statusCounts['solved'] ?? 0) +
         (summary.statusCounts['chargesheeted'] ?? 0);
     final solvedRate =
         summary.total == 0 ? 0.0 : solvedTotal * 100 / summary.total;
 
+    // Datasets the officer can plug into a custom chart (pick metric + type).
+    final stageDisplay = [
+      for (final e in (summary.stageCounts.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value))))
+        MapEntry('crime.stage.${e.key}'.tr(), e.value),
+    ];
+    final datasets = <String, List<MapEntry<String, int>>>{
+      'analyzer.chart.crimeType'.tr(): crimeRanked,
+      'analyzer.chart.status'.tr(): statusDisplay.entries.toList(),
+      'analyzer.chart.stage'.tr(): stageDisplay,
+      'analyzer.chart.topSections'.tr(): summary.topSections,
+      'analyzer.chart.officer'.tr(): _sorted(summary.officerCounts),
+      'analyzer.chart.trend'.tr(): summary.monthlyTrend,
+      if (summary.stationCounts.length >= 2)
+        'analyzer.chart.station'.tr(): _sorted(summary.stationCounts),
+    };
+
     final cards = <Widget>[
+      // Two build-your-own charts: choose the data and the chart shape, then
+      // tap to enlarge. Officers can compare any metric in any chart type.
+      CustomChartCard(datasets: datasets),
+      CustomChartCard(datasets: datasets, initialType: ChartType.pie),
       // Station comparison — only meaningful across multiple stations (the
       // officer portal), so hidden on a single-station install.
       if (summary.stationCounts.length >= 2)
@@ -254,6 +381,19 @@ class _ChartGrid extends StatelessWidget {
         ),
       ),
       ChartCard(
+        title: 'analyzer.chart.chargesheetWindow'.tr(),
+        height: 300,
+        child: ChargesheetWindowChart(
+          within: summary.chargesheetWithin,
+          overdue: summary.chargesheetOverdue,
+          filed: summary.chargesheetFiled,
+          withinLabel: 'analyzer.chargesheet.within'.tr(),
+          overdueLabel: 'analyzer.chargesheet.overdue'.tr(),
+          filedLabel: 'analyzer.chargesheet.filed'.tr(),
+          emptyLabel: empty,
+        ),
+      ),
+      ChartCard(
         title: 'analyzer.chart.area'.tr(),
         child: AreaTrend(entries: summary.monthlyTrend, emptyLabel: empty),
       ),
@@ -303,18 +443,35 @@ class _ChartGrid extends StatelessWidget {
       ),
     ];
 
+    // Lay cards out as fixed rows (2 columns on wide screens, 1 on narrow) with
+    // IntrinsicHeight so both cards in a row share the taller one's height —
+    // this keeps the grid evenly aligned instead of the ragged "staircase" a
+    // Wrap produces when cards differ in height.
     return LayoutBuilder(
       builder: (context, constraints) {
-        final twoCol = constraints.maxWidth > 720;
-        final width =
-            twoCol ? (constraints.maxWidth - 8) / 2 : constraints.maxWidth;
-        return Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final c in cards) SizedBox(width: width, child: c),
-          ],
-        );
+        final columns = constraints.maxWidth > 720 ? 2 : 1;
+        const gap = 8.0;
+        final rows = <Widget>[];
+        for (var i = 0; i < cards.length; i += columns) {
+          final rowChildren = <Widget>[];
+          for (var j = 0; j < columns; j++) {
+            if (j > 0) rowChildren.add(const SizedBox(width: gap));
+            final index = i + j;
+            rowChildren.add(Expanded(
+              child: index < cards.length ? cards[index] : const SizedBox(),
+            ));
+          }
+          rows.add(Padding(
+            padding: const EdgeInsets.only(bottom: gap),
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: rowChildren,
+              ),
+            ),
+          ));
+        }
+        return Column(children: rows);
       },
     );
   }
@@ -413,7 +570,7 @@ class _FilterBar extends StatelessWidget {
               onSelected: onStatus,
               dropdownMenuEntries: [
                 DropdownMenuEntry(value: null, label: 'list.statusAll'.tr()),
-                for (final st in ['open', 'pending', 'solved', 'chargesheeted'])
+                for (final st in ['detected', 'undetected'])
                   DropdownMenuEntry(value: st, label: 'crime.status.$st'.tr()),
               ],
             ),

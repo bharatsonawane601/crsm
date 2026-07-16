@@ -98,4 +98,161 @@ void main() {
     expect(row.aadhaarEnc, isNot(contains('123456789012')));
     expect(cipher.decryptField(row.aadhaarEnc), '123456789012');
   });
+
+  // --- Station crime-register format (7 columns) ---------------------------
+  // गु.रं | पोलीस स्टेशन | वर्ष | कायदा | कलम | उघड/न उघड | दाखल तारीख
+
+  Uint8List buildRegisterXlsx() {
+    final excel = Excel.createExcel();
+    final sheet = excel[excel.getDefaultSheet()!];
+
+    const headers = [
+      'गु.रं',
+      'पोलीस स्टेशन',
+      'वर्ष',
+      'कायदा',
+      'कलम',
+      'उघड/न उघड',
+      'दाखल तारीख',
+    ];
+    sheet.appendRow([for (final h in headers) TextCellValue(h)]);
+
+    // Row exactly like the register: multi-section कलम with commas, न उघड.
+    sheet.appendRow([
+      IntCellValue(1),
+      TextCellValue('एम.वाळूज'),
+      IntCellValue(2026),
+      TextCellValue('BNS'),
+      TextCellValue('309(4),3(5)'),
+      TextCellValue('न उघड'),
+      TextCellValue('1/1/2026'),
+    ]);
+    // उघड row with a different act and a single section.
+    sheet.appendRow([
+      IntCellValue(2),
+      TextCellValue('एम.वाळूज'),
+      IntCellValue(2026),
+      TextCellValue('मपोका'),
+      TextCellValue('122'),
+      TextCellValue('उघड'),
+      TextCellValue('2/1/2026'),
+    ]);
+    // Long comma list with Marathi tail text — must be stored as-is.
+    sheet.appendRow([
+      IntCellValue(9),
+      TextCellValue('एम.वाळूज'),
+      IntCellValue(2026),
+      TextCellValue('BNS'),
+      TextCellValue('85,86,352,115(2) स.क.3,4,हंडा बंदि अधि.'),
+      TextCellValue('उघड'),
+      TextCellValue('3/1/2026'),
+    ]);
+
+    return Uint8List.fromList(excel.encode()!);
+  }
+
+  test('imports the 7-column station register format', () async {
+    final result = await importer.import(buildRegisterXlsx());
+
+    expect(result.imported, 3);
+    expect(result.failed, 0);
+
+    final list = await repo.watchCrimeList().first;
+    expect(list, hasLength(3));
+
+    final drafts = <String, dynamic>{};
+    for (final item in list) {
+      final d = (await repo.loadDraft(item.id))!;
+      drafts[d.firNo] = d;
+    }
+
+    final one = drafts['1']!;
+    expect(one.policeStation, 'एम.वाळूज');
+    expect(one.year, 2026);
+    // कायदा prefixed onto the comma-separated कलम, text kept as-is.
+    expect(one.section, 'BNS 309(4),3(5)');
+    expect(one.status, 'undetected', reason: 'न उघड');
+    // d/M/yyyy register date -> date registered.
+    expect(one.dateRegistered, DateTime(2026, 1, 1));
+
+    final two = drafts['2']!;
+    expect(two.section, 'मपोका 122');
+    expect(two.status, 'detected', reason: 'उघड');
+    expect(two.dateRegistered, DateTime(2026, 1, 2));
+
+    final nine = drafts['9']!;
+    expect(nine.section, 'BNS 85,86,352,115(2) स.क.3,4,हंडा बंदि अधि.');
+    expect(nine.status, 'detected');
+  });
+
+  test('imports from EVERY sheet, not just the first', () async {
+    final excel = Excel.createExcel();
+    // Sheet 1 (default) — station एम.वाळूज.
+    final s1 = excel[excel.getDefaultSheet()!];
+    for (final r in [
+      ['गु.रं', 'पोलीस स्टेशन', 'वर्ष', 'कायदा', 'कलम'],
+      ['1', 'एम.वाळूज', '2026', 'BNS', '309(4)'],
+      ['2', 'एम.वाळूज', '2026', 'BNS', '324'],
+    ]) {
+      s1.appendRow([for (final c in r) TextCellValue(c)]);
+    }
+    // Sheet 2 — station सिटीचौक. Must ALSO be imported.
+    final s2 = excel['सिटीचौक'];
+    for (final r in [
+      ['गु.रं', 'पोलीस स्टेशन', 'वर्ष', 'कायदा', 'कलम'],
+      ['131', 'सिटीचौक', '2026', 'BNS', '318(4)'],
+      ['132', 'सिटीचौक', '2026', 'BNS', '303(2)'],
+    ]) {
+      s2.appendRow([for (final c in r) TextCellValue(c)]);
+    }
+
+    final result = await importer.import(Uint8List.fromList(excel.encode()!));
+    expect(result.imported, 4, reason: 'both sheets, 2 rows each');
+
+    final list = await repo.watchCrimeList().first;
+    final stations = <String?>{};
+    final sections = <String, String?>{};
+    for (final item in list) {
+      final d = (await repo.loadDraft(item.id))!;
+      stations.add(d.policeStation);
+      sections[d.firNo] = d.section;
+    }
+    // Second sheet's station came through — canonicalized to the app's
+    // English spelling (सिटीचौक -> City Chowk); unknown names pass through.
+    expect(stations, containsAll(['एम.वाळूज', 'City Chowk']));
+    // Section = कायदा + कलम for a row from each sheet.
+    expect(sections['131'], 'BNS 318(4)');
+    expect(sections['1'], 'BNS 309(4)');
+  });
+
+  test('fuzzy header match: variant spellings still map', () async {
+    final excel = Excel.createExcel();
+    final s = excel[excel.getDefaultSheet()!];
+    // Deliberately "off" headers that are NOT in the exact table, so the
+    // keyword fallback must resolve them (separate कायदा + कलम columns).
+    for (final r in [
+      ['गुन्हा रजिस्टर नं', 'पो.ठाणे', 'कायदा प्रकार', 'कलमे', 'उघड अथवा न उघड'],
+      ['50', 'सिटीचौक', 'BNS', '309(4),3(5)', 'न उघड'],
+    ]) {
+      s.appendRow([for (final c in r) TextCellValue(c)]);
+    }
+    final result = await importer.import(Uint8List.fromList(excel.encode()!));
+    expect(result.imported, 1);
+    final d = (await repo.loadDraft(
+        (await repo.watchCrimeList().first).single.id))!;
+    expect(d.firNo, '50');
+    // Station canonicalized to the app's one spelling per station.
+    expect(d.policeStation, 'City Chowk');
+    expect(d.section, 'BNS 309(4),3(5)');
+    expect(d.status, 'undetected');
+  });
+
+  test('old-format कलम (no कायदा column) is unchanged by the combiner',
+      () async {
+    await importer.import(buildXlsx());
+    // buildXlsx has no कलम column at all -> section must stay null.
+    final id = (await repo.watchCrimeList().first).single.id;
+    final d = (await repo.loadDraft(id))!;
+    expect(d.section, anyOf(isNull, isEmpty));
+  });
 }

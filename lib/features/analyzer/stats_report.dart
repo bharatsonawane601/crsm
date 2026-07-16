@@ -35,7 +35,8 @@ class StatsReport {
   final CrimeTypeStat totalRow; // grand totals (type = '')
 }
 
-bool _isSolved(String status) => status == 'solved' || status == 'chargesheeted';
+bool _isSolved(String status) =>
+    status == 'detected' || status == 'solved' || status == 'chargesheeted';
 
 /// Pure computation: bucket crimes by crime type and registration month into
 /// solved/unsolved counts, with current-year (per-month + total) and

@@ -50,6 +50,7 @@ DEFINES=()
 [ -n "${CRMS_API_BASE_URL:-}" ]         && DEFINES+=(--dart-define=CRMS_API_BASE_URL="${CRMS_API_BASE_URL}")
 [ -n "${CRMS_GOOGLE_CLIENT_ID:-}" ]     && DEFINES+=(--dart-define=CRMS_GOOGLE_CLIENT_ID="${CRMS_GOOGLE_CLIENT_ID}")
 [ -n "${CRMS_GOOGLE_CLIENT_SECRET:-}" ] && DEFINES+=(--dart-define=CRMS_GOOGLE_CLIENT_SECRET="${CRMS_GOOGLE_CLIENT_SECRET}")
+[ -n "${CRMS_FIELD_KEY:-}" ]            && DEFINES+=(--dart-define=CRMS_FIELD_KEY="${CRMS_FIELD_KEY}")
 
 # --- 2) Build --------------------------------------------------------------
 echo "==> Building (flutter build linux --release)"

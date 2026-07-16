@@ -34,16 +34,13 @@ $sq = $pdo->prepare('SELECT remote_uid FROM central_suppressed WHERE owner_email
 $sq->execute([$email]);
 foreach ($sq->fetchAll(PDO::FETCH_COLUMN) as $u) $suppressed[(string) $u] = true;
 
-// Cache station name -> id lookups for this batch.
-$stationIdByName = [];
-$lookup = function (?string $name) use ($pdo, &$stationIdByName): ?int {
-    $name = trim((string) $name);
-    if ($name === '') return null;
-    if (array_key_exists($name, $stationIdByName)) return $stationIdByName[$name];
-    $q = $pdo->prepare('SELECT id FROM org_stations WHERE name = ?');
-    $q->execute([$name]);
-    $id = $q->fetchColumn();
-    return $stationIdByName[$name] = ($id !== false ? (int) $id : null);
+// Tolerant station name -> id lookup: matches the English name, the Marathi
+// alias (name_mr) or the code, ignoring case/spacing/punctuation — so imported
+// register data with Marathi station names still scopes into the right zone.
+$stationMap = stationNameMap($pdo);
+$lookup = function (?string $name) use ($stationMap): ?int {
+    $key = normStationName(trim((string) $name));
+    return $key === '' ? null : ($stationMap[$key] ?? null);
 };
 
 $upsert = $pdo->prepare(

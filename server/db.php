@@ -222,6 +222,30 @@ const ORG_STATIONS = [
     'Satara', 'Cyber Police Station',
 ];
 
+/// Marathi names of the same stations — imported register data usually carries
+/// these, so uploads must match them too. Seeded into org_stations.name_mr
+/// (only where the admin hasn't set one).
+const ORG_STATIONS_MR = [
+    'City Chowk' => 'सिटी चौक',
+    'Kranti Chowk' => 'क्रांती चौक',
+    'Vedant Nagar' => 'वेदांत नगर',
+    'Begumpura' => 'बेगमपुरा',
+    'Chhavani' => 'छावणी',
+    'Waluj' => 'वाळूज',
+    'MIDC Waluj' => 'एमआयडीसी वाळूज',
+    'Daulatabad' => 'दौलताबाद',
+    'Jinsi' => 'जिन्सी',
+    'CIDCO' => 'सिडको',
+    'MIDC CIDCO' => 'एमआयडीसी सिडको',
+    'Harsul' => 'हर्सूल',
+    'Jawahar Nagar' => 'जवाहर नगर',
+    'Usmanpura' => 'उस्मानपुरा',
+    'Pundlik Nagar' => 'पुंडलिक नगर',
+    'Mukundwadi' => 'मुकुंदवाडी',
+    'Satara' => 'सातारा',
+    'Cyber Police Station' => 'सायबर पोलीस स्टेशन',
+];
+
 /// Seeds the org tree once. Idempotent: always ensures every station row
 /// exists, but only creates the zone/division structure + initial mapping when
 /// no zones exist yet (so later admin edits are never clobbered). Both zones'
@@ -232,6 +256,14 @@ function seedOrg(PDO $pdo): void
     // Always make sure every station exists (division left NULL if new).
     $ins = $pdo->prepare('INSERT IGNORE INTO org_stations (name) VALUES (?)');
     foreach (ORG_STATIONS as $s) $ins->execute([$s]);
+
+    // Fill the Marathi alias where the admin hasn't set one, so uploads with
+    // Marathi station names resolve to the right station.
+    $mr = $pdo->prepare(
+        "UPDATE org_stations SET name_mr = ?
+         WHERE name = ? AND (name_mr IS NULL OR name_mr = '')"
+    );
+    foreach (ORG_STATIONS_MR as $en => $marathi) $mr->execute([$marathi, $en]);
 
     // Only build the hierarchy the first time.
     if ((int) $pdo->query('SELECT COUNT(*) FROM org_zones')->fetchColumn() > 0) {
@@ -318,6 +350,63 @@ function stationIdsInDivision(PDO $pdo, int $divisionId): array
     $q = $pdo->prepare('SELECT id FROM org_stations WHERE division_id = ?');
     $q->execute([$divisionId]);
     return array_map('intval', $q->fetchAll(PDO::FETCH_COLUMN));
+}
+
+/// Canonical form of a station name for matching: Devanagari digits become
+/// ASCII, "police station" tails (पोलीस स्टेशन / पो.स्टे / पो.ठाणे / police
+/// station) are dropped, then everything is lowercased with all whitespace and
+/// punctuation removed — so "सिटी चौक", "सिटीचौक" and "City  Chowk" all
+/// produce the same key. Both sides of every lookup must use this.
+function normStationName(string $name): string
+{
+    $name = str_replace(
+        ['०','१','२','३','४','५','६','७','८','९'],
+        ['0','1','2','3','4','5','6','7','8','9'],
+        $name
+    );
+    $name = mb_strtolower($name, 'UTF-8');
+    $name = preg_replace(
+        '/(पोलीस|पोलिस)\s*(स्टेशन|ठाणे|स्टे)\.?|police\s*station|पो\.?\s*(स्टे|ठाणे)\.?/u',
+        '', $name
+    );
+    return preg_replace('/[\s\.\-_,()]+/u', '', $name);
+}
+
+/// Normalized station-name -> id map over name, name_mr and code, for the
+/// tolerant lookup used by upload.php and the admin re-link action.
+function stationNameMap(PDO $pdo): array
+{
+    $map = [];
+    $rows = $pdo->query('SELECT id, name, name_mr, code FROM org_stations');
+    foreach ($rows as $s) {
+        foreach ([$s['name'], $s['name_mr'], $s['code']] as $n) {
+            $k = normStationName((string) $n);
+            if ($k !== '') $map[$k] = (int) $s['id'];
+        }
+    }
+    return $map;
+}
+
+/// Fills station_id on central_crimes rows whose station name didn't match at
+/// upload time (older exact-match uploads, spelling variants). Returns how many
+/// rows were linked.
+function relinkCentralStations(PDO $pdo): int
+{
+    $map = stationNameMap($pdo);
+    $rows = $pdo->query(
+        "SELECT id, station_name FROM central_crimes
+         WHERE station_id IS NULL AND station_name IS NOT NULL AND station_name <> ''"
+    )->fetchAll();
+    $upd = $pdo->prepare('UPDATE central_crimes SET station_id = ? WHERE id = ?');
+    $n = 0;
+    foreach ($rows as $r) {
+        $id = $map[normStationName($r['station_name'])] ?? null;
+        if ($id !== null) {
+            $upd->execute([$id, $r['id']]);
+            $n++;
+        }
+    }
+    return $n;
 }
 
 /// The effective station scope for a request: the user's base scope, optionally

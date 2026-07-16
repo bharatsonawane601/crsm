@@ -29,12 +29,14 @@ if ($scopeSql !== '') {
     $params = array_merge($params, $scopeParams);
 }
 
-// Free-text search.
+// Free-text search. Matches both the uploaded station spelling and the
+// canonical org_stations name, so "Daulatabad" also finds "दौलताबाद" rows.
 $q = trim((string) ($body['q'] ?? ''));
 if ($q !== '') {
-    $where[] = '(fir_no LIKE ? OR section LIKE ? OR crime_type LIKE ? OR station_name LIKE ?)';
+    $where[] = '(fir_no LIKE ? OR section LIKE ? OR crime_type LIKE ?'
+        . ' OR c.station_name LIKE ? OR s.name LIKE ?)';
     $like = '%' . $q . '%';
-    array_push($params, $like, $like, $like, $like);
+    array_push($params, $like, $like, $like, $like, $like);
 }
 
 // Structured filters.
@@ -52,9 +54,12 @@ if (!empty($body['crime_type'])) {
 }
 
 $whereSql = $where ? ('WHERE ' . implode(' AND ', $where)) : '';
+// LEFT JOIN keeps every FIR (station-less ones included) while exposing the
+// canonical station name for display and search.
+$fromSql = 'FROM central_crimes c LEFT JOIN org_stations s ON c.station_id = s.id';
 
-$total = (int) (function () use ($pdo, $whereSql, $params) {
-    $c = $pdo->prepare("SELECT COUNT(*) FROM central_crimes $whereSql");
+$total = (int) (function () use ($pdo, $fromSql, $whereSql, $params) {
+    $c = $pdo->prepare("SELECT COUNT(*) $fromSql $whereSql");
     $c->execute($params);
     return $c->fetchColumn();
 })();
@@ -64,10 +69,11 @@ $pageSize = max(1, min(200, $pageSize));
 $page = max(1, (int) ($body['page'] ?? 1));
 $offset = ($page - 1) * $pageSize;
 
-$sql = "SELECT id, station_name, fir_no, year, crime_type, section, status,
-               date_occurred, date_registered, data_json, updated_at
-        FROM central_crimes $whereSql
-        ORDER BY date_registered DESC, id DESC
+$sql = "SELECT c.id, COALESCE(s.name, c.station_name) AS station_name, c.fir_no,
+               c.year, c.crime_type, c.section, c.status,
+               c.date_occurred, c.date_registered, c.data_json, c.updated_at
+        $fromSql $whereSql
+        ORDER BY c.date_registered DESC, c.id DESC
         LIMIT $pageSize OFFSET $offset";
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);

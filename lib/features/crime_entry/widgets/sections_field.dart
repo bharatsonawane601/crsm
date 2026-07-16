@@ -63,6 +63,16 @@ class _SectionsFieldState extends State<SectionsField> {
     _emit();
   }
 
+  /// Opens a searchable list of all Acts (filter by name or short code). With
+  /// 100+ Acts a plain dropdown is unusable, so the officer types to narrow down.
+  Future<void> _pickAct() async {
+    final picked = await showDialog<ActOption>(
+      context: context,
+      builder: (ctx) => _ActPickerDialog(acts: widget.acts, selected: _act),
+    );
+    if (picked != null) setState(() => _act = picked);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -99,36 +109,21 @@ class _SectionsFieldState extends State<SectionsField> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Act selector (left half).
+              // Act selector (left half) — opens a searchable picker.
               Expanded(
                 flex: 5,
-                child: DropdownButtonFormField<ActOption>(
-                  initialValue: _act,
-                  isExpanded: true,
-                  decoration: InputDecoration(
-                    labelText: 'crime.info.act'.tr(),
-                    border: const OutlineInputBorder(),
-                    isDense: true,
+                child: InkWell(
+                  onTap: _pickAct,
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      labelText: 'crime.info.act'.tr(),
+                      border: const OutlineInputBorder(),
+                      isDense: true,
+                      suffixIcon: const Icon(Icons.arrow_drop_down),
+                    ),
+                    child: Text(_act.code,
+                        overflow: TextOverflow.ellipsis, maxLines: 1),
                   ),
-                  items: [
-                    for (final a in widget.acts)
-                      DropdownMenuItem(
-                        value: a,
-                        child: Text(a.name,
-                            overflow: TextOverflow.ellipsis, maxLines: 1),
-                      ),
-                  ],
-                  // Show the short code when collapsed (full name in the list).
-                  selectedItemBuilder: (context) => [
-                    for (final a in widget.acts)
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(a.code,
-                            overflow: TextOverflow.ellipsis, maxLines: 1),
-                      ),
-                  ],
-                  onChanged: (a) =>
-                      setState(() => _act = a ?? widget.acts.first),
                 ),
               ),
               const SizedBox(width: 8),
@@ -210,6 +205,91 @@ class _SectionsFieldState extends State<SectionsField> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// A searchable Act chooser: a search box over the full Acts list, filtering by
+/// name or short code. Returns the chosen [ActOption] (or null if cancelled).
+class _ActPickerDialog extends StatefulWidget {
+  const _ActPickerDialog({required this.acts, required this.selected});
+
+  final List<ActOption> acts;
+  final ActOption selected;
+
+  @override
+  State<_ActPickerDialog> createState() => _ActPickerDialogState();
+}
+
+class _ActPickerDialogState extends State<_ActPickerDialog> {
+  String _query = '';
+
+  List<ActOption> get _filtered {
+    final q = _query.trim().toLowerCase();
+    if (q.isEmpty) return widget.acts;
+    return widget.acts
+        .where((a) =>
+            a.name.toLowerCase().contains(q) ||
+            a.code.toLowerCase().contains(q))
+        .toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final results = _filtered;
+    return AlertDialog(
+      title: Text('crime.info.selectAct'.tr()),
+      content: SizedBox(
+        width: 460,
+        height: 460,
+        child: Column(
+          children: [
+            TextField(
+              autofocus: true,
+              autocorrect: false,
+              enableSuggestions: false,
+              onChanged: (v) => setState(() => _query = v),
+              decoration: InputDecoration(
+                hintText: 'crime.info.searchAct'.tr(),
+                prefixIcon: const Icon(Icons.search),
+                border: const OutlineInputBorder(),
+                isDense: true,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: results.isEmpty
+                  ? Center(
+                      child: Text('crime.info.noActMatch'.tr(),
+                          style: theme.textTheme.bodySmall))
+                  : ListView.builder(
+                      itemCount: results.length,
+                      itemBuilder: (context, i) {
+                        final a = results[i];
+                        final isSel = a.code == widget.selected.code;
+                        return ListTile(
+                          dense: true,
+                          selected: isSel,
+                          leading: isSel
+                              ? const Icon(Icons.check, size: 18)
+                              : const SizedBox(width: 18),
+                          title: Text(a.name),
+                          subtitle: Text(a.code),
+                          onTap: () => Navigator.pop(context, a),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text('common.cancel'.tr()),
+        ),
+      ],
     );
   }
 }

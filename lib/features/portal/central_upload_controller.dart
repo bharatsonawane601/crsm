@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../access/access_config.dart';
 import '../auth/auth_service.dart';
@@ -18,6 +21,20 @@ class CentralUploadState {
 /// Runs quietly in the background for station (data-entry) users so senior
 /// officers always see up-to-date data. No-op when the server isn't configured.
 class CentralUploadController extends Notifier<CentralUploadState> {
+  /// When the last fully-successful upload finished. Only records saved/edited
+  /// after this are sent on the next sync (the server upsert keeps the rest).
+  static const _lastUploadPrefKey = 'central_last_upload_millis';
+
+  /// When the last suppressed-tombstone pull ran, so the frequent background
+  /// poll only fetches NEW deletions instead of the whole (growing) list.
+  static const _lastSuppressedPrefKey = 'central_last_suppressed_millis';
+
+  /// Records per request. The Go server pipelines each chunk as one Postgres
+  /// batch, so bigger chunks just mean fewer HTTP round trips; 1000 keeps a
+  /// full 3000-record import to three requests while staying well inside the
+  /// 180s timeout even on a slow uplink.
+  static const _chunkSize = 1000;
+
   @override
   CentralUploadState build() => const CentralUploadState();
 
@@ -30,29 +47,59 @@ class CentralUploadController extends Notifier<CentralUploadState> {
     state = const CentralUploadState(phase: UploadPhase.uploading);
     final client = CentralClient();
     try {
+      final repo = ref.read(crimeRepositoryProvider);
+
       // 1) Pull down server-side deletions first: if the admin removed any of
       // this device's FIRs, delete the local copies too so they don't reappear
-      // (or get re-uploaded) after a restart.
+      // (or get re-uploaded) after a restart. The manual/launch sync always
+      // pulls the FULL list (correctness anchor for the incremental poll).
+      final prefs = await SharedPreferences.getInstance();
+      final suppressedPulledAt = DateTime.now();
       final suppressed = await client.fetchSuppressed(email: user.email);
       if (suppressed.isNotEmpty) {
-        await ref.read(crimeRepositoryProvider).purgeLocalByUids(suppressed);
+        await repo.purgeLocalByUids(suppressed);
       }
+      await prefs.setInt(_lastSuppressedPrefKey,
+          suppressedPulledAt.millisecondsSinceEpoch);
 
-      // 2) Upload whatever local records remain.
-      final records = await ref.read(crimeRepositoryProvider).exportForCentral();
+      // 2) One station = one spelling: fold Marathi/variant station names into
+      // the canonical one before export, so the portal never shows the same
+      // station twice. Touched rows get a fresh updatedAt and re-upload below.
+      await repo.canonicalizeStationNames();
+
+      // 3) Upload only what changed since the last successful sync (full
+      // upload the first time). [startedAt] is stamped before the export so a
+      // record saved mid-sync is re-sent next time — the upsert makes that safe.
+      final lastMillis = prefs.getInt(_lastUploadPrefKey);
+      final since = lastMillis == null
+          ? null
+          : DateTime.fromMillisecondsSinceEpoch(lastMillis);
+      final startedAt = DateTime.now();
+      final records = await repo.exportForCentral(since: since);
       if (records.isEmpty) {
         state = const CentralUploadState(phase: UploadPhase.done, saved: 0);
         return;
       }
       final settings = await ref.read(settingsProvider.future);
-      final saved = await client.upload(
-        email: user.email,
-        records: records,
-        defaultStation: settings.stationNameEnglish,
-      );
-      state = saved == null
-          ? const CentralUploadState(phase: UploadPhase.failed)
-          : CentralUploadState(phase: UploadPhase.done, saved: saved);
+
+      var savedTotal = 0;
+      for (var i = 0; i < records.length; i += _chunkSize) {
+        final chunk = records.sublist(i, min(i + _chunkSize, records.length));
+        final saved = await client.upload(
+          email: user.email,
+          records: chunk,
+          defaultStation: settings.stationNameEnglish,
+        );
+        if (saved == null) {
+          // Don't advance the marker — the failed remainder is retried in
+          // full on the next sync.
+          state = const CentralUploadState(phase: UploadPhase.failed);
+          return;
+        }
+        savedTotal += saved;
+      }
+      await prefs.setInt(_lastUploadPrefKey, startedAt.millisecondsSinceEpoch);
+      state = CentralUploadState(phase: UploadPhase.done, saved: savedTotal);
     } catch (_) {
       state = const CentralUploadState(phase: UploadPhase.failed);
     } finally {
@@ -70,9 +117,24 @@ class CentralUploadController extends Notifier<CentralUploadState> {
     if (user == null) return 0;
     final client = CentralClient();
     try {
-      final suppressed = await client.fetchSuppressed(email: user.email);
+      // Incremental: only tombstones newer than the last pull (with a 10-min
+      // overlap for clock skew). The launch/manual sync still does the full
+      // pull, so a missed tombstone is corrected there at the latest.
+      final prefs = await SharedPreferences.getInstance();
+      final lastMillis = prefs.getInt(_lastSuppressedPrefKey);
+      final since = lastMillis == null
+          ? null
+          : DateTime.fromMillisecondsSinceEpoch(lastMillis)
+              .subtract(const Duration(minutes: 10));
+      final pulledAt = DateTime.now();
+      final suppressed =
+          await client.fetchSuppressed(email: user.email, since: since);
+      await prefs.setInt(
+          _lastSuppressedPrefKey, pulledAt.millisecondsSinceEpoch);
       if (suppressed.isEmpty) return 0;
-      return await ref.read(crimeRepositoryProvider).purgeLocalByUids(suppressed);
+      return await ref
+          .read(crimeRepositoryProvider)
+          .purgeLocalByUids(suppressed);
     } catch (_) {
       return 0;
     } finally {
@@ -112,4 +174,5 @@ class CentralUploadController extends Notifier<CentralUploadState> {
 
 final centralUploadControllerProvider =
     NotifierProvider<CentralUploadController, CentralUploadState>(
-        CentralUploadController.new);
+      CentralUploadController.new,
+    );

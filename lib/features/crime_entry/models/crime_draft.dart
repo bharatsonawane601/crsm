@@ -10,24 +10,42 @@ class PersonDraft {
     this.name = '',
     this.gender,
     this.age,
+    this.ageText,
     this.address,
     this.mobile,
     this.email,
     this.aadhaar, // plaintext in memory; encrypted before persistence
     this.pan,
     this.passport,
+    this.fatherHusbandName,
+    this.birthYear,
+    this.nationality,
+    this.occupation,
+    this.permanentAddress,
+    this.idType,
+    this.idNumber,
   });
 
   int? id;
   String name;
   String? gender;
   int? age;
+  // Free-form age like "19.4" (19 years 4 months). [age] holds the integer part.
+  String? ageText;
   String? address;
   String? mobile;
   String? email;
   String? aadhaar;
   String? pan;
   String? passport;
+  // Extra NCRB FIR complainant fields.
+  String? fatherHusbandName;
+  int? birthYear;
+  String? nationality;
+  String? occupation;
+  String? permanentAddress;
+  String? idType;
+  String? idNumber;
 }
 
 class AccusedDraft extends PersonDraft {
@@ -36,6 +54,7 @@ class AccusedDraft extends PersonDraft {
     super.name,
     super.gender,
     super.age,
+    super.ageText,
     super.address,
     super.mobile,
     super.email,
@@ -46,18 +65,29 @@ class AccusedDraft extends PersonDraft {
     this.arrestDate,
     this.arrestTime,
     this.photoPath,
+    this.alias,
+    this.relativeName,
+    this.physical,
   });
 
   String? arrestStatus;
   DateTime? arrestDate;
   String? arrestTime;
   String? photoPath;
+  // Extra NCRB FIR accused fields.
+  String? alias;
+  String? relativeName;
+  // Physical-description block (build, height, complexion, ID marks, …),
+  // persisted as a JSON object in accused.physical_json.
+  Map<String, String>? physical;
 }
 
 class StolenItemDraft {
-  StolenItemDraft({this.id, this.type, this.description, this.value});
+  StolenItemDraft(
+      {this.id, this.category, this.type, this.description, this.value});
 
   int? id;
+  String? category;
   String? type;
   String? description;
   double? value;
@@ -77,23 +107,38 @@ class InvestigationDraft {
     this.id,
     this.officerName,
     this.officerId,
+    this.officerDesignation,
     this.officerMobile,
     this.filedBy,
     this.preventiveAction,
     this.preventiveNo,
     this.preventiveDate,
     this.wantedAccused,
+    this.registeringOfficerName,
+    this.registeringOfficerRank,
+    this.registeringOfficerNo,
+    this.actionTaken,
+    this.courtDispatchDate,
+    this.courtDispatchTime,
   });
 
   int? id;
   String? officerName;
   String? officerId;
+  String? officerDesignation;
   String? officerMobile;
   String? filedBy;
   String? preventiveAction;
   String? preventiveNo;
   DateTime? preventiveDate;
   String? wantedAccused;
+  // Extra NCRB FIR registration / dispatch fields.
+  String? registeringOfficerName;
+  String? registeringOfficerRank;
+  String? registeringOfficerNo;
+  String? actionTaken;
+  DateTime? courtDispatchDate;
+  String? courtDispatchTime;
 }
 
 class VerdictDraft {
@@ -129,6 +174,7 @@ class AttachmentDraft {
 class CrimeDraft {
   CrimeDraft({
     this.id,
+    this.remoteUid,
     this.firNo = '',
     this.year,
     this.section,
@@ -137,13 +183,32 @@ class CrimeDraft {
     this.district,
     this.policeStation,
     this.dateOccurred,
+    this.dateOccurredTo,
     this.timeOccurred,
+    this.timeOccurredTo,
     this.placeOccurred,
     this.dateRegistered,
     this.timeRegistered,
     this.crimeType,
-    this.status = 'open',
+    this.status = 'undetected',
+    this.courtType,
+    this.caseStage = 'investigation',
     this.detailedDescription,
+    this.firDate,
+    this.firTime,
+    this.infoReceivedDate,
+    this.infoReceivedTime,
+    this.gdDate,
+    this.gdTime,
+    this.gdEntryNo,
+    this.occurrenceDay,
+    this.typeOfInformation,
+    this.beatNo,
+    this.directionDistance,
+    this.outsidePsName,
+    this.outsidePsDistrict,
+    this.delayReason,
+    this.inquestUdNo,
     PersonDraft? complainant,
     InvestigationDraft? investigation,
     VerdictDraft? verdict,
@@ -163,6 +228,10 @@ class CrimeDraft {
 
   int? id;
 
+  /// Stable central-server identity (see Crimes.remoteUid). Null for a brand-new
+  /// draft; assigned once on first save.
+  String? remoteUid;
+
   // Tab 1 — Crime info
   String firNo;
   int? year;
@@ -172,13 +241,36 @@ class CrimeDraft {
   String? district;
   String? policeStation;
   DateTime? dateOccurred;
+  DateTime? dateOccurredTo;
   String? timeOccurred;
+  String? timeOccurredTo;
   String? placeOccurred;
   DateTime? dateRegistered;
   String? timeRegistered;
   String? crimeType;
   String status;
+  // 'sessions' (90-day chargesheet) | 'jmfc' (60-day) | null.
+  String? courtType;
+  // Where the FIR stands: investigation | chargesheet | both | court | disposed.
+  String caseStage;
   String? detailedDescription;
+
+  // Extra NCRB IIF-1 FIR fields.
+  DateTime? firDate;
+  String? firTime;
+  DateTime? infoReceivedDate;
+  String? infoReceivedTime;
+  DateTime? gdDate;
+  String? gdTime;
+  String? gdEntryNo;
+  String? occurrenceDay;
+  String? typeOfInformation;
+  String? beatNo;
+  String? directionDistance;
+  String? outsidePsName;
+  String? outsidePsDistrict;
+  String? delayReason;
+  String? inquestUdNo;
 
   // Tab 2 — Complainant
   PersonDraft complainant;

@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -53,6 +54,54 @@ void main() {
     expect(loaded.verdict.chargesheetNo, 'CS-1');
   });
 
+  test('new NCRB FIR fields round-trip (crime / person / accused / property / inv)',
+      () async {
+    final d = sampleDraft()
+      ..firDate = DateTime(2026, 3, 30)
+      ..firTime = '19:02'
+      ..gdEntryNo = '040'
+      ..beatNo = '1'
+      ..directionDistance = 'East, 1 km'
+      ..delayReason = 'No delay'
+      ..inquestUdNo = 'UD-9';
+    d.complainant
+      ..fatherHusbandName = 'Kadubal'
+      ..birthYear = 1997
+      ..nationality = 'India'
+      ..occupation = 'Private job'
+      ..permanentAddress = 'Bakwal Nagar'
+      ..idType = 'Aadhaar'
+      ..idNumber = 'XXXX';
+    d.accused.first
+      ..alias = 'Unknown-1'
+      ..relativeName = 'Father: Unknown'
+      ..physical = {'build': 'Medium', 'height': '170'};
+    d.stolen.first.category = 'Vehicles and others';
+    d.investigation
+      ..registeringOfficerName = 'narendra padalkar'
+      ..registeringOfficerRank = 'Inspector'
+      ..registeringOfficerNo = '50686'
+      ..actionTaken = 'Registered the case'
+      ..courtDispatchDate = DateTime(2026, 4, 1)
+      ..courtDispatchTime = '10:00';
+
+    final id = await repo.saveDraft(d);
+    final l = await repo.loadDraft(id);
+
+    expect(l!.firTime, '19:02');
+    expect(l.gdEntryNo, '040');
+    expect(l.directionDistance, 'East, 1 km');
+    expect(l.inquestUdNo, 'UD-9');
+    expect(l.complainant.fatherHusbandName, 'Kadubal');
+    expect(l.complainant.birthYear, 1997);
+    expect(l.complainant.permanentAddress, 'Bakwal Nagar');
+    expect(l.accused.first.alias, 'Unknown-1');
+    expect(l.accused.first.physical?['height'], '170');
+    expect(l.stolen.first.category, 'Vehicles and others');
+    expect(l.investigation.registeringOfficerNo, '50686');
+    expect(l.investigation.courtDispatchTime, '10:00');
+  });
+
   test('Aadhaar is persisted encrypted, never as plaintext', () async {
     final id = await repo.saveDraft(sampleDraft());
     final row = await (db.select(db.complainants)
@@ -88,6 +137,51 @@ void main() {
     expect(await repo.loadDraft(id), isNull);
     expect(await db.select(db.accused).get(), isEmpty);
     expect(await db.select(db.stolenProperty).get(), isEmpty);
+  });
+
+  group('central sync uid (server deletion safety)', () {
+    test('new crime gets a stable non-numeric "c_" uid, exported as uid',
+        () async {
+      final id = await repo.saveDraft(CrimeDraft(firNo: 'A/2026', year: 2026));
+      final loaded = await repo.loadDraft(id);
+      expect(loaded!.remoteUid, isNotNull);
+      expect(loaded.remoteUid, startsWith('c_'));
+
+      final exported = await repo.exportForCentral();
+      expect(exported.single['uid'], loaded.remoteUid);
+    });
+
+    test('purge by an OLD numeric uid does NOT delete a freshly-created record',
+        () async {
+      // The bug: admin deleted FIR with numeric uid "1"; the server suppresses
+      // "1" forever. A new record that happens to reuse local id 1 must NOT be
+      // purged, because it now carries a unique "c_" uid.
+      final id = await repo.saveDraft(CrimeDraft(firNo: 'NEW/2026', year: 2026));
+
+      final removed = await repo.purgeLocalByUids(['1', '2', '3']);
+      expect(removed, 0);
+      expect(await repo.loadDraft(id), isNotNull); // survived the sync
+    });
+
+    test('purge by the record\'s real remote uid removes it', () async {
+      final id = await repo.saveDraft(CrimeDraft(firNo: 'DEL/2026', year: 2026));
+      final uid = (await repo.loadDraft(id))!.remoteUid!;
+
+      final removed = await repo.purgeLocalByUids([uid]);
+      expect(removed, 1);
+      expect(await repo.loadDraft(id), isNull);
+    });
+
+    test('legacy row (numeric remote_uid) is still purged by its id', () async {
+      final id = await repo.saveDraft(CrimeDraft(firNo: 'OLD/2026', year: 2026));
+      // Simulate a pre-v8 record whose uid is its numeric id.
+      await (db.update(db.crimes)..where((t) => t.id.equals(id)))
+          .write(CrimesCompanion(remoteUid: Value(id.toString())));
+
+      final removed = await repo.purgeLocalByUids([id.toString()]);
+      expect(removed, 1);
+      expect(await repo.loadDraft(id), isNull);
+    });
   });
 
   test('watchCrimeList includes complainant + accused names; search matches',

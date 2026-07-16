@@ -18,6 +18,15 @@ class V {
         value);
   }
 
+  /// Optional age — a whole number of years, or "years.months" like "19.4".
+  static String? optAge(String? value) {
+    if (value == null || value.trim().isEmpty) return null;
+    return FormBuilderValidators.match(
+      RegExp(r'^\d{1,3}(\.\d{1,2})?$'),
+      errorText: 'validation.age'.tr(),
+    )(value.trim());
+  }
+
   /// Optional decimal number (for ₹ values).
   static String? optNumber(String? value) {
     if (value == null || value.trim().isEmpty) return null;

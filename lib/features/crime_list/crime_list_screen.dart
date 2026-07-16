@@ -17,7 +17,7 @@ import 'models/crime_list_item.dart';
 
 final _dateFmt = DateFormat('dd-MM-yyyy');
 
-const _statuses = ['open', 'pending', 'solved', 'chargesheeted'];
+const _statuses = ['detected', 'undetected'];
 const _perPageOptions = [50, 100, 200];
 
 /// Crime Records — sortable, paginated data table with filter chips. Post-login
@@ -59,8 +59,11 @@ class _CrimeListScreenState extends ConsumerState<CrimeListScreen> {
       if (_status != null && item.crime.status != _status) return false;
       final reg = _effectiveDate(item);
       if (_from != null && reg.isBefore(_from!)) return false;
-      if (_to != null && reg.isAfter(_to!.add(const Duration(days: 1)))) {
-        return false;
+      if (_to != null) {
+        // Inclusive of the whole "to" day: [to 00:00, to+1day 00:00).
+        final end = DateTime(_to!.year, _to!.month, _to!.day)
+            .add(const Duration(days: 1));
+        if (!reg.isBefore(end)) return false;
       }
       return true;
     }).toList();
@@ -362,6 +365,35 @@ class _CrimeListScreenState extends ConsumerState<CrimeListScreen> {
               alignment: Alignment.centerLeft,
               child: CrmsBadge.status(r.crime.status)),
           sortValue: (r) => r.crime.status,
+        ),
+        CrmsColumn(
+          label: 'list.col.chargesheet'.tr(),
+          width: 124,
+          cell: (r) {
+            final badge = ChargesheetBadge.maybe(
+              status: r.crime.status,
+              courtType: r.crime.courtType,
+              dateRegistered: r.crime.dateRegistered,
+            );
+            return Align(
+              alignment: Alignment.centerLeft,
+              child: badge ?? const Text('—'),
+            );
+          },
+          sortValue: (r) =>
+              chargesheetDaysRemaining(
+                courtType: r.crime.courtType,
+                dateRegistered: r.crime.dateRegistered,
+              ) ??
+              1 << 30,
+        ),
+        CrmsColumn(
+          label: 'list.col.stage'.tr(),
+          width: 180,
+          cell: (r) => Align(
+              alignment: Alignment.centerLeft,
+              child: StageBadges(r.crime.caseStage)),
+          sortValue: (r) => r.crime.caseStage,
         ),
         CrmsColumn(
           label: 'list.col.accused'.tr(),

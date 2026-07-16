@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show gzip;
 
 import 'package:http/http.dart' as http;
 
@@ -31,16 +32,20 @@ class CentralClient {
   }) async {
     try {
       final meta = await clientDeviceMeta();
+      // Gzip the body: FIR JSON compresses ~10:1, so a big import syncs in a
+      // tenth of the time on a slow station uplink. The Go server (jsonBody)
+      // decompresses transparently.
+      final body = gzip.encode(utf8.encode(jsonEncode({
+        'email': email,
+        'records': records,
+        'default_station': defaultStation,
+        ...meta,
+      })));
       final res = await _http
           .post(_uri('upload.php'),
-              headers: _headers,
-              body: jsonEncode({
-                'email': email,
-                'records': records,
-                'default_station': defaultStation,
-                ...meta,
-              }))
-          .timeout(const Duration(seconds: 60));
+              headers: {..._headers, 'Content-Encoding': 'gzip'}, body: body)
+          // Big first-time chunks over a slow office uplink need headroom.
+          .timeout(const Duration(seconds: 180));
       final json = jsonDecode(res.body) as Map<String, dynamic>;
       if (json['ok'] == true) return (json['saved'] as num?)?.toInt() ?? 0;
       return null;
@@ -51,12 +56,20 @@ class CentralClient {
 
   /// The remote_uids of this user's FIRs that were deleted on the server (admin
   /// panel). The app deletes its matching local copies so a server-side deletion
-  /// isn't re-created on sync. Returns an empty list on any failure.
-  Future<List<String>> fetchSuppressed({required String email}) async {
+  /// isn't re-created on sync. Pass [since] to fetch only tombstones created
+  /// after it (the frequent background poll). Returns an empty list on failure.
+  Future<List<String>> fetchSuppressed({
+    required String email,
+    DateTime? since,
+  }) async {
     try {
       final res = await _http
           .post(_uri('suppressed.php'),
-              headers: _headers, body: jsonEncode({'email': email}))
+              headers: _headers,
+              body: jsonEncode({
+                'email': email,
+                'since': ?since?.toUtc().toIso8601String(),
+              }))
           .timeout(const Duration(seconds: 30));
       final json = jsonDecode(res.body) as Map<String, dynamic>;
       if (json['ok'] != true) return const [];
@@ -97,18 +110,38 @@ class CentralClient {
     }
   }
 
-  /// The scope options the officer can drill into (All city / zone / division /
-  /// station depending on rank), straight from the server.
-  Future<List<PortalScopeOption>> scopeOptions({required String email}) async {
+  /// The scoped org tree (zones / divisions / stations the officer may see) that
+  /// feeds the three cascading dropdowns and the comparison picker.
+  Future<PortalScopeTree> scopeTree({required String email}) async {
     final res = await _http
         .post(_uri('portal_scope.php'),
             headers: _headers, body: jsonEncode({'email': email}))
         .timeout(const Duration(seconds: 30));
     final json = jsonDecode(res.body) as Map<String, dynamic>;
-    if (json['ok'] != true) return const [];
+    if (json['ok'] != true) return PortalScopeTree.empty;
+    return PortalScopeTree.fromJson(json);
+  }
+
+  /// Side-by-side comparison KPIs for a set of stations ([by]='station') or ACP
+  /// divisions ([by]='division'). Scope-enforced on the server.
+  Future<List<PortalCompareRow>> compare({
+    required String email,
+    required String by,
+    required List<int> ids,
+  }) async {
+    if (ids.isEmpty) return const [];
+    final res = await _http
+        .post(_uri('portal_compare.php'),
+            headers: _headers,
+            body: jsonEncode({'email': email, 'by': by, 'ids': ids}))
+        .timeout(const Duration(seconds: 45));
+    final json = jsonDecode(res.body) as Map<String, dynamic>;
+    if (json['ok'] != true) {
+      throw Exception(json['message'] ?? 'portal.error');
+    }
     return [
-      for (final o in (json['options'] as List? ?? []))
-        PortalScopeOption.fromJson(o as Map<String, dynamic>),
+      for (final r in (json['rows'] as List? ?? []))
+        PortalCompareRow.fromJson(r as Map<String, dynamic>),
     ];
   }
 
@@ -119,7 +152,7 @@ class CentralClient {
     int? year,
     String? status,
     String? crimeType,
-    PortalScopeOption? scope,
+    PortalScope? scope,
     int page = 1,
     int pageSize = 50,
   }) async {
@@ -154,7 +187,7 @@ class CentralClient {
   /// Returned as raw maps; the caller maps them into the shared analytics model.
   Future<List<Map<String, dynamic>>> rows({
     required String email,
-    PortalScopeOption? scope,
+    PortalScope? scope,
   }) async {
     final body = <String, dynamic>{'email': email};
     scope?.applyTo(body);
@@ -175,40 +208,123 @@ class CentralClient {
   void dispose() => _http.close();
 }
 
-/// One selectable scope in the portal drill-down (All city / a zone / a
-/// division / a station). [type] is 'all'|'zone'|'division'|'station'.
-class PortalScopeOption {
-  const PortalScopeOption({required this.label, required this.type, this.id});
-  final String label;
-  final String type;
-  final int? id;
+/// A zone in the scoped org tree.
+class PortalZone {
+  const PortalZone({required this.id, required this.name});
+  final int id;
+  final String name;
+  factory PortalZone.fromJson(Map<String, dynamic> j) =>
+      PortalZone(id: (j['id'] as num).toInt(), name: (j['name'] ?? '').toString());
+}
 
-  factory PortalScopeOption.fromJson(Map<String, dynamic> j) => PortalScopeOption(
-        label: (j['label'] ?? '').toString(),
-        type: (j['type'] ?? 'all').toString(),
-        id: (j['id'] as num?)?.toInt(),
+/// An ACP division (belongs to a zone).
+class PortalDivision {
+  const PortalDivision({required this.id, required this.name, this.zoneId});
+  final int id;
+  final String name;
+  final int? zoneId;
+  factory PortalDivision.fromJson(Map<String, dynamic> j) => PortalDivision(
+        id: (j['id'] as num).toInt(),
+        name: (j['name'] ?? '').toString(),
+        zoneId: (j['zone_id'] as num?)?.toInt(),
       );
+}
 
-  /// Adds this scope's filter key to a request body.
+/// A police station (belongs to a division / zone).
+class PortalStation {
+  const PortalStation(
+      {required this.id, required this.name, this.divisionId, this.zoneId});
+  final int id;
+  final String name;
+  final int? divisionId;
+  final int? zoneId;
+  factory PortalStation.fromJson(Map<String, dynamic> j) => PortalStation(
+        id: (j['id'] as num).toInt(),
+        name: (j['name'] ?? '').toString(),
+        divisionId: (j['division_id'] as num?)?.toInt(),
+        zoneId: (j['zone_id'] as num?)?.toInt(),
+      );
+}
+
+/// The scoped org tree returned by portal_scope.php.
+class PortalScopeTree {
+  const PortalScopeTree({
+    required this.role,
+    required this.zones,
+    required this.divisions,
+    required this.stations,
+  });
+
+  final String role;
+  final List<PortalZone> zones;
+  final List<PortalDivision> divisions;
+  final List<PortalStation> stations;
+
+  static const empty =
+      PortalScopeTree(role: 'station', zones: [], divisions: [], stations: []);
+
+  factory PortalScopeTree.fromJson(Map<String, dynamic> j) => PortalScopeTree(
+        role: (j['role'] ?? 'station').toString(),
+        zones: [
+          for (final z in (j['zones'] as List? ?? []))
+            PortalZone.fromJson(z as Map<String, dynamic>)
+        ],
+        divisions: [
+          for (final d in (j['divisions'] as List? ?? []))
+            PortalDivision.fromJson(d as Map<String, dynamic>)
+        ],
+        stations: [
+          for (final s in (j['stations'] as List? ?? []))
+            PortalStation.fromJson(s as Map<String, dynamic>)
+        ],
+      );
+}
+
+/// The effective single-select scope built from the three dropdowns. Sends the
+/// most specific filter chosen (station > division > zone) to the server.
+class PortalScope {
+  const PortalScope({this.zoneId, this.divisionId, this.stationId});
+  final int? zoneId;
+  final int? divisionId;
+  final int? stationId;
+
+  bool get isAll => zoneId == null && divisionId == null && stationId == null;
+
   void applyTo(Map<String, dynamic> body) {
-    if (id == null) return;
-    switch (type) {
-      case 'zone':
-        body['zone_id'] = id;
-      case 'division':
-        body['division_id'] = id;
-      case 'station':
-        body['station_id'] = id;
+    if (stationId != null) {
+      body['station_id'] = stationId;
+    } else if (divisionId != null) {
+      body['division_id'] = divisionId;
+    } else if (zoneId != null) {
+      body['zone_id'] = zoneId;
     }
   }
+}
 
-  // Identity by (type,id) so the dropdown can match the selected value.
-  @override
-  bool operator ==(Object other) =>
-      other is PortalScopeOption && other.type == type && other.id == id;
+/// One entity's KPI bundle in a side-by-side comparison.
+class PortalCompareRow {
+  const PortalCompareRow({required this.id, required this.label, required this.kpi});
+  final int id;
+  final String label;
+  final Map<String, num> kpi;
 
-  @override
-  int get hashCode => Object.hash(type, id);
+  num get total => kpi['total'] ?? 0;
+  num get detected => kpi['detected'] ?? 0;
+  num get undetected => kpi['undetected'] ?? 0;
+  num get arrested => kpi['arrested'] ?? 0;
+  num get wanted => kpi['wanted'] ?? 0;
+  num get recovered => kpi['recovered'] ?? 0;
+  num get chargesheeted => kpi['chargesheeted'] ?? 0;
+  double get detectedPct => total == 0 ? 0 : (detected / total * 100);
+
+  factory PortalCompareRow.fromJson(Map<String, dynamic> j) => PortalCompareRow(
+        id: (j['id'] as num?)?.toInt() ?? 0,
+        label: (j['label'] ?? '').toString(),
+        kpi: {
+          for (final e in ((j['kpi'] as Map?) ?? const {}).entries)
+            e.key.toString(): (e.value as num? ?? 0),
+        },
+      );
 }
 
 class PortalSearchResult {

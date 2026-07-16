@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.4.0+8
+version: 1.13.2+33
 
 environment:
   sdk: ^3.11.5
@@ -36,7 +36,6 @@ dependencies:
   cupertino_icons: ^1.0.8
   drift: ^2.34.0
   drift_flutter: ^0.3.0
-  sqlcipher_flutter_libs: ^0.7.0+eol
   path_provider: ^2.1.5
   path: ^1.9.1
   easy_localization: ^3.0.8
@@ -62,6 +61,19 @@ dependencies:
   share_plus: ^12.0.2
   device_info_plus: ^11.2.0
   package_info_plus: ^9.0.1
+  # In-app cropping of scanned documents (pure-Flutter, works on desktop).
+  crop_your_image: ^1.1.0
+  # Slicing the captured report image across multiple PDF pages.
+  image: ^4.3.0
+  # Extracting text from an imported FIR PDF (pure-Dart, works on desktop).
+  syncfusion_flutter_pdf: ^28.2.5
+  # --- IO portal scene capture (phone-first, degrade gracefully on desktop) ---
+  # Camera / gallery photos of the scene (image_picker_windows handles desktop).
+  image_picker: ^1.1.2
+  # GPS stamp for panchnama location (endorsed Windows/macOS/Linux impls exist).
+  geolocator: ^13.0.2
+  # Voice-to-text scene notes (Android/iOS; guarded off on desktop).
+  speech_to_text: ^7.0.0
 
 dev_dependencies:
   flutter_test:

@@ -59,8 +59,13 @@ class UpdateController extends Notifier<UpdateState> {
 
     if (Platform.isMacOS) {
       openUrl(release.url);
-      // Leave the prompt; the user installs the downloaded .dmg manually.
-      state = state.copyWith(phase: UpdatePhase.idle, error: null);
+      // Open the .dmg download in the browser for manual install. A MANDATORY
+      // update must NOT drop to idle (that would let the user into the app
+      // without updating) — keep the gate up; only an optional update dismisses.
+      state = state.copyWith(
+        phase: release.mandatory ? UpdatePhase.mandatory : UpdatePhase.idle,
+        error: null,
+      );
       return;
     }
 

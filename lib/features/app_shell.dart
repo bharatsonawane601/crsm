@@ -4,19 +4,25 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-
 import '../core/theme/colors.dart';
 import '../core/theme/spacing.dart';
 import '../core/theme/typography.dart';
 import '../shared/widgets/crms.dart';
 import 'analyzer/dashboard_screen.dart';
 import 'audit/audit_log_screen.dart';
+import 'bhag/reports_hub.dart';
 import 'auth/auth_service.dart';
 import 'crime_entry/crime_entry_screen.dart';
 import 'crime_list/crime_list_provider.dart';
 import 'crime_list/crime_list_screen.dart';
 import 'import_excel/import_screen.dart';
+import 'access/access_client.dart';
+import 'access/access_service.dart';
+import 'io/io_portal_shell.dart';
 import 'portal/central_upload_controller.dart';
+import 'portal/portal_shell.dart';
+import 'portal/station_firs_screen.dart';
+import 'settings/backup_service.dart';
 import 'settings/settings_screen.dart';
 import 'sync/sync_controller.dart';
 import 'template_builder/template_list_screen.dart';
@@ -43,6 +49,8 @@ class _AppShellState extends ConsumerState<AppShell> {
     // deletions (so admin-deleted FIRs are removed from this device too).
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(centralUploadControllerProvider.notifier).uploadNow();
+      // Daily automatic backup (encrypted). No-op if one ran in the last 24h.
+      ref.read(backupServiceProvider).autoBackupIfDue();
     });
     // Then keep checking for server-side deletions while the app is open, so an
     // admin deletion clears from this device within a minute or two (near
@@ -62,7 +70,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     'nav.dashboard',
     'list.title',
     'templates.title',
-    'cf.title',
+    'reports.title',
     'audit.title',
     'settings.title',
   ];
@@ -95,6 +103,12 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   @override
   Widget build(BuildContext context) {
+    // Admin-assigned station: unlocks the read-only "Station FIRs" view of the
+    // whole station's central records (all users, not just this device).
+    // HQ role instead gets the full officer portal (all stations) + free entry.
+    final access = ref.watch(accessControllerProvider);
+    final assignedStation = access.scope.station;
+    final isHq = access.role == OfficerRole.hq;
     final items = <CrmsNavItem>[
       CrmsNavItem(
           icon: PhosphorIconsRegular.chartBar,
@@ -106,6 +120,18 @@ class _AppShellState extends ConsumerState<AppShell> {
           label: 'nav.crimeRecords'.tr(),
           selected: _section == 1,
           onTap: () => _go(1)),
+      if (assignedStation != null && assignedStation.isNotEmpty)
+        CrmsNavItem(
+            icon: PhosphorIconsRegular.buildings,
+            label: 'nav.stationFirs'.tr(),
+            onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                builder: (_) => const StationFirsScreen()))),
+      if (isHq)
+        CrmsNavItem(
+            icon: PhosphorIconsRegular.buildings,
+            label: 'nav.officerPortal'.tr(),
+            onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                builder: (_) => const PortalShell()))),
       CrmsNavItem(
           icon: PhosphorIconsRegular.plusCircle,
           label: 'nav.newCrime'.tr(),
@@ -115,6 +141,16 @@ class _AppShellState extends ConsumerState<AppShell> {
           label: 'nav.templates'.tr(),
           selected: _section == 2,
           onTap: () => _go(2)),
+      CrmsNavItem(
+          icon: PhosphorIconsRegular.chartPieSlice,
+          label: 'reports.title'.tr(),
+          selected: _section == 3,
+          onTap: () => _go(3)),
+      CrmsNavItem(
+          icon: PhosphorIconsRegular.identificationCard,
+          label: 'io.title'.tr(),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+              builder: (_) => const IoPortalShell()))),
       CrmsNavItem(
           icon: PhosphorIconsRegular.uploadSimple,
           label: 'nav.import'.tr(),
@@ -179,7 +215,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                       _lazy(0, const DashboardScreen()),
                       _lazy(1, const CrimeListScreen()),
                       _lazy(2, const TemplateListScreen()),
-                      const SizedBox.shrink(), // (custom fields removed)
+                      _lazy(3, const ReportsHubScreen()),
                       _lazy(4, const AuditLogScreen(embedded: true)),
                       _lazy(5, const SettingsScreen(embedded: true)),
                     ],

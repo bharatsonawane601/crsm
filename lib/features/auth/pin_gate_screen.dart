@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -35,6 +37,10 @@ class _PinGateScreenState extends ConsumerState<PinGateScreen> {
   String? _error;
   bool _busy = false;
 
+  /// Seconds left of the failed-attempts lockout; 0 = entry allowed.
+  int _lockSeconds = 0;
+  Timer? _lockTimer;
+
   String get _email =>
       ref.read(authControllerProvider).value?.email ?? '';
 
@@ -48,11 +54,33 @@ class _PinGateScreenState extends ConsumerState<PinGateScreen> {
     final has = await _pin.hasPinFor(_email);
     if (!mounted) return;
     setState(() => _step = has ? _PinStep.enter : _PinStep.create);
+    if (has) await _refreshLockout();
     _focus.requestFocus();
+  }
+
+  /// Reads the persistent lockout and, while active, ticks a 1s countdown.
+  Future<void> _refreshLockout() async {
+    final left = await _pin.remainingLockout();
+    if (!mounted) return;
+    setState(() => _lockSeconds = left.inSeconds);
+    _lockTimer?.cancel();
+    if (left > Duration.zero) {
+      _lockTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+        if (!mounted) return t.cancel();
+        setState(() {
+          _lockSeconds = (_lockSeconds - 1).clamp(0, 1 << 31);
+          if (_lockSeconds == 0) {
+            t.cancel();
+            _error = null;
+          }
+        });
+      });
+    }
   }
 
   @override
   void dispose() {
+    _lockTimer?.cancel();
     _controller.dispose();
     _focus.dispose();
     super.dispose();
@@ -98,14 +126,20 @@ class _PinGateScreenState extends ConsumerState<PinGateScreen> {
         if (!mounted) return;
         widget.onUnlocked();
       case _PinStep.enter:
+        if (_lockSeconds > 0) {
+          setState(() => _busy = false);
+          return;
+        }
         final ok = await _pin.verify(_email, value);
         if (!mounted) return;
         if (ok) {
           widget.onUnlocked();
         } else {
+          await _refreshLockout();
+          if (!mounted) return;
           setState(() {
             _busy = false;
-            _error = 'pin.wrong'.tr();
+            _error = _lockSeconds > 0 ? null : 'pin.wrong'.tr();
           });
           _reset();
         }
@@ -171,7 +205,16 @@ class _PinGateScreenState extends ConsumerState<PinGateScreen> {
                   },
                   onCompleted: (_) => _submit(),
                 ),
-                if (_error != null) ...[
+                if (_lockSeconds > 0) ...[
+                  const SizedBox(height: AppSpacing.s3),
+                  Text(
+                    'pin.lockedOut'
+                        .tr(namedArgs: {'seconds': '$_lockSeconds'}),
+                    textAlign: TextAlign.center,
+                    style: AppType.bodySm
+                        .copyWith(color: AppColors.dangerRed),
+                  ),
+                ] else if (_error != null) ...[
                   const SizedBox(height: AppSpacing.s3),
                   Text(_error!,
                       style: AppType.bodySm
@@ -182,7 +225,7 @@ class _PinGateScreenState extends ConsumerState<PinGateScreen> {
                   label: copy.cta,
                   expand: true,
                   loading: _busy,
-                  onPressed: _submit,
+                  onPressed: _lockSeconds > 0 ? null : _submit,
                 ),
                 const SizedBox(height: AppSpacing.s3),
                 CrmsButton(

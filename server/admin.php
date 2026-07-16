@@ -19,13 +19,39 @@ if (isset($_GET['logout'])) {
 
 function loginForm(): void
 {
-    echo '<!doctype html><meta charset="utf-8"><title>CRMS Admin</title>';
-    echo '<style>body{font-family:system-ui;max-width:420px;margin:80px auto;padding:0 16px}'
-        . 'input,button{font-size:16px;padding:10px;width:100%;box-sizing:border-box;margin:6px 0}'
-        . 'button{background:#13294B;color:#fff;border:0;border-radius:6px;cursor:pointer}</style>';
-    echo '<h2>CRMS Admin</h2><form method="post">'
-        . '<input type="password" name="login_password" placeholder="Admin password" autofocus>'
-        . '<button>Sign in</button></form>';
+    echo '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+        . '<meta name="viewport" content="width=device-width, initial-scale=1">'
+        . '<title>CRMS Admin · Sign in</title>';
+    echo '<style>'
+        . ':root{--navy:#13294B;--navy2:#1d3a66;--gold:#c9a227;--line:#e3e7ef;--ink:#16233b}'
+        . '*{box-sizing:border-box}'
+        . 'body{font-family:"Segoe UI",system-ui,sans-serif;margin:0;min-height:100vh;color:var(--ink);'
+        . 'display:grid;place-items:center;padding:24px;'
+        . 'background:linear-gradient(150deg,var(--navy) 0%,var(--navy2) 55%,#28497c 100%)}'
+        . '.card{background:#fff;border-radius:16px;box-shadow:0 24px 60px rgba(4,12,30,.45);'
+        . 'padding:36px 34px;width:100%;max-width:400px}'
+        . '.logo{width:54px;height:54px;border-radius:14px;margin:0 auto 14px;'
+        . 'background:linear-gradient(140deg,var(--navy),var(--navy2));color:#fff;display:grid;'
+        . 'place-items:center;font-weight:800;font-size:20px;letter-spacing:.5px;'
+        . 'box-shadow:inset 0 0 0 2px var(--gold)}'
+        . 'h2{margin:0 0 2px;text-align:center;font-size:21px;color:var(--navy)}'
+        . '.sub{margin:0 0 22px;text-align:center;font-size:13px;color:#68738a}'
+        . 'label{display:block;font-size:12.5px;font-weight:600;color:#4a5670;margin:0 0 6px}'
+        . 'input{font-size:15px;padding:12px 14px;width:100%;border:1.5px solid var(--line);'
+        . 'border-radius:10px;outline:none;transition:border-color .15s, box-shadow .15s}'
+        . 'input:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(19,41,75,.15)}'
+        . 'button{margin-top:16px;font-size:15px;font-weight:700;padding:12px;width:100%;'
+        . 'background:var(--navy);color:#fff;border:0;border-radius:10px;cursor:pointer;'
+        . 'transition:filter .15s}'
+        . 'button:hover{filter:brightness(1.15)}'
+        . '.foot{margin-top:18px;text-align:center;font-size:11.5px;color:#8a93a8}'
+        . '</style></head><body>';
+    echo '<div class="card"><div class="logo">CR</div>'
+        . '<h2>CRMS Admin</h2><p class="sub">Crime Records Management System</p>'
+        . '<form method="post"><label for="pw">Admin password</label>'
+        . '<input id="pw" type="password" name="login_password" placeholder="••••••••" autofocus>'
+        . '<button>Sign in</button></form>'
+        . '<div class="foot">DB Square Technology</div></div></body></html>';
 }
 
 if (empty($_SESSION['admin'])) {
@@ -69,35 +95,140 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'
 // --- Central FIR record actions (admin controls the shared crime store) ---
 // Delete ONE central FIR: copy it to the 30-day recycle bin, log it to the
 // deletion audit, tombstone it so the station can't re-upload it, then remove it.
+/// Soft-deletes ONE central FIR row (already fetched): copies it to the 30-day
+/// recycle bin, writes a deletion audit row, tombstones it so the station app
+/// won't re-upload it, then removes it from the central store. Shared by the
+/// single, multi-select, and by-device delete actions so they behave identically.
+function softDeleteCentralCrime(PDO $pdo, array $row, string $by = 'Admin panel'): void
+{
+    $fid = (int) $row['id'];
+    $pdo->prepare(
+        'INSERT INTO central_trash (' . CENTRAL_COLS . ', deleted_by)
+         SELECT ' . CENTRAL_COLS . ', ? FROM central_crimes WHERE id = ?'
+    )->execute([$by, $fid]);
+    $pdo->prepare(
+        'INSERT INTO central_deletions
+            (owner_email, remote_uid, fir_no, year, station_name,
+             src_device, src_platform, src_ip)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    )->execute([
+        $row['owner_email'], $row['remote_uid'], $row['fir_no'], $row['year'],
+        $row['station_name'], $by, 'admin', clientIp(),
+    ]);
+    $pdo->prepare(
+        'INSERT IGNORE INTO central_suppressed (owner_email, remote_uid) VALUES (?, ?)'
+    )->execute([$row['owner_email'], $row['remote_uid']]);
+    $pdo->prepare('DELETE FROM central_crimes WHERE id = ?')->execute([$fid]);
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete_fir'
     && isset($_POST['fir_id'])) {
     $fid = (int) $_POST['fir_id'];
     $q = $pdo->prepare('SELECT * FROM central_crimes WHERE id = ?');
     $q->execute([$fid]);
     if ($row = $q->fetch()) {
-        // 1) Recycle bin — keep the full record so it can be restored.
-        $pdo->prepare(
-            'INSERT INTO central_trash (' . CENTRAL_COLS . ', deleted_by)
-             SELECT ' . CENTRAL_COLS . ', ? FROM central_crimes WHERE id = ?'
-        )->execute(['Admin panel', $fid]);
-        // 2) Audit (record who removed it: the admin, plus the FIR's owner).
-        $pdo->prepare(
-            'INSERT INTO central_deletions
-                (owner_email, remote_uid, fir_no, year, station_name,
-                 src_device, src_platform, src_ip)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-        )->execute([
-            $row['owner_email'], $row['remote_uid'], $row['fir_no'], $row['year'],
-            $row['station_name'], 'Admin panel', 'admin', clientIp(),
-        ]);
-        // 3) Tombstone so the next station sync doesn't re-create it.
-        $pdo->prepare(
-            'INSERT IGNORE INTO central_suppressed (owner_email, remote_uid) VALUES (?, ?)'
-        )->execute([$row['owner_email'], $row['remote_uid']]);
-        $pdo->prepare('DELETE FROM central_crimes WHERE id = ?')->execute([$fid]);
+        softDeleteCentralCrime($pdo, $row);
         $_SESSION['fir_msg'] = 'FIR ' . ($row['fir_no'] ?: '#' . $fid)
             . ' removed — recoverable from the Recycle Bin for 30 days.';
     }
+    header('Location: admin.php?page=firs');
+    exit;
+}
+// Delete the SELECTED FIRs (multi-select checkboxes → fir_ids[]).
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete_firs_selected') {
+    $ids = is_array($_POST['fir_ids'] ?? null) ? $_POST['fir_ids'] : [];
+    $n = 0;
+    foreach ($ids as $rawId) {
+        $q = $pdo->prepare('SELECT * FROM central_crimes WHERE id = ?');
+        $q->execute([(int) $rawId]);
+        if ($row = $q->fetch()) {
+            softDeleteCentralCrime($pdo, $row);
+            $n++;
+        }
+    }
+    $_SESSION['fir_msg'] = $n > 0
+        ? "$n FIR(s) removed — recoverable from the Recycle Bin for 30 days."
+        : 'No FIRs were selected to delete.';
+    header('Location: admin.php?page=firs');
+    exit;
+}
+// Delete EVERY FIR that came from one device (by device name + IP, matching the
+// Source column). Removes across the whole store, not just the displayed page.
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete_by_device') {
+    $device = trim((string) ($_POST['device'] ?? ''));
+    $ip = trim((string) ($_POST['ip'] ?? ''));
+    if ($device === '' && $ip === '') {
+        $_SESSION['fir_msg'] = 'Pick a device to delete its FIRs.';
+        header('Location: admin.php?page=firs');
+        exit;
+    }
+    // NULL-safe match on whichever identifiers were provided.
+    $where = [];
+    $args = [];
+    if ($device !== '') { $where[] = 'src_device = ?'; $args[] = $device; }
+    if ($ip !== '')     { $where[] = 'src_ip = ?';     $args[] = $ip; }
+    $sql = 'SELECT * FROM central_crimes WHERE ' . implode(' AND ', $where);
+    $rows = $pdo->prepare($sql);
+    $rows->execute($args);
+    $n = 0;
+    foreach ($rows->fetchAll() as $row) {
+        softDeleteCentralCrime($pdo, $row);
+        $n++;
+    }
+    $label = $device !== '' ? $device : $ip;
+    $_SESSION['fir_msg'] = $n > 0
+        ? "$n FIR(s) from \"$label\" removed — recoverable from the Recycle Bin for 30 days."
+        : "No FIRs found for \"$label\".";
+    header('Location: admin.php?page=firs');
+    exit;
+}
+// Re-link station names: fill station_id on FIRs whose station name didn't
+// match at upload time (e.g. Marathi spellings from imported registers), so
+// they count inside their zone in the officer portal.
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'relink_stations') {
+    $n = relinkCentralStations($pdo);
+    $left = (int) $pdo->query(
+        'SELECT COUNT(*) FROM central_crimes WHERE station_id IS NULL'
+    )->fetchColumn();
+    $_SESSION['fir_msg'] = "Linked $n FIR(s) to their station."
+        . ($left > 0
+            ? " $left still unmatched — fix their station names (or add a Marathi alias) in the Organisation page, then run this again."
+            : ' Every FIR now belongs to a station.');
+    header('Location: admin.php?page=firs');
+    exit;
+}
+// Remove duplicate FIRs — the same owner + FIR no + year + station uploaded
+// more than once (repeated imports create new uids, so the upsert can't catch
+// them). Keeps the newest copy; the rest go to the recycle bin and are
+// tombstoned, so the station apps also delete their local duplicates on next sync.
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'dedupe_firs') {
+    $rows = $pdo->query(
+        "SELECT id, owner_email, fir_no, year, station_name FROM central_crimes
+         WHERE fir_no IS NOT NULL AND fir_no <> '' ORDER BY id DESC"
+    )->fetchAll();
+    $seen = [];
+    $n = 0;
+    foreach ($rows as $r) {
+        // Same normalization as the station lookup, so "१२/२०२४" and "12/2024"
+        // or spacing variants of a station name count as the same FIR.
+        $key = strtolower($r['owner_email'])
+            . '|' . normStationName((string) $r['station_name'])
+            . '|' . normStationName((string) $r['fir_no'])
+            . '|' . (int) $r['year'];
+        if (isset($seen[$key])) {
+            $q = $pdo->prepare('SELECT * FROM central_crimes WHERE id = ?');
+            $q->execute([(int) $r['id']]);
+            if ($full = $q->fetch()) {
+                softDeleteCentralCrime($pdo, $full, 'Admin panel (duplicate)');
+                $n++;
+            }
+        } else {
+            $seen[$key] = true;
+        }
+    }
+    $_SESSION['fir_msg'] = $n > 0
+        ? "$n duplicate FIR(s) removed (newest copy kept) — recoverable from the Recycle Bin for 30 days. Station apps drop their local duplicates on next sync."
+        : 'No duplicate FIRs found.';
     header('Location: admin.php?page=firs');
     exit;
 }
@@ -107,6 +238,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'unsup
     $pdo->prepare('DELETE FROM central_suppressed WHERE owner_email = ? AND remote_uid = ?')
         ->execute([trim($_POST['owner']), trim($_POST['uid'])]);
     $_SESSION['fir_msg'] = 'FIR un-blocked — it will reappear the next time that station syncs.';
+    header('Location: admin.php?page=firs');
+    exit;
+}
+// Un-block EVERY tombstoned FIR at once (clears the whole blocked list). Use this
+// after a round of testing so a station's restored data can sync back instead of
+// being deleted on every sync. Optionally scoped to a single owner_email.
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'unsuppress_all') {
+    $owner = strtolower(trim((string) ($_POST['owner'] ?? '')));
+    if ($owner !== '') {
+        $q = $pdo->prepare('DELETE FROM central_suppressed WHERE owner_email = ?');
+        $q->execute([$owner]);
+        $n = $q->rowCount();
+        $_SESSION['fir_msg'] = "Un-blocked all $n FIR(s) for $owner — they will sync back on that station's next upload.";
+    } else {
+        $n = (int) $pdo->query('SELECT COUNT(*) FROM central_suppressed')->fetchColumn();
+        $pdo->exec('DELETE FROM central_suppressed');
+        $_SESSION['fir_msg'] = "Un-blocked all $n FIR(s) — every station's data will sync back on its next upload.";
+    }
     header('Location: admin.php?page=firs');
     exit;
 }
@@ -459,6 +608,20 @@ $pendingFiles = unregisteredReleaseFiles($pdo);
 // the totals power the dashboard.
 $firs = $pdo->query('SELECT * FROM central_crimes ORDER BY updated_at DESC LIMIT 500')->fetchAll();
 $firTotal = (int) $pdo->query('SELECT COUNT(*) FROM central_crimes')->fetchColumn();
+// FIRs not linked to any station (station name didn't match / blank) — these
+// are invisible to every zone in the officer portal, so surface the count.
+$firUnmatched = (int) $pdo->query(
+    'SELECT COUNT(*) FROM central_crimes WHERE station_id IS NULL'
+)->fetchColumn();
+// Distinct source devices (name + IP) with a FIR count, for the "delete by
+// device" dropdown. Scans the whole store, not just the displayed 500.
+$firDevices = $pdo->query(
+    "SELECT src_device, src_ip, COUNT(*) AS n
+       FROM central_crimes
+      WHERE COALESCE(src_device, '') <> '' OR COALESCE(src_ip, '') <> ''
+      GROUP BY src_device, src_ip
+      ORDER BY n DESC"
+)->fetchAll();
 $deletions = $pdo->query('SELECT * FROM central_deletions ORDER BY deleted_at DESC LIMIT 300')->fetchAll();
 $delTotal = (int) $pdo->query('SELECT COUNT(*) FROM central_deletions')->fetchColumn();
 $del7 = (int) $pdo->query('SELECT COUNT(*) FROM central_deletions
@@ -750,80 +913,131 @@ function renderReleaseSection(string $plat, array $rels, array $pending, string 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CRMS Admin · DB Square Technology</title>
 <style>
-  :root{--navy:#13294B;--navy2:#1d3a66;--khaki:#9a8c5c;--ink:#1b1b1b;--line:#e7e9ee;--bg:#f4f6fa;}
+  /* ---- CRMS Admin design system (light + dark, brand navy/gold) ---- */
+  :root{
+    --navy:#13294B;--navy2:#1d3a66;--gold:#c9a227;--khaki:#9a8c5c;
+    --bg:#f2f5fa;--card:#ffffff;--line:#e3e7ef;--ink:#16233b;
+    --sub:#68738a;--faint:#8a93a8;--thead:#f7f9fd;--hover:#f4f7fd;
+    --chip:#eef1f7;--chip-ink:#3d4a66;--accent:var(--navy);
+    --ok:#1E7E34;--warn:#C8870A;--bad:#C82333;--violet:#5b3fb0;
+    --shadow:0 1px 2px rgba(16,30,60,.06),0 4px 14px rgba(16,30,60,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0e1524;--card:#162034;--line:#27334d;--ink:#e6ebf5;
+      --sub:#9aa7c0;--faint:#7b88a3;--thead:#1a2540;--hover:#1c2942;
+      --chip:#233151;--chip-ink:#c3cde4;--accent:#7ea4e0;
+      --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.35);
+    }
+  }
   *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
   body{font-family:'Segoe UI',system-ui,sans-serif;margin:0;color:var(--ink);background:var(--bg)}
-  a{color:var(--navy);text-decoration:none}
-  .wrap{max-width:1080px;margin:0 auto;padding:0 18px 60px}
+  a{color:var(--accent);text-decoration:none}
+  :focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 18px 60px}
   /* top bar */
   .topbar{background:linear-gradient(110deg,var(--navy),var(--navy2));color:#fff;
-    padding:16px 0;box-shadow:0 2px 10px rgba(0,0,0,.12);position:sticky;top:0;z-index:20}
+    padding:14px 0;box-shadow:0 2px 14px rgba(4,12,30,.35);position:sticky;top:0;z-index:20;
+    border-bottom:2px solid var(--gold)}
   .topbar .wrap{display:flex;align-items:center;justify-content:space-between;padding-bottom:0}
   .brand{display:flex;align-items:center;gap:12px}
-  .brand .logo{width:40px;height:40px;border-radius:9px;background:var(--khaki);color:#fff;
-    display:grid;place-items:center;font-weight:800;font-size:17px;letter-spacing:.5px}
+  .brand .logo{width:42px;height:42px;border-radius:11px;color:#fff;
+    background:linear-gradient(140deg,var(--khaki),#7c7048);
+    display:grid;place-items:center;font-weight:800;font-size:17px;letter-spacing:.5px;
+    box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.35)}
   .brand b{font-size:18px;display:block;line-height:1.1}
   .brand span{font-size:12px;opacity:.8}
-  .topbar a.out{color:#fff;border:1px solid rgba(255,255,255,.4);padding:7px 14px;border-radius:7px;font-size:13px}
-  .topbar a.out:hover{background:rgba(255,255,255,.12)}
+  .topbar a.out{color:#fff;border:1px solid rgba(255,255,255,.4);padding:7px 14px;border-radius:8px;
+    font-size:13px;transition:background .15s}
+  .topbar a.out:hover{background:rgba(255,255,255,.14)}
   /* nav pills */
   nav.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 6px}
-  nav.tabs a{background:#fff;border:1px solid var(--line);padding:8px 14px;border-radius:20px;
-    font-size:13px;font-weight:600;color:var(--navy)}
-  nav.tabs a:hover{border-color:var(--navy);background:#eef2fb}
+  nav.tabs a{background:var(--card);border:1px solid var(--line);padding:8px 14px;border-radius:20px;
+    font-size:13px;font-weight:600;color:var(--accent);transition:all .15s;box-shadow:var(--shadow)}
+  nav.tabs a:hover{border-color:var(--accent);transform:translateY(-1px)}
   nav.tabs a.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+  nav.tabs a.on:hover{transform:none}
   /* device / source cell */
-  .src{font-size:12px;color:#445;line-height:1.6}
-  .src b{color:#223;font-weight:600}
-  .src .ip{font-family:ui-monospace,Consolas,monospace;background:#eef1f7;padding:1px 5px;border-radius:4px}
-  .pagehead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:4px 0 2px}
-  .pagehead h2{font-size:20px;color:var(--navy);margin:0}
+  .src{font-size:12px;color:var(--sub);line-height:1.6}
+  .src b{color:var(--ink);font-weight:600}
+  .src .ip{font-family:ui-monospace,Consolas,monospace;background:var(--chip);color:var(--chip-ink);
+    padding:1px 5px;border-radius:4px}
+  .pagehead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:10px 0 2px}
+  .pagehead h2{font-size:20px;color:var(--accent);margin:0}
   /* stat cards */
   .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:14px 0 8px}
-  .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;
-    box-shadow:0 1px 3px rgba(20,40,80,.05)}
-  .stat .n{font-size:30px;font-weight:800;color:var(--navy);line-height:1}
-  .stat .l{font-size:12.5px;color:#667;margin-top:6px;text-transform:uppercase;letter-spacing:.4px}
-  .stat.amber .n{color:#C8870A}.stat.green .n{color:#1E7E34}.stat.violet .n{color:#5b3fb0}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;
+    box-shadow:var(--shadow);border-top:3px solid var(--accent);transition:transform .15s}
+  .stat:hover{transform:translateY(-2px)}
+  .stat .n{font-size:30px;font-weight:800;color:var(--accent);line-height:1;font-variant-numeric:tabular-nums}
+  .stat .l{font-size:12px;color:var(--sub);margin-top:6px;text-transform:uppercase;letter-spacing:.4px}
+  .stat.amber{border-top-color:var(--warn)}.stat.green{border-top-color:var(--ok)}.stat.violet{border-top-color:var(--violet)}
+  .stat.amber .n{color:var(--warn)}.stat.green .n{color:var(--ok)}.stat.violet .n{color:var(--violet)}
   /* cards + tables */
-  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin:20px 0;
-    box-shadow:0 1px 3px rgba(20,40,80,.05)}
-  .card h3{margin:0 0 4px;font-size:18px;color:var(--navy);display:flex;align-items:center;gap:8px}
-  .card .sub{color:#778;font-size:13px;margin:0 0 14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin:20px 0;
+    box-shadow:var(--shadow);overflow-x:auto}
+  .card h3{margin:0 0 4px;font-size:17px;color:var(--accent);display:flex;align-items:center;gap:8px}
+  .card .sub{color:var(--sub);font-size:13px;margin:0 0 14px}
   table{border-collapse:collapse;width:100%;font-size:13.5px}
-  th,td{border-bottom:1px solid var(--line);padding:9px 8px;text-align:left;vertical-align:top}
-  th{font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;color:#889;background:#fafbfe}
-  tbody tr:hover{background:#fafbff}
+  th,td{border-bottom:1px solid var(--line);padding:10px 8px;text-align:left;vertical-align:top}
+  th{font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--faint);
+    background:var(--thead);position:sticky;top:0}
+  tbody tr{transition:background .12s}
+  tbody tr:hover{background:var(--hover)}
   .b{display:inline-block;padding:2px 9px;border-radius:11px;font-size:11.5px;color:#fff;font-weight:600}
-  .pending{background:#E0A800}.approved{background:#1E7E34}.denied{background:#C82333}
-  button{padding:6px 11px;border:0;border-radius:6px;cursor:pointer;color:#fff;font-size:12.5px;font-weight:600}
-  button:hover{filter:brightness(1.07)}
-  .ok{background:#1E7E34}.no{background:#C82333}.rs{background:#5A6268}.del{background:#9b1c1c}
+  .pending{background:var(--warn)}.approved{background:var(--ok)}.denied{background:var(--bad)}
+  button{padding:7px 12px;border:0;border-radius:7px;cursor:pointer;color:#fff;font-size:12.5px;font-weight:600;
+    transition:filter .12s, transform .12s}
+  button:hover{filter:brightness(1.1)}
+  button:active{transform:scale(.97)}
+  .ok{background:var(--ok)}.no{background:var(--bad)}.rs{background:#5A6268}.del{background:#9b1c1c}
   form{display:inline}
   .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#c2c7d0;margin-right:6px}
-  .dot.on{background:#1E7E34;box-shadow:0 0 0 3px rgba(30,126,52,.18)}
+  .dot.on{background:var(--ok);box-shadow:0 0 0 3px rgba(30,126,52,.18)}
   details.sec{margin-top:5px}
-  details.sec summary{cursor:pointer;color:var(--navy);font-size:12px;font-weight:600}
-  details.sec .kv{margin-top:6px;font-size:12px;color:#445;line-height:1.7}
-  details.sec .kv b{color:#223;font-weight:600}
-  .up label{display:block;font-size:13px;color:#445;margin:9px 0 3px;font-weight:600}
+  details.sec summary{cursor:pointer;color:var(--accent);font-size:12px;font-weight:600}
+  details.sec .kv{margin-top:6px;font-size:12px;color:var(--sub);line-height:1.7}
+  details.sec .kv b{color:var(--ink);font-weight:600}
+  .up label{display:block;font-size:13px;color:var(--sub);margin:9px 0 3px;font-weight:600}
   .up input[type=text],.up input[type=number],.up textarea,.up select{width:100%;
-    padding:9px;border:1px solid #ccd2dc;border-radius:7px;font-size:14px;background:#fff}
+    padding:10px;border:1.5px solid var(--line);border-radius:8px;font-size:14px;
+    background:var(--card);color:var(--ink);transition:border-color .15s, box-shadow .15s}
+  .up input:focus,.up textarea:focus,.up select:focus{border-color:var(--accent);outline:none;
+    box-shadow:0 0 0 3px rgba(19,41,75,.12)}
   .up textarea{min-height:62px}
   .up .row{display:flex;gap:14px;flex-wrap:wrap}.up .row>div{flex:1;min-width:200px}
   .up button{background:var(--navy);margin-top:14px;padding:11px 18px;font-size:14px}
   .ckbox{display:inline-flex;align-items:center;gap:7px;margin-top:12px;font-weight:600;font-size:13px}
   .ckbox input{width:auto}
-  .muted{color:#889;font-size:12px}
-  .msg{background:#e7f4ea;border:1px solid #bcdfc6;color:#1E7E34;padding:11px 14px;border-radius:8px;margin:6px 0 14px}
-  .ftp{margin-top:16px;border-top:1px dashed #d6dae3;padding-top:12px}
-  .ftp summary{cursor:pointer;font-weight:600;color:var(--navy)}
+  .muted{color:var(--faint);font-size:12px}
+  .msg{background:rgba(30,126,52,.1);border:1px solid rgba(30,126,52,.35);color:var(--ok);
+    padding:11px 14px;border-radius:10px;margin:6px 0 14px;font-weight:600}
+  .ftp{margin-top:16px;border-top:1px dashed var(--line);padding-top:12px}
+  .ftp summary{cursor:pointer;font-weight:600;color:var(--accent)}
   .toolbar{display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
-  .toolbar input[type=search]{flex:1;min-width:220px;padding:9px 12px;border:1px solid #ccd2dc;border-radius:8px;font-size:14px}
-  .toolbar a.exp{background:#fff;border:1px solid var(--line);color:var(--navy);padding:9px 14px;border-radius:8px;font-size:13px;font-weight:600}
-  code{background:#eef1f7;padding:1px 5px;border-radius:4px;font-size:12.5px}
+  .toolbar input[type=search]{flex:1;min-width:220px;padding:10px 12px;border:1.5px solid var(--line);
+    border-radius:9px;font-size:14px;background:var(--card);color:var(--ink);
+    transition:border-color .15s, box-shadow .15s}
+  .toolbar input[type=search]:focus{border-color:var(--accent);outline:none;
+    box-shadow:0 0 0 3px rgba(19,41,75,.12)}
+  .toolbar a.exp{background:var(--card);border:1px solid var(--line);color:var(--accent);
+    padding:9px 14px;border-radius:9px;font-size:13px;font-weight:600;transition:border-color .15s}
+  .toolbar a.exp:hover{border-color:var(--accent)}
+  .bulkbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:0 0 12px;
+    padding:10px 12px;background:var(--thead);border:1px solid var(--line);border-radius:10px}
+  .bulkbar select{padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;
+    background:var(--card);color:var(--ink);font-size:13px;max-width:340px}
+  .bulkbar button:disabled{opacity:.5;cursor:not-allowed;filter:none}
+  .firbox,#firAll{width:16px;height:16px;cursor:pointer}
+  code{background:var(--chip);color:var(--chip-ink);padding:1px 5px;border-radius:4px;font-size:12.5px}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-  @media(max-width:780px){.grid2{grid-template-columns:1fr}}
+  @media(max-width:780px){
+    .grid2{grid-template-columns:1fr}
+    .brand span{display:none}
+    nav.tabs{overflow-x:auto;flex-wrap:nowrap;padding-bottom:6px}
+    nav.tabs a{white-space:nowrap}
+  }
 </style>
 </head><body>
 <div class="topbar"><div class="wrap">
@@ -1024,23 +1238,76 @@ function srcCell(array $r): void
   <p class="sub">
     Every FIR uploaded by the station apps lives here — one shared database for
     the whole city. You control it: <b>View data</b> to inspect a record,
-    <b>Delete</b> to remove one (it is logged &amp; blocked from re-syncing), or
-    <b>Clear ALL</b> to wipe the central store. The <b>Source</b> column shows the
-    computer / IP each record came from. Showing the latest <?= count($firs) ?> of
+    <b>Delete</b> one, tick several and <b>Delete selected</b>, or
+    <b>Delete all FIRs from a device</b> using the dropdown — and <b>Clear ALL</b>
+    to wipe the store. Every delete is logged, moved to the 30-day Recycle Bin,
+    and blocked from re-syncing. The <b>Source</b> column shows the computer / IP
+    each record came from. Showing the latest <?= count($firs) ?> of
     <b><?= (int) $firTotal ?></b> records.
   </p>
   <div class="toolbar">
     <input type="search" id="firSearch" placeholder="🔎 Search FIR no, station, type, device, email…" onkeyup="filterTable('firSearch','firTable')">
   </div>
+
   <?php if ($firs): ?>
+  <!-- Data-health maintenance: link Marathi/variant station names to their
+       station (so zone counts reconcile) and collapse duplicate uploads. -->
+  <div class="bulkbar">
+    <label style="font-weight:600">Data health:</label>
+    <?php if ($firUnmatched > 0): ?>
+    <span class="muted">⚠️ <b><?= (int) $firUnmatched ?></b> FIR(s) not linked to any station (invisible to zone views)</span>
+    <?php else: ?>
+    <span class="muted">✅ every FIR is linked to a station</span>
+    <?php endif; ?>
+    <form method="post" style="display:inline">
+      <input type="hidden" name="action" value="relink_stations">
+      <button class="rs">🔗 Re-link stations</button>
+    </form>
+    <form method="post" style="display:inline" onsubmit="return confirm('Remove duplicate FIRs? For each FIR no + year + station uploaded more than once, only the newest copy is kept. The removed copies go to the Recycle Bin (30 days) and station apps drop their local duplicates on next sync.')">
+      <input type="hidden" name="action" value="dedupe_firs">
+      <button class="del">♻️ Remove duplicates</button>
+    </form>
+  </div>
+  <?php endif; ?>
+
+  <?php if ($firs && $firDevices): ?>
+  <!-- Delete every FIR from one device (whole store, not just this page). -->
+  <div class="bulkbar">
+    <form method="post" onsubmit="return confirmDevice(this)">
+      <input type="hidden" name="action" value="delete_by_device">
+      <input type="hidden" name="device" id="devName">
+      <input type="hidden" name="ip" id="devIp">
+      <label style="font-weight:600">Delete all FIRs from a device:</label>
+      <select id="devSelect" onchange="pickDevice()">
+        <option value="">— choose device —</option>
+        <?php foreach ($firDevices as $d): ?>
+        <option value="<?= e(($d['src_device'] ?? '') . '||' . ($d['src_ip'] ?? '')) ?>">
+          <?= e(($d['src_device'] ?? '') ?: 'unknown') ?><?= ($d['src_ip'] ?? '') !== '' ? ' (' . e($d['src_ip']) . ')' : '' ?> — <?= (int) $d['n'] ?> FIR(s)
+        </option>
+        <?php endforeach; ?>
+      </select>
+      <button class="del" id="devBtn" disabled>🗑️ Delete device's FIRs</button>
+    </form>
+  </div>
+  <?php endif; ?>
+
+  <?php if ($firs): ?>
+  <form method="post" id="firSelForm" onsubmit="return confirmBulk()">
+    <input type="hidden" name="action" value="delete_firs_selected">
+    <div class="bulkbar">
+      <label class="ckbox" style="margin:0"><input type="checkbox" id="firAll" onclick="toggleFirs(this)"> Select all shown</label>
+      <span class="muted" id="firSelCount">0 selected</span>
+      <button class="del" type="submit">🗑️ Delete selected</button>
+    </div>
   <table id="firTable">
-    <tr><th>FIR No / Year</th><th>Station</th><th>Type / Section</th><th>Status</th><th>Source device / IP</th><th>Synced</th><th>Data</th><th></th></tr>
+    <tr><th style="width:28px"></th><th>FIR No / Year</th><th>Station</th><th>Type / Section</th><th>Status</th><th>Source device / IP</th><th>Synced</th><th>Data</th><th></th></tr>
     <?php foreach ($firs as $f): ?>
     <?php
       $key = strtolower(implode(' ', [$f['fir_no'] ?? '', $f['year'] ?? '', $f['station_name'] ?? '', $f['crime_type'] ?? '', $f['owner_email'] ?? '', $f['src_device'] ?? '', $f['src_ip'] ?? '']));
       $data = json_decode($f['data_json'] ?? '', true);
     ?>
     <tr data-search="<?= e($key) ?>">
+      <td><input type="checkbox" class="firbox" name="fir_ids[]" value="<?= (int) $f['id'] ?>" onclick="updateFirCount()"></td>
       <td><b><?= e($f['fir_no'] ?? '') ?: '—' ?></b><?= ($f['year'] ?? '') !== '' ? '/' . e($f['year']) : '' ?>
         <div class="muted"><?= e($f['owner_email'] ?? '') ?></div></td>
       <td><?= e($f['station_name'] ?? '') ?: '—' ?></td>
@@ -1058,15 +1325,17 @@ function srcCell(array $r): void
         <?php else: ?><span class="muted">—</span><?php endif; ?>
       </td>
       <td>
-        <form method="post" onsubmit="return confirm('Delete FIR <?= e($f['fir_no'] ?? '') ?> from the central store? It will be logged and blocked from re-syncing.')">
-          <input type="hidden" name="action" value="delete_fir">
-          <input type="hidden" name="fir_id" value="<?= (int) $f['id'] ?>">
-          <button class="del">Delete</button>
-        </form>
+        <button type="button" class="del" onclick="deleteOne(<?= (int) $f['id'] ?>)">Delete</button>
       </td>
     </tr>
     <?php endforeach; ?>
   </table>
+  </form>
+  <!-- Hidden single-delete form (posted by the per-row Delete via JS). -->
+  <form method="post" id="firOneForm" style="display:none">
+    <input type="hidden" name="action" value="delete_fir">
+    <input type="hidden" name="fir_id" id="firOneId">
+  </form>
   <?php else: ?>
   <p class="muted">No FIRs have been uploaded to the central store yet. They appear here automatically once a station app syncs.</p>
   <?php endif; ?>
@@ -1074,8 +1343,14 @@ function srcCell(array $r): void
 
 <?php if ($suppressed): ?>
 <div class="card">
-  <h3>🚫 Blocked FIRs <span class="muted" style="font-weight:400">(deleted by admin — won't re-sync)</span></h3>
-  <p class="sub">These FIRs were removed from the central store and are blocked from being re-uploaded. Un-block one to let its station sync it back.</p>
+  <div class="pagehead">
+    <h3>🚫 Blocked FIRs <span class="muted" style="font-weight:400">(deleted by admin — won't re-sync)</span></h3>
+    <form method="post" onsubmit="return confirm('Un-block ALL blocked FIRs? Every station&#39;s deleted records will sync back on its next upload.')">
+      <input type="hidden" name="action" value="unsuppress_all">
+      <button class="ok">↩ Un-block ALL</button>
+    </form>
+  </div>
+  <p class="sub">These FIRs were removed from the central store and are blocked from being re-uploaded. Un-block one to let its station sync it back — or <b>Un-block ALL</b> to clear the whole list at once (do this after testing so a restored station can sync its data back).</p>
   <table>
     <tr><th>Owner</th><th>Record id</th><th>Blocked at</th><th></th></tr>
     <?php foreach ($suppressed as $s): ?>
@@ -1084,11 +1359,16 @@ function srcCell(array $r): void
       <td class="muted"><?= e($s['remote_uid']) ?></td>
       <td class="muted"><?= e(fmtIst($s['suppressed_at'] ?? '')) ?></td>
       <td>
-        <form method="post">
+        <form method="post" style="margin-right:4px">
           <input type="hidden" name="action" value="unsuppress_fir">
           <input type="hidden" name="owner" value="<?= e($s['owner_email']) ?>">
           <input type="hidden" name="uid" value="<?= e($s['remote_uid']) ?>">
           <button class="rs">Un-block</button>
+        </form>
+        <form method="post" onsubmit="return confirm('Un-block every blocked FIR for <?= e($s['owner_email']) ?>?')">
+          <input type="hidden" name="action" value="unsuppress_all">
+          <input type="hidden" name="owner" value="<?= e($s['owner_email']) ?>">
+          <button class="ok" title="Un-block every blocked FIR owned by this email">All for this email</button>
         </form>
       </td>
     </tr>
@@ -1103,6 +1383,49 @@ function srcCell(array $r): void
     if (t !== 'CLEAR') { alert('Cancelled — you must type CLEAR exactly.'); return false; }
     document.getElementById('clearConfirm').value = 'CLEAR';
     return true;
+  }
+
+  // --- Per-row single delete (posts the hidden firOneForm) ---
+  function deleteOne(id) {
+    if (!confirm('Delete this FIR from the central store? It is moved to the Recycle Bin (30 days) and blocked from re-syncing.')) return;
+    document.getElementById('firOneId').value = id;
+    document.getElementById('firOneForm').submit();
+  }
+
+  // --- Multi-select delete ---
+  function firVisibleBoxes() {
+    return Array.prototype.slice.call(document.querySelectorAll('#firTable tr[data-search]'))
+      .filter(function (tr) { return tr.style.display !== 'none'; })
+      .map(function (tr) { return tr.querySelector('.firbox'); })
+      .filter(Boolean);
+  }
+  function toggleFirs(master) {
+    firVisibleBoxes().forEach(function (b) { b.checked = master.checked; });
+    updateFirCount();
+  }
+  function updateFirCount() {
+    var n = document.querySelectorAll('.firbox:checked').length;
+    document.getElementById('firSelCount').textContent = n + ' selected';
+  }
+  function confirmBulk() {
+    var n = document.querySelectorAll('.firbox:checked').length;
+    if (n === 0) { alert('Select at least one FIR to delete.'); return false; }
+    return confirm('Delete ' + n + ' selected FIR(s)? They are moved to the Recycle Bin (30 days) and blocked from re-syncing.');
+  }
+
+  // --- Delete all FIRs from one device ---
+  function pickDevice() {
+    var sel = document.getElementById('devSelect');
+    var parts = (sel.value || '').split('||');
+    document.getElementById('devName').value = parts[0] || '';
+    document.getElementById('devIp').value = parts[1] || '';
+    document.getElementById('devBtn').disabled = (sel.value === '');
+  }
+  function confirmDevice(form) {
+    var sel = document.getElementById('devSelect');
+    if (!sel.value) { alert('Choose a device first.'); return false; }
+    return confirm('Delete ALL FIRs from "' + sel.options[sel.selectedIndex].text.trim() +
+      '"? They are moved to the Recycle Bin (30 days) and blocked from re-syncing.');
   }
 </script>
 

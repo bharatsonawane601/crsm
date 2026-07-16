@@ -69,6 +69,98 @@ void main() {
     });
   });
 
+  group('time of offence range', () {
+    test('joins from + to with "ते"', () {
+      final d = draft()
+        ..timeOccurred = '1 PM'
+        ..timeOccurredTo = '2 PM';
+      final ctx = ReportContext.fromDraft(d);
+      expect(engine.renderValue('{crime.time_occurred_range}', ctx), '1 PM ते 2 PM');
+    });
+
+    test('single time when only "from" is set', () {
+      final d = draft()..timeOccurred = '1 PM';
+      final ctx = ReportContext.fromDraft(d);
+      expect(engine.renderValue('{crime.time_occurred_range}', ctx), '1 PM');
+    });
+
+    test('empty when neither end is set', () {
+      final ctx = ReportContext.fromDraft(draft());
+      expect(engine.renderValue('{crime.time_occurred_range}', ctx), '');
+    });
+  });
+
+  group('date of offence range', () {
+    test('joins from + to dates with "ते"', () {
+      final d = draft()
+        ..dateOccurred = DateTime(2026, 1, 1)
+        ..dateOccurredTo = DateTime(2026, 1, 3);
+      final ctx = ReportContext.fromDraft(d);
+      expect(engine.renderValue('{crime.date_occurred_range}', ctx),
+          '01-01-2026 ते 03-01-2026');
+    });
+
+    test('single date when both ends are the same / only one is set', () {
+      final d = draft()..dateOccurred = DateTime(2026, 1, 1);
+      final ctx = ReportContext.fromDraft(d);
+      expect(engine.renderValue('{crime.date_occurred_range}', ctx),
+          '01-01-2026');
+    });
+  });
+
+  group('stolen property total', () {
+    test('sums all stolen values into a total label', () {
+      final d = CrimeDraft(firNo: '1', year: 2026);
+      d.stolen.add(StolenItemDraft(description: 'Phone', value: 15000));
+      d.stolen.add(StolenItemDraft(description: 'Cash', value: 30000));
+      final ctx = ReportContext.fromDraft(d);
+      expect(engine.renderValue('{stolen_total}', ctx), '45000');
+      expect(engine.renderValue('{stolen_total_label}', ctx),
+          '(एकूण किंमत 45000/-)');
+    });
+
+    test('no total label when nothing has a value', () {
+      final d = CrimeDraft(firNo: '1', year: 2026);
+      d.stolen.add(StolenItemDraft(description: 'Phone'));
+      final ctx = ReportContext.fromDraft(d);
+      expect(engine.renderValue('{stolen_total_label}', ctx), '');
+    });
+  });
+
+  group('person age + status label', () {
+    test('age prints the free-form ageText (e.g. 19.4) when set', () {
+      final d = CrimeDraft(firNo: '1', year: 2026);
+      d.complainant
+        ..name = 'Ramesh'
+        ..age = 19
+        ..ageText = '19.4';
+      final ctx = ReportContext.fromDraft(d);
+      expect(engine.renderValue('{complainant.age}', ctx), '19.4');
+    });
+
+    test('age falls back to the integer when ageText is blank', () {
+      final d = CrimeDraft(firNo: '1', year: 2026);
+      d.complainant
+        ..name = 'Ramesh'
+        ..age = 40;
+      final ctx = ReportContext.fromDraft(d);
+      expect(engine.renderValue('{complainant.age}', ctx), '40');
+    });
+
+    test('status_label is Marathi उघड / अनउघड', () {
+      final det = ReportContext.fromDraft(
+          CrimeDraft(firNo: '1', year: 2026, status: 'detected'));
+      expect(engine.renderValue('{crime.status_label}', det), 'उघड');
+      final und = ReportContext.fromDraft(
+          CrimeDraft(firNo: '1', year: 2026, status: 'undetected'));
+      expect(engine.renderValue('{crime.status_label}', und), 'अनउघड');
+      // Legacy 'solved' still maps to उघड.
+      final legacy = ReportContext.fromDraft(
+          CrimeDraft(firNo: '1', year: 2026, status: 'solved'));
+      expect(engine.renderValue('{crime.status_label}', legacy), 'उघड');
+    });
+  });
+
   test('renders a full B-Patrak-style template end to end', () {
     final ctx = ReportContext.fromDraft(draft());
     final template = ReportTemplate.fromJson({

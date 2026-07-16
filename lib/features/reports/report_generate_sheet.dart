@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -74,7 +75,17 @@ class _ReportSheetState extends ConsumerState<_ReportSheet> {
 
   Future<void> _save() => _run((s) async {
         final report = await s.renderForCrime(widget.crimeId, _choice!);
-        final path = await s.saveReport(report, _format, options: _pdfOptions);
+        final ext = ReportService.extensionFor(_format);
+        // Ask the user WHERE to save (OS "Save As" dialog).
+        final chosen = await FilePicker.saveFile(
+          dialogTitle: 'report.save'.tr(),
+          fileName: '${ReportService.safeFileName(report)}.$ext',
+          type: FileType.custom,
+          allowedExtensions: [ext],
+        );
+        if (chosen == null) return; // cancelled
+        final path =
+            await s.saveReportToPath(report, _format, chosen, options: _pdfOptions);
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('report.saved'.tr(namedArgs: {'path': path}))),

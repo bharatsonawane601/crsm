@@ -105,12 +105,35 @@ class $CrimesTable extends Crimes with TableInfo<$CrimesTable, Crime> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _dateOccurredToMeta = const VerificationMeta(
+    'dateOccurredTo',
+  );
+  @override
+  late final GeneratedColumn<DateTime> dateOccurredTo =
+      GeneratedColumn<DateTime>(
+        'date_occurred_to',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _timeOccurredMeta = const VerificationMeta(
     'timeOccurred',
   );
   @override
   late final GeneratedColumn<String> timeOccurred = GeneratedColumn<String>(
     'time_occurred',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _timeOccurredToMeta = const VerificationMeta(
+    'timeOccurredTo',
+  );
+  @override
+  late final GeneratedColumn<String> timeOccurredTo = GeneratedColumn<String>(
+    'time_occurred_to',
     aliasedName,
     true,
     type: DriftSqlType.string,
@@ -161,6 +184,17 @@ class $CrimesTable extends Crimes with TableInfo<$CrimesTable, Crime> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _remoteUidMeta = const VerificationMeta(
+    'remoteUid',
+  );
+  @override
+  late final GeneratedColumn<String> remoteUid = GeneratedColumn<String>(
+    'remote_uid',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
   late final GeneratedColumn<String> status = GeneratedColumn<String>(
@@ -169,7 +203,30 @@ class $CrimesTable extends Crimes with TableInfo<$CrimesTable, Crime> {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
-    defaultValue: const Constant('open'),
+    defaultValue: const Constant('undetected'),
+  );
+  static const VerificationMeta _courtTypeMeta = const VerificationMeta(
+    'courtType',
+  );
+  @override
+  late final GeneratedColumn<String> courtType = GeneratedColumn<String>(
+    'court_type',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _caseStageMeta = const VerificationMeta(
+    'caseStage',
+  );
+  @override
+  late final GeneratedColumn<String> caseStage = GeneratedColumn<String>(
+    'case_stage',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('investigation'),
   );
   static const VerificationMeta _detailedDescriptionMeta =
       const VerificationMeta('detailedDescription');
@@ -182,6 +239,169 @@ class $CrimesTable extends Crimes with TableInfo<$CrimesTable, Crime> {
         type: DriftSqlType.string,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _firDateMeta = const VerificationMeta(
+    'firDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> firDate = GeneratedColumn<DateTime>(
+    'fir_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _firTimeMeta = const VerificationMeta(
+    'firTime',
+  );
+  @override
+  late final GeneratedColumn<String> firTime = GeneratedColumn<String>(
+    'fir_time',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _infoReceivedDateMeta = const VerificationMeta(
+    'infoReceivedDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> infoReceivedDate =
+      GeneratedColumn<DateTime>(
+        'info_received_date',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _infoReceivedTimeMeta = const VerificationMeta(
+    'infoReceivedTime',
+  );
+  @override
+  late final GeneratedColumn<String> infoReceivedTime = GeneratedColumn<String>(
+    'info_received_time',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _gdDateMeta = const VerificationMeta('gdDate');
+  @override
+  late final GeneratedColumn<DateTime> gdDate = GeneratedColumn<DateTime>(
+    'gd_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _gdTimeMeta = const VerificationMeta('gdTime');
+  @override
+  late final GeneratedColumn<String> gdTime = GeneratedColumn<String>(
+    'gd_time',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _gdEntryNoMeta = const VerificationMeta(
+    'gdEntryNo',
+  );
+  @override
+  late final GeneratedColumn<String> gdEntryNo = GeneratedColumn<String>(
+    'gd_entry_no',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _occurrenceDayMeta = const VerificationMeta(
+    'occurrenceDay',
+  );
+  @override
+  late final GeneratedColumn<String> occurrenceDay = GeneratedColumn<String>(
+    'occurrence_day',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _typeOfInformationMeta = const VerificationMeta(
+    'typeOfInformation',
+  );
+  @override
+  late final GeneratedColumn<String> typeOfInformation =
+      GeneratedColumn<String>(
+        'type_of_information',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _beatNoMeta = const VerificationMeta('beatNo');
+  @override
+  late final GeneratedColumn<String> beatNo = GeneratedColumn<String>(
+    'beat_no',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _directionDistanceMeta = const VerificationMeta(
+    'directionDistance',
+  );
+  @override
+  late final GeneratedColumn<String> directionDistance =
+      GeneratedColumn<String>(
+        'direction_distance',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _outsidePsNameMeta = const VerificationMeta(
+    'outsidePsName',
+  );
+  @override
+  late final GeneratedColumn<String> outsidePsName = GeneratedColumn<String>(
+    'outside_ps_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _outsidePsDistrictMeta = const VerificationMeta(
+    'outsidePsDistrict',
+  );
+  @override
+  late final GeneratedColumn<String> outsidePsDistrict =
+      GeneratedColumn<String>(
+        'outside_ps_district',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _delayReasonMeta = const VerificationMeta(
+    'delayReason',
+  );
+  @override
+  late final GeneratedColumn<String> delayReason = GeneratedColumn<String>(
+    'delay_reason',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _inquestUdNoMeta = const VerificationMeta(
+    'inquestUdNo',
+  );
+  @override
+  late final GeneratedColumn<String> inquestUdNo = GeneratedColumn<String>(
+    'inquest_ud_no',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -217,13 +437,33 @@ class $CrimesTable extends Crimes with TableInfo<$CrimesTable, Crime> {
     district,
     policeStation,
     dateOccurred,
+    dateOccurredTo,
     timeOccurred,
+    timeOccurredTo,
     placeOccurred,
     dateRegistered,
     timeRegistered,
     crimeType,
+    remoteUid,
     status,
+    courtType,
+    caseStage,
     detailedDescription,
+    firDate,
+    firTime,
+    infoReceivedDate,
+    infoReceivedTime,
+    gdDate,
+    gdTime,
+    gdEntryNo,
+    occurrenceDay,
+    typeOfInformation,
+    beatNo,
+    directionDistance,
+    outsidePsName,
+    outsidePsDistrict,
+    delayReason,
+    inquestUdNo,
     createdAt,
     updatedAt,
   ];
@@ -300,12 +540,30 @@ class $CrimesTable extends Crimes with TableInfo<$CrimesTable, Crime> {
         ),
       );
     }
+    if (data.containsKey('date_occurred_to')) {
+      context.handle(
+        _dateOccurredToMeta,
+        dateOccurredTo.isAcceptableOrUnknown(
+          data['date_occurred_to']!,
+          _dateOccurredToMeta,
+        ),
+      );
+    }
     if (data.containsKey('time_occurred')) {
       context.handle(
         _timeOccurredMeta,
         timeOccurred.isAcceptableOrUnknown(
           data['time_occurred']!,
           _timeOccurredMeta,
+        ),
+      );
+    }
+    if (data.containsKey('time_occurred_to')) {
+      context.handle(
+        _timeOccurredToMeta,
+        timeOccurredTo.isAcceptableOrUnknown(
+          data['time_occurred_to']!,
+          _timeOccurredToMeta,
         ),
       );
     }
@@ -342,10 +600,28 @@ class $CrimesTable extends Crimes with TableInfo<$CrimesTable, Crime> {
         crimeType.isAcceptableOrUnknown(data['crime_type']!, _crimeTypeMeta),
       );
     }
+    if (data.containsKey('remote_uid')) {
+      context.handle(
+        _remoteUidMeta,
+        remoteUid.isAcceptableOrUnknown(data['remote_uid']!, _remoteUidMeta),
+      );
+    }
     if (data.containsKey('status')) {
       context.handle(
         _statusMeta,
         status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('court_type')) {
+      context.handle(
+        _courtTypeMeta,
+        courtType.isAcceptableOrUnknown(data['court_type']!, _courtTypeMeta),
+      );
+    }
+    if (data.containsKey('case_stage')) {
+      context.handle(
+        _caseStageMeta,
+        caseStage.isAcceptableOrUnknown(data['case_stage']!, _caseStageMeta),
       );
     }
     if (data.containsKey('detailed_description')) {
@@ -354,6 +630,123 @@ class $CrimesTable extends Crimes with TableInfo<$CrimesTable, Crime> {
         detailedDescription.isAcceptableOrUnknown(
           data['detailed_description']!,
           _detailedDescriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('fir_date')) {
+      context.handle(
+        _firDateMeta,
+        firDate.isAcceptableOrUnknown(data['fir_date']!, _firDateMeta),
+      );
+    }
+    if (data.containsKey('fir_time')) {
+      context.handle(
+        _firTimeMeta,
+        firTime.isAcceptableOrUnknown(data['fir_time']!, _firTimeMeta),
+      );
+    }
+    if (data.containsKey('info_received_date')) {
+      context.handle(
+        _infoReceivedDateMeta,
+        infoReceivedDate.isAcceptableOrUnknown(
+          data['info_received_date']!,
+          _infoReceivedDateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('info_received_time')) {
+      context.handle(
+        _infoReceivedTimeMeta,
+        infoReceivedTime.isAcceptableOrUnknown(
+          data['info_received_time']!,
+          _infoReceivedTimeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('gd_date')) {
+      context.handle(
+        _gdDateMeta,
+        gdDate.isAcceptableOrUnknown(data['gd_date']!, _gdDateMeta),
+      );
+    }
+    if (data.containsKey('gd_time')) {
+      context.handle(
+        _gdTimeMeta,
+        gdTime.isAcceptableOrUnknown(data['gd_time']!, _gdTimeMeta),
+      );
+    }
+    if (data.containsKey('gd_entry_no')) {
+      context.handle(
+        _gdEntryNoMeta,
+        gdEntryNo.isAcceptableOrUnknown(data['gd_entry_no']!, _gdEntryNoMeta),
+      );
+    }
+    if (data.containsKey('occurrence_day')) {
+      context.handle(
+        _occurrenceDayMeta,
+        occurrenceDay.isAcceptableOrUnknown(
+          data['occurrence_day']!,
+          _occurrenceDayMeta,
+        ),
+      );
+    }
+    if (data.containsKey('type_of_information')) {
+      context.handle(
+        _typeOfInformationMeta,
+        typeOfInformation.isAcceptableOrUnknown(
+          data['type_of_information']!,
+          _typeOfInformationMeta,
+        ),
+      );
+    }
+    if (data.containsKey('beat_no')) {
+      context.handle(
+        _beatNoMeta,
+        beatNo.isAcceptableOrUnknown(data['beat_no']!, _beatNoMeta),
+      );
+    }
+    if (data.containsKey('direction_distance')) {
+      context.handle(
+        _directionDistanceMeta,
+        directionDistance.isAcceptableOrUnknown(
+          data['direction_distance']!,
+          _directionDistanceMeta,
+        ),
+      );
+    }
+    if (data.containsKey('outside_ps_name')) {
+      context.handle(
+        _outsidePsNameMeta,
+        outsidePsName.isAcceptableOrUnknown(
+          data['outside_ps_name']!,
+          _outsidePsNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('outside_ps_district')) {
+      context.handle(
+        _outsidePsDistrictMeta,
+        outsidePsDistrict.isAcceptableOrUnknown(
+          data['outside_ps_district']!,
+          _outsidePsDistrictMeta,
+        ),
+      );
+    }
+    if (data.containsKey('delay_reason')) {
+      context.handle(
+        _delayReasonMeta,
+        delayReason.isAcceptableOrUnknown(
+          data['delay_reason']!,
+          _delayReasonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('inquest_ud_no')) {
+      context.handle(
+        _inquestUdNoMeta,
+        inquestUdNo.isAcceptableOrUnknown(
+          data['inquest_ud_no']!,
+          _inquestUdNoMeta,
         ),
       );
     }
@@ -414,9 +807,17 @@ class $CrimesTable extends Crimes with TableInfo<$CrimesTable, Crime> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}date_occurred'],
       ),
+      dateOccurredTo: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date_occurred_to'],
+      ),
       timeOccurred: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}time_occurred'],
+      ),
+      timeOccurredTo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}time_occurred_to'],
       ),
       placeOccurred: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -434,13 +835,85 @@ class $CrimesTable extends Crimes with TableInfo<$CrimesTable, Crime> {
         DriftSqlType.string,
         data['${effectivePrefix}crime_type'],
       ),
+      remoteUid: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remote_uid'],
+      ),
       status: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}status'],
       )!,
+      courtType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}court_type'],
+      ),
+      caseStage: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}case_stage'],
+      )!,
       detailedDescription: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}detailed_description'],
+      ),
+      firDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fir_date'],
+      ),
+      firTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}fir_time'],
+      ),
+      infoReceivedDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}info_received_date'],
+      ),
+      infoReceivedTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}info_received_time'],
+      ),
+      gdDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}gd_date'],
+      ),
+      gdTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}gd_time'],
+      ),
+      gdEntryNo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}gd_entry_no'],
+      ),
+      occurrenceDay: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}occurrence_day'],
+      ),
+      typeOfInformation: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type_of_information'],
+      ),
+      beatNo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}beat_no'],
+      ),
+      directionDistance: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}direction_distance'],
+      ),
+      outsidePsName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}outside_ps_name'],
+      ),
+      outsidePsDistrict: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}outside_ps_district'],
+      ),
+      delayReason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}delay_reason'],
+      ),
+      inquestUdNo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}inquest_ud_no'],
       ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -469,13 +942,33 @@ class Crime extends DataClass implements Insertable<Crime> {
   final String? district;
   final String? policeStation;
   final DateTime? dateOccurred;
+  final DateTime? dateOccurredTo;
   final String? timeOccurred;
+  final String? timeOccurredTo;
   final String? placeOccurred;
   final DateTime? dateRegistered;
   final String? timeRegistered;
   final String? crimeType;
+  final String? remoteUid;
   final String status;
+  final String? courtType;
+  final String caseStage;
   final String? detailedDescription;
+  final DateTime? firDate;
+  final String? firTime;
+  final DateTime? infoReceivedDate;
+  final String? infoReceivedTime;
+  final DateTime? gdDate;
+  final String? gdTime;
+  final String? gdEntryNo;
+  final String? occurrenceDay;
+  final String? typeOfInformation;
+  final String? beatNo;
+  final String? directionDistance;
+  final String? outsidePsName;
+  final String? outsidePsDistrict;
+  final String? delayReason;
+  final String? inquestUdNo;
   final DateTime createdAt;
   final DateTime updatedAt;
   const Crime({
@@ -488,13 +981,33 @@ class Crime extends DataClass implements Insertable<Crime> {
     this.district,
     this.policeStation,
     this.dateOccurred,
+    this.dateOccurredTo,
     this.timeOccurred,
+    this.timeOccurredTo,
     this.placeOccurred,
     this.dateRegistered,
     this.timeRegistered,
     this.crimeType,
+    this.remoteUid,
     required this.status,
+    this.courtType,
+    required this.caseStage,
     this.detailedDescription,
+    this.firDate,
+    this.firTime,
+    this.infoReceivedDate,
+    this.infoReceivedTime,
+    this.gdDate,
+    this.gdTime,
+    this.gdEntryNo,
+    this.occurrenceDay,
+    this.typeOfInformation,
+    this.beatNo,
+    this.directionDistance,
+    this.outsidePsName,
+    this.outsidePsDistrict,
+    this.delayReason,
+    this.inquestUdNo,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -522,8 +1035,14 @@ class Crime extends DataClass implements Insertable<Crime> {
     if (!nullToAbsent || dateOccurred != null) {
       map['date_occurred'] = Variable<DateTime>(dateOccurred);
     }
+    if (!nullToAbsent || dateOccurredTo != null) {
+      map['date_occurred_to'] = Variable<DateTime>(dateOccurredTo);
+    }
     if (!nullToAbsent || timeOccurred != null) {
       map['time_occurred'] = Variable<String>(timeOccurred);
+    }
+    if (!nullToAbsent || timeOccurredTo != null) {
+      map['time_occurred_to'] = Variable<String>(timeOccurredTo);
     }
     if (!nullToAbsent || placeOccurred != null) {
       map['place_occurred'] = Variable<String>(placeOccurred);
@@ -537,9 +1056,61 @@ class Crime extends DataClass implements Insertable<Crime> {
     if (!nullToAbsent || crimeType != null) {
       map['crime_type'] = Variable<String>(crimeType);
     }
+    if (!nullToAbsent || remoteUid != null) {
+      map['remote_uid'] = Variable<String>(remoteUid);
+    }
     map['status'] = Variable<String>(status);
+    if (!nullToAbsent || courtType != null) {
+      map['court_type'] = Variable<String>(courtType);
+    }
+    map['case_stage'] = Variable<String>(caseStage);
     if (!nullToAbsent || detailedDescription != null) {
       map['detailed_description'] = Variable<String>(detailedDescription);
+    }
+    if (!nullToAbsent || firDate != null) {
+      map['fir_date'] = Variable<DateTime>(firDate);
+    }
+    if (!nullToAbsent || firTime != null) {
+      map['fir_time'] = Variable<String>(firTime);
+    }
+    if (!nullToAbsent || infoReceivedDate != null) {
+      map['info_received_date'] = Variable<DateTime>(infoReceivedDate);
+    }
+    if (!nullToAbsent || infoReceivedTime != null) {
+      map['info_received_time'] = Variable<String>(infoReceivedTime);
+    }
+    if (!nullToAbsent || gdDate != null) {
+      map['gd_date'] = Variable<DateTime>(gdDate);
+    }
+    if (!nullToAbsent || gdTime != null) {
+      map['gd_time'] = Variable<String>(gdTime);
+    }
+    if (!nullToAbsent || gdEntryNo != null) {
+      map['gd_entry_no'] = Variable<String>(gdEntryNo);
+    }
+    if (!nullToAbsent || occurrenceDay != null) {
+      map['occurrence_day'] = Variable<String>(occurrenceDay);
+    }
+    if (!nullToAbsent || typeOfInformation != null) {
+      map['type_of_information'] = Variable<String>(typeOfInformation);
+    }
+    if (!nullToAbsent || beatNo != null) {
+      map['beat_no'] = Variable<String>(beatNo);
+    }
+    if (!nullToAbsent || directionDistance != null) {
+      map['direction_distance'] = Variable<String>(directionDistance);
+    }
+    if (!nullToAbsent || outsidePsName != null) {
+      map['outside_ps_name'] = Variable<String>(outsidePsName);
+    }
+    if (!nullToAbsent || outsidePsDistrict != null) {
+      map['outside_ps_district'] = Variable<String>(outsidePsDistrict);
+    }
+    if (!nullToAbsent || delayReason != null) {
+      map['delay_reason'] = Variable<String>(delayReason);
+    }
+    if (!nullToAbsent || inquestUdNo != null) {
+      map['inquest_ud_no'] = Variable<String>(inquestUdNo);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -569,9 +1140,15 @@ class Crime extends DataClass implements Insertable<Crime> {
       dateOccurred: dateOccurred == null && nullToAbsent
           ? const Value.absent()
           : Value(dateOccurred),
+      dateOccurredTo: dateOccurredTo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dateOccurredTo),
       timeOccurred: timeOccurred == null && nullToAbsent
           ? const Value.absent()
           : Value(timeOccurred),
+      timeOccurredTo: timeOccurredTo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(timeOccurredTo),
       placeOccurred: placeOccurred == null && nullToAbsent
           ? const Value.absent()
           : Value(placeOccurred),
@@ -584,10 +1161,62 @@ class Crime extends DataClass implements Insertable<Crime> {
       crimeType: crimeType == null && nullToAbsent
           ? const Value.absent()
           : Value(crimeType),
+      remoteUid: remoteUid == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remoteUid),
       status: Value(status),
+      courtType: courtType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(courtType),
+      caseStage: Value(caseStage),
       detailedDescription: detailedDescription == null && nullToAbsent
           ? const Value.absent()
           : Value(detailedDescription),
+      firDate: firDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(firDate),
+      firTime: firTime == null && nullToAbsent
+          ? const Value.absent()
+          : Value(firTime),
+      infoReceivedDate: infoReceivedDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(infoReceivedDate),
+      infoReceivedTime: infoReceivedTime == null && nullToAbsent
+          ? const Value.absent()
+          : Value(infoReceivedTime),
+      gdDate: gdDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(gdDate),
+      gdTime: gdTime == null && nullToAbsent
+          ? const Value.absent()
+          : Value(gdTime),
+      gdEntryNo: gdEntryNo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(gdEntryNo),
+      occurrenceDay: occurrenceDay == null && nullToAbsent
+          ? const Value.absent()
+          : Value(occurrenceDay),
+      typeOfInformation: typeOfInformation == null && nullToAbsent
+          ? const Value.absent()
+          : Value(typeOfInformation),
+      beatNo: beatNo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(beatNo),
+      directionDistance: directionDistance == null && nullToAbsent
+          ? const Value.absent()
+          : Value(directionDistance),
+      outsidePsName: outsidePsName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(outsidePsName),
+      outsidePsDistrict: outsidePsDistrict == null && nullToAbsent
+          ? const Value.absent()
+          : Value(outsidePsDistrict),
+      delayReason: delayReason == null && nullToAbsent
+          ? const Value.absent()
+          : Value(delayReason),
+      inquestUdNo: inquestUdNo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(inquestUdNo),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -608,15 +1237,43 @@ class Crime extends DataClass implements Insertable<Crime> {
       district: serializer.fromJson<String?>(json['district']),
       policeStation: serializer.fromJson<String?>(json['policeStation']),
       dateOccurred: serializer.fromJson<DateTime?>(json['dateOccurred']),
+      dateOccurredTo: serializer.fromJson<DateTime?>(json['dateOccurredTo']),
       timeOccurred: serializer.fromJson<String?>(json['timeOccurred']),
+      timeOccurredTo: serializer.fromJson<String?>(json['timeOccurredTo']),
       placeOccurred: serializer.fromJson<String?>(json['placeOccurred']),
       dateRegistered: serializer.fromJson<DateTime?>(json['dateRegistered']),
       timeRegistered: serializer.fromJson<String?>(json['timeRegistered']),
       crimeType: serializer.fromJson<String?>(json['crimeType']),
+      remoteUid: serializer.fromJson<String?>(json['remoteUid']),
       status: serializer.fromJson<String>(json['status']),
+      courtType: serializer.fromJson<String?>(json['courtType']),
+      caseStage: serializer.fromJson<String>(json['caseStage']),
       detailedDescription: serializer.fromJson<String?>(
         json['detailedDescription'],
       ),
+      firDate: serializer.fromJson<DateTime?>(json['firDate']),
+      firTime: serializer.fromJson<String?>(json['firTime']),
+      infoReceivedDate: serializer.fromJson<DateTime?>(
+        json['infoReceivedDate'],
+      ),
+      infoReceivedTime: serializer.fromJson<String?>(json['infoReceivedTime']),
+      gdDate: serializer.fromJson<DateTime?>(json['gdDate']),
+      gdTime: serializer.fromJson<String?>(json['gdTime']),
+      gdEntryNo: serializer.fromJson<String?>(json['gdEntryNo']),
+      occurrenceDay: serializer.fromJson<String?>(json['occurrenceDay']),
+      typeOfInformation: serializer.fromJson<String?>(
+        json['typeOfInformation'],
+      ),
+      beatNo: serializer.fromJson<String?>(json['beatNo']),
+      directionDistance: serializer.fromJson<String?>(
+        json['directionDistance'],
+      ),
+      outsidePsName: serializer.fromJson<String?>(json['outsidePsName']),
+      outsidePsDistrict: serializer.fromJson<String?>(
+        json['outsidePsDistrict'],
+      ),
+      delayReason: serializer.fromJson<String?>(json['delayReason']),
+      inquestUdNo: serializer.fromJson<String?>(json['inquestUdNo']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -634,13 +1291,33 @@ class Crime extends DataClass implements Insertable<Crime> {
       'district': serializer.toJson<String?>(district),
       'policeStation': serializer.toJson<String?>(policeStation),
       'dateOccurred': serializer.toJson<DateTime?>(dateOccurred),
+      'dateOccurredTo': serializer.toJson<DateTime?>(dateOccurredTo),
       'timeOccurred': serializer.toJson<String?>(timeOccurred),
+      'timeOccurredTo': serializer.toJson<String?>(timeOccurredTo),
       'placeOccurred': serializer.toJson<String?>(placeOccurred),
       'dateRegistered': serializer.toJson<DateTime?>(dateRegistered),
       'timeRegistered': serializer.toJson<String?>(timeRegistered),
       'crimeType': serializer.toJson<String?>(crimeType),
+      'remoteUid': serializer.toJson<String?>(remoteUid),
       'status': serializer.toJson<String>(status),
+      'courtType': serializer.toJson<String?>(courtType),
+      'caseStage': serializer.toJson<String>(caseStage),
       'detailedDescription': serializer.toJson<String?>(detailedDescription),
+      'firDate': serializer.toJson<DateTime?>(firDate),
+      'firTime': serializer.toJson<String?>(firTime),
+      'infoReceivedDate': serializer.toJson<DateTime?>(infoReceivedDate),
+      'infoReceivedTime': serializer.toJson<String?>(infoReceivedTime),
+      'gdDate': serializer.toJson<DateTime?>(gdDate),
+      'gdTime': serializer.toJson<String?>(gdTime),
+      'gdEntryNo': serializer.toJson<String?>(gdEntryNo),
+      'occurrenceDay': serializer.toJson<String?>(occurrenceDay),
+      'typeOfInformation': serializer.toJson<String?>(typeOfInformation),
+      'beatNo': serializer.toJson<String?>(beatNo),
+      'directionDistance': serializer.toJson<String?>(directionDistance),
+      'outsidePsName': serializer.toJson<String?>(outsidePsName),
+      'outsidePsDistrict': serializer.toJson<String?>(outsidePsDistrict),
+      'delayReason': serializer.toJson<String?>(delayReason),
+      'inquestUdNo': serializer.toJson<String?>(inquestUdNo),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -656,13 +1333,33 @@ class Crime extends DataClass implements Insertable<Crime> {
     Value<String?> district = const Value.absent(),
     Value<String?> policeStation = const Value.absent(),
     Value<DateTime?> dateOccurred = const Value.absent(),
+    Value<DateTime?> dateOccurredTo = const Value.absent(),
     Value<String?> timeOccurred = const Value.absent(),
+    Value<String?> timeOccurredTo = const Value.absent(),
     Value<String?> placeOccurred = const Value.absent(),
     Value<DateTime?> dateRegistered = const Value.absent(),
     Value<String?> timeRegistered = const Value.absent(),
     Value<String?> crimeType = const Value.absent(),
+    Value<String?> remoteUid = const Value.absent(),
     String? status,
+    Value<String?> courtType = const Value.absent(),
+    String? caseStage,
     Value<String?> detailedDescription = const Value.absent(),
+    Value<DateTime?> firDate = const Value.absent(),
+    Value<String?> firTime = const Value.absent(),
+    Value<DateTime?> infoReceivedDate = const Value.absent(),
+    Value<String?> infoReceivedTime = const Value.absent(),
+    Value<DateTime?> gdDate = const Value.absent(),
+    Value<String?> gdTime = const Value.absent(),
+    Value<String?> gdEntryNo = const Value.absent(),
+    Value<String?> occurrenceDay = const Value.absent(),
+    Value<String?> typeOfInformation = const Value.absent(),
+    Value<String?> beatNo = const Value.absent(),
+    Value<String?> directionDistance = const Value.absent(),
+    Value<String?> outsidePsName = const Value.absent(),
+    Value<String?> outsidePsDistrict = const Value.absent(),
+    Value<String?> delayReason = const Value.absent(),
+    Value<String?> inquestUdNo = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => Crime(
@@ -677,7 +1374,13 @@ class Crime extends DataClass implements Insertable<Crime> {
         ? policeStation.value
         : this.policeStation,
     dateOccurred: dateOccurred.present ? dateOccurred.value : this.dateOccurred,
+    dateOccurredTo: dateOccurredTo.present
+        ? dateOccurredTo.value
+        : this.dateOccurredTo,
     timeOccurred: timeOccurred.present ? timeOccurred.value : this.timeOccurred,
+    timeOccurredTo: timeOccurredTo.present
+        ? timeOccurredTo.value
+        : this.timeOccurredTo,
     placeOccurred: placeOccurred.present
         ? placeOccurred.value
         : this.placeOccurred,
@@ -688,10 +1391,42 @@ class Crime extends DataClass implements Insertable<Crime> {
         ? timeRegistered.value
         : this.timeRegistered,
     crimeType: crimeType.present ? crimeType.value : this.crimeType,
+    remoteUid: remoteUid.present ? remoteUid.value : this.remoteUid,
     status: status ?? this.status,
+    courtType: courtType.present ? courtType.value : this.courtType,
+    caseStage: caseStage ?? this.caseStage,
     detailedDescription: detailedDescription.present
         ? detailedDescription.value
         : this.detailedDescription,
+    firDate: firDate.present ? firDate.value : this.firDate,
+    firTime: firTime.present ? firTime.value : this.firTime,
+    infoReceivedDate: infoReceivedDate.present
+        ? infoReceivedDate.value
+        : this.infoReceivedDate,
+    infoReceivedTime: infoReceivedTime.present
+        ? infoReceivedTime.value
+        : this.infoReceivedTime,
+    gdDate: gdDate.present ? gdDate.value : this.gdDate,
+    gdTime: gdTime.present ? gdTime.value : this.gdTime,
+    gdEntryNo: gdEntryNo.present ? gdEntryNo.value : this.gdEntryNo,
+    occurrenceDay: occurrenceDay.present
+        ? occurrenceDay.value
+        : this.occurrenceDay,
+    typeOfInformation: typeOfInformation.present
+        ? typeOfInformation.value
+        : this.typeOfInformation,
+    beatNo: beatNo.present ? beatNo.value : this.beatNo,
+    directionDistance: directionDistance.present
+        ? directionDistance.value
+        : this.directionDistance,
+    outsidePsName: outsidePsName.present
+        ? outsidePsName.value
+        : this.outsidePsName,
+    outsidePsDistrict: outsidePsDistrict.present
+        ? outsidePsDistrict.value
+        : this.outsidePsDistrict,
+    delayReason: delayReason.present ? delayReason.value : this.delayReason,
+    inquestUdNo: inquestUdNo.present ? inquestUdNo.value : this.inquestUdNo,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -712,9 +1447,15 @@ class Crime extends DataClass implements Insertable<Crime> {
       dateOccurred: data.dateOccurred.present
           ? data.dateOccurred.value
           : this.dateOccurred,
+      dateOccurredTo: data.dateOccurredTo.present
+          ? data.dateOccurredTo.value
+          : this.dateOccurredTo,
       timeOccurred: data.timeOccurred.present
           ? data.timeOccurred.value
           : this.timeOccurred,
+      timeOccurredTo: data.timeOccurredTo.present
+          ? data.timeOccurredTo.value
+          : this.timeOccurredTo,
       placeOccurred: data.placeOccurred.present
           ? data.placeOccurred.value
           : this.placeOccurred,
@@ -725,10 +1466,46 @@ class Crime extends DataClass implements Insertable<Crime> {
           ? data.timeRegistered.value
           : this.timeRegistered,
       crimeType: data.crimeType.present ? data.crimeType.value : this.crimeType,
+      remoteUid: data.remoteUid.present ? data.remoteUid.value : this.remoteUid,
       status: data.status.present ? data.status.value : this.status,
+      courtType: data.courtType.present ? data.courtType.value : this.courtType,
+      caseStage: data.caseStage.present ? data.caseStage.value : this.caseStage,
       detailedDescription: data.detailedDescription.present
           ? data.detailedDescription.value
           : this.detailedDescription,
+      firDate: data.firDate.present ? data.firDate.value : this.firDate,
+      firTime: data.firTime.present ? data.firTime.value : this.firTime,
+      infoReceivedDate: data.infoReceivedDate.present
+          ? data.infoReceivedDate.value
+          : this.infoReceivedDate,
+      infoReceivedTime: data.infoReceivedTime.present
+          ? data.infoReceivedTime.value
+          : this.infoReceivedTime,
+      gdDate: data.gdDate.present ? data.gdDate.value : this.gdDate,
+      gdTime: data.gdTime.present ? data.gdTime.value : this.gdTime,
+      gdEntryNo: data.gdEntryNo.present ? data.gdEntryNo.value : this.gdEntryNo,
+      occurrenceDay: data.occurrenceDay.present
+          ? data.occurrenceDay.value
+          : this.occurrenceDay,
+      typeOfInformation: data.typeOfInformation.present
+          ? data.typeOfInformation.value
+          : this.typeOfInformation,
+      beatNo: data.beatNo.present ? data.beatNo.value : this.beatNo,
+      directionDistance: data.directionDistance.present
+          ? data.directionDistance.value
+          : this.directionDistance,
+      outsidePsName: data.outsidePsName.present
+          ? data.outsidePsName.value
+          : this.outsidePsName,
+      outsidePsDistrict: data.outsidePsDistrict.present
+          ? data.outsidePsDistrict.value
+          : this.outsidePsDistrict,
+      delayReason: data.delayReason.present
+          ? data.delayReason.value
+          : this.delayReason,
+      inquestUdNo: data.inquestUdNo.present
+          ? data.inquestUdNo.value
+          : this.inquestUdNo,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -746,13 +1523,33 @@ class Crime extends DataClass implements Insertable<Crime> {
           ..write('district: $district, ')
           ..write('policeStation: $policeStation, ')
           ..write('dateOccurred: $dateOccurred, ')
+          ..write('dateOccurredTo: $dateOccurredTo, ')
           ..write('timeOccurred: $timeOccurred, ')
+          ..write('timeOccurredTo: $timeOccurredTo, ')
           ..write('placeOccurred: $placeOccurred, ')
           ..write('dateRegistered: $dateRegistered, ')
           ..write('timeRegistered: $timeRegistered, ')
           ..write('crimeType: $crimeType, ')
+          ..write('remoteUid: $remoteUid, ')
           ..write('status: $status, ')
+          ..write('courtType: $courtType, ')
+          ..write('caseStage: $caseStage, ')
           ..write('detailedDescription: $detailedDescription, ')
+          ..write('firDate: $firDate, ')
+          ..write('firTime: $firTime, ')
+          ..write('infoReceivedDate: $infoReceivedDate, ')
+          ..write('infoReceivedTime: $infoReceivedTime, ')
+          ..write('gdDate: $gdDate, ')
+          ..write('gdTime: $gdTime, ')
+          ..write('gdEntryNo: $gdEntryNo, ')
+          ..write('occurrenceDay: $occurrenceDay, ')
+          ..write('typeOfInformation: $typeOfInformation, ')
+          ..write('beatNo: $beatNo, ')
+          ..write('directionDistance: $directionDistance, ')
+          ..write('outsidePsName: $outsidePsName, ')
+          ..write('outsidePsDistrict: $outsidePsDistrict, ')
+          ..write('delayReason: $delayReason, ')
+          ..write('inquestUdNo: $inquestUdNo, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -760,7 +1557,7 @@ class Crime extends DataClass implements Insertable<Crime> {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     firNo,
     year,
@@ -770,16 +1567,36 @@ class Crime extends DataClass implements Insertable<Crime> {
     district,
     policeStation,
     dateOccurred,
+    dateOccurredTo,
     timeOccurred,
+    timeOccurredTo,
     placeOccurred,
     dateRegistered,
     timeRegistered,
     crimeType,
+    remoteUid,
     status,
+    courtType,
+    caseStage,
     detailedDescription,
+    firDate,
+    firTime,
+    infoReceivedDate,
+    infoReceivedTime,
+    gdDate,
+    gdTime,
+    gdEntryNo,
+    occurrenceDay,
+    typeOfInformation,
+    beatNo,
+    directionDistance,
+    outsidePsName,
+    outsidePsDistrict,
+    delayReason,
+    inquestUdNo,
     createdAt,
     updatedAt,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -793,13 +1610,33 @@ class Crime extends DataClass implements Insertable<Crime> {
           other.district == this.district &&
           other.policeStation == this.policeStation &&
           other.dateOccurred == this.dateOccurred &&
+          other.dateOccurredTo == this.dateOccurredTo &&
           other.timeOccurred == this.timeOccurred &&
+          other.timeOccurredTo == this.timeOccurredTo &&
           other.placeOccurred == this.placeOccurred &&
           other.dateRegistered == this.dateRegistered &&
           other.timeRegistered == this.timeRegistered &&
           other.crimeType == this.crimeType &&
+          other.remoteUid == this.remoteUid &&
           other.status == this.status &&
+          other.courtType == this.courtType &&
+          other.caseStage == this.caseStage &&
           other.detailedDescription == this.detailedDescription &&
+          other.firDate == this.firDate &&
+          other.firTime == this.firTime &&
+          other.infoReceivedDate == this.infoReceivedDate &&
+          other.infoReceivedTime == this.infoReceivedTime &&
+          other.gdDate == this.gdDate &&
+          other.gdTime == this.gdTime &&
+          other.gdEntryNo == this.gdEntryNo &&
+          other.occurrenceDay == this.occurrenceDay &&
+          other.typeOfInformation == this.typeOfInformation &&
+          other.beatNo == this.beatNo &&
+          other.directionDistance == this.directionDistance &&
+          other.outsidePsName == this.outsidePsName &&
+          other.outsidePsDistrict == this.outsidePsDistrict &&
+          other.delayReason == this.delayReason &&
+          other.inquestUdNo == this.inquestUdNo &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -814,13 +1651,33 @@ class CrimesCompanion extends UpdateCompanion<Crime> {
   final Value<String?> district;
   final Value<String?> policeStation;
   final Value<DateTime?> dateOccurred;
+  final Value<DateTime?> dateOccurredTo;
   final Value<String?> timeOccurred;
+  final Value<String?> timeOccurredTo;
   final Value<String?> placeOccurred;
   final Value<DateTime?> dateRegistered;
   final Value<String?> timeRegistered;
   final Value<String?> crimeType;
+  final Value<String?> remoteUid;
   final Value<String> status;
+  final Value<String?> courtType;
+  final Value<String> caseStage;
   final Value<String?> detailedDescription;
+  final Value<DateTime?> firDate;
+  final Value<String?> firTime;
+  final Value<DateTime?> infoReceivedDate;
+  final Value<String?> infoReceivedTime;
+  final Value<DateTime?> gdDate;
+  final Value<String?> gdTime;
+  final Value<String?> gdEntryNo;
+  final Value<String?> occurrenceDay;
+  final Value<String?> typeOfInformation;
+  final Value<String?> beatNo;
+  final Value<String?> directionDistance;
+  final Value<String?> outsidePsName;
+  final Value<String?> outsidePsDistrict;
+  final Value<String?> delayReason;
+  final Value<String?> inquestUdNo;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   const CrimesCompanion({
@@ -833,13 +1690,33 @@ class CrimesCompanion extends UpdateCompanion<Crime> {
     this.district = const Value.absent(),
     this.policeStation = const Value.absent(),
     this.dateOccurred = const Value.absent(),
+    this.dateOccurredTo = const Value.absent(),
     this.timeOccurred = const Value.absent(),
+    this.timeOccurredTo = const Value.absent(),
     this.placeOccurred = const Value.absent(),
     this.dateRegistered = const Value.absent(),
     this.timeRegistered = const Value.absent(),
     this.crimeType = const Value.absent(),
+    this.remoteUid = const Value.absent(),
     this.status = const Value.absent(),
+    this.courtType = const Value.absent(),
+    this.caseStage = const Value.absent(),
     this.detailedDescription = const Value.absent(),
+    this.firDate = const Value.absent(),
+    this.firTime = const Value.absent(),
+    this.infoReceivedDate = const Value.absent(),
+    this.infoReceivedTime = const Value.absent(),
+    this.gdDate = const Value.absent(),
+    this.gdTime = const Value.absent(),
+    this.gdEntryNo = const Value.absent(),
+    this.occurrenceDay = const Value.absent(),
+    this.typeOfInformation = const Value.absent(),
+    this.beatNo = const Value.absent(),
+    this.directionDistance = const Value.absent(),
+    this.outsidePsName = const Value.absent(),
+    this.outsidePsDistrict = const Value.absent(),
+    this.delayReason = const Value.absent(),
+    this.inquestUdNo = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
@@ -853,13 +1730,33 @@ class CrimesCompanion extends UpdateCompanion<Crime> {
     this.district = const Value.absent(),
     this.policeStation = const Value.absent(),
     this.dateOccurred = const Value.absent(),
+    this.dateOccurredTo = const Value.absent(),
     this.timeOccurred = const Value.absent(),
+    this.timeOccurredTo = const Value.absent(),
     this.placeOccurred = const Value.absent(),
     this.dateRegistered = const Value.absent(),
     this.timeRegistered = const Value.absent(),
     this.crimeType = const Value.absent(),
+    this.remoteUid = const Value.absent(),
     this.status = const Value.absent(),
+    this.courtType = const Value.absent(),
+    this.caseStage = const Value.absent(),
     this.detailedDescription = const Value.absent(),
+    this.firDate = const Value.absent(),
+    this.firTime = const Value.absent(),
+    this.infoReceivedDate = const Value.absent(),
+    this.infoReceivedTime = const Value.absent(),
+    this.gdDate = const Value.absent(),
+    this.gdTime = const Value.absent(),
+    this.gdEntryNo = const Value.absent(),
+    this.occurrenceDay = const Value.absent(),
+    this.typeOfInformation = const Value.absent(),
+    this.beatNo = const Value.absent(),
+    this.directionDistance = const Value.absent(),
+    this.outsidePsName = const Value.absent(),
+    this.outsidePsDistrict = const Value.absent(),
+    this.delayReason = const Value.absent(),
+    this.inquestUdNo = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   }) : firNo = Value(firNo),
@@ -874,13 +1771,33 @@ class CrimesCompanion extends UpdateCompanion<Crime> {
     Expression<String>? district,
     Expression<String>? policeStation,
     Expression<DateTime>? dateOccurred,
+    Expression<DateTime>? dateOccurredTo,
     Expression<String>? timeOccurred,
+    Expression<String>? timeOccurredTo,
     Expression<String>? placeOccurred,
     Expression<DateTime>? dateRegistered,
     Expression<String>? timeRegistered,
     Expression<String>? crimeType,
+    Expression<String>? remoteUid,
     Expression<String>? status,
+    Expression<String>? courtType,
+    Expression<String>? caseStage,
     Expression<String>? detailedDescription,
+    Expression<DateTime>? firDate,
+    Expression<String>? firTime,
+    Expression<DateTime>? infoReceivedDate,
+    Expression<String>? infoReceivedTime,
+    Expression<DateTime>? gdDate,
+    Expression<String>? gdTime,
+    Expression<String>? gdEntryNo,
+    Expression<String>? occurrenceDay,
+    Expression<String>? typeOfInformation,
+    Expression<String>? beatNo,
+    Expression<String>? directionDistance,
+    Expression<String>? outsidePsName,
+    Expression<String>? outsidePsDistrict,
+    Expression<String>? delayReason,
+    Expression<String>? inquestUdNo,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
   }) {
@@ -894,14 +1811,34 @@ class CrimesCompanion extends UpdateCompanion<Crime> {
       if (district != null) 'district': district,
       if (policeStation != null) 'police_station': policeStation,
       if (dateOccurred != null) 'date_occurred': dateOccurred,
+      if (dateOccurredTo != null) 'date_occurred_to': dateOccurredTo,
       if (timeOccurred != null) 'time_occurred': timeOccurred,
+      if (timeOccurredTo != null) 'time_occurred_to': timeOccurredTo,
       if (placeOccurred != null) 'place_occurred': placeOccurred,
       if (dateRegistered != null) 'date_registered': dateRegistered,
       if (timeRegistered != null) 'time_registered': timeRegistered,
       if (crimeType != null) 'crime_type': crimeType,
+      if (remoteUid != null) 'remote_uid': remoteUid,
       if (status != null) 'status': status,
+      if (courtType != null) 'court_type': courtType,
+      if (caseStage != null) 'case_stage': caseStage,
       if (detailedDescription != null)
         'detailed_description': detailedDescription,
+      if (firDate != null) 'fir_date': firDate,
+      if (firTime != null) 'fir_time': firTime,
+      if (infoReceivedDate != null) 'info_received_date': infoReceivedDate,
+      if (infoReceivedTime != null) 'info_received_time': infoReceivedTime,
+      if (gdDate != null) 'gd_date': gdDate,
+      if (gdTime != null) 'gd_time': gdTime,
+      if (gdEntryNo != null) 'gd_entry_no': gdEntryNo,
+      if (occurrenceDay != null) 'occurrence_day': occurrenceDay,
+      if (typeOfInformation != null) 'type_of_information': typeOfInformation,
+      if (beatNo != null) 'beat_no': beatNo,
+      if (directionDistance != null) 'direction_distance': directionDistance,
+      if (outsidePsName != null) 'outside_ps_name': outsidePsName,
+      if (outsidePsDistrict != null) 'outside_ps_district': outsidePsDistrict,
+      if (delayReason != null) 'delay_reason': delayReason,
+      if (inquestUdNo != null) 'inquest_ud_no': inquestUdNo,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
@@ -917,13 +1854,33 @@ class CrimesCompanion extends UpdateCompanion<Crime> {
     Value<String?>? district,
     Value<String?>? policeStation,
     Value<DateTime?>? dateOccurred,
+    Value<DateTime?>? dateOccurredTo,
     Value<String?>? timeOccurred,
+    Value<String?>? timeOccurredTo,
     Value<String?>? placeOccurred,
     Value<DateTime?>? dateRegistered,
     Value<String?>? timeRegistered,
     Value<String?>? crimeType,
+    Value<String?>? remoteUid,
     Value<String>? status,
+    Value<String?>? courtType,
+    Value<String>? caseStage,
     Value<String?>? detailedDescription,
+    Value<DateTime?>? firDate,
+    Value<String?>? firTime,
+    Value<DateTime?>? infoReceivedDate,
+    Value<String?>? infoReceivedTime,
+    Value<DateTime?>? gdDate,
+    Value<String?>? gdTime,
+    Value<String?>? gdEntryNo,
+    Value<String?>? occurrenceDay,
+    Value<String?>? typeOfInformation,
+    Value<String?>? beatNo,
+    Value<String?>? directionDistance,
+    Value<String?>? outsidePsName,
+    Value<String?>? outsidePsDistrict,
+    Value<String?>? delayReason,
+    Value<String?>? inquestUdNo,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
   }) {
@@ -937,13 +1894,33 @@ class CrimesCompanion extends UpdateCompanion<Crime> {
       district: district ?? this.district,
       policeStation: policeStation ?? this.policeStation,
       dateOccurred: dateOccurred ?? this.dateOccurred,
+      dateOccurredTo: dateOccurredTo ?? this.dateOccurredTo,
       timeOccurred: timeOccurred ?? this.timeOccurred,
+      timeOccurredTo: timeOccurredTo ?? this.timeOccurredTo,
       placeOccurred: placeOccurred ?? this.placeOccurred,
       dateRegistered: dateRegistered ?? this.dateRegistered,
       timeRegistered: timeRegistered ?? this.timeRegistered,
       crimeType: crimeType ?? this.crimeType,
+      remoteUid: remoteUid ?? this.remoteUid,
       status: status ?? this.status,
+      courtType: courtType ?? this.courtType,
+      caseStage: caseStage ?? this.caseStage,
       detailedDescription: detailedDescription ?? this.detailedDescription,
+      firDate: firDate ?? this.firDate,
+      firTime: firTime ?? this.firTime,
+      infoReceivedDate: infoReceivedDate ?? this.infoReceivedDate,
+      infoReceivedTime: infoReceivedTime ?? this.infoReceivedTime,
+      gdDate: gdDate ?? this.gdDate,
+      gdTime: gdTime ?? this.gdTime,
+      gdEntryNo: gdEntryNo ?? this.gdEntryNo,
+      occurrenceDay: occurrenceDay ?? this.occurrenceDay,
+      typeOfInformation: typeOfInformation ?? this.typeOfInformation,
+      beatNo: beatNo ?? this.beatNo,
+      directionDistance: directionDistance ?? this.directionDistance,
+      outsidePsName: outsidePsName ?? this.outsidePsName,
+      outsidePsDistrict: outsidePsDistrict ?? this.outsidePsDistrict,
+      delayReason: delayReason ?? this.delayReason,
+      inquestUdNo: inquestUdNo ?? this.inquestUdNo,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -979,8 +1956,14 @@ class CrimesCompanion extends UpdateCompanion<Crime> {
     if (dateOccurred.present) {
       map['date_occurred'] = Variable<DateTime>(dateOccurred.value);
     }
+    if (dateOccurredTo.present) {
+      map['date_occurred_to'] = Variable<DateTime>(dateOccurredTo.value);
+    }
     if (timeOccurred.present) {
       map['time_occurred'] = Variable<String>(timeOccurred.value);
+    }
+    if (timeOccurredTo.present) {
+      map['time_occurred_to'] = Variable<String>(timeOccurredTo.value);
     }
     if (placeOccurred.present) {
       map['place_occurred'] = Variable<String>(placeOccurred.value);
@@ -994,11 +1977,65 @@ class CrimesCompanion extends UpdateCompanion<Crime> {
     if (crimeType.present) {
       map['crime_type'] = Variable<String>(crimeType.value);
     }
+    if (remoteUid.present) {
+      map['remote_uid'] = Variable<String>(remoteUid.value);
+    }
     if (status.present) {
       map['status'] = Variable<String>(status.value);
     }
+    if (courtType.present) {
+      map['court_type'] = Variable<String>(courtType.value);
+    }
+    if (caseStage.present) {
+      map['case_stage'] = Variable<String>(caseStage.value);
+    }
     if (detailedDescription.present) {
       map['detailed_description'] = Variable<String>(detailedDescription.value);
+    }
+    if (firDate.present) {
+      map['fir_date'] = Variable<DateTime>(firDate.value);
+    }
+    if (firTime.present) {
+      map['fir_time'] = Variable<String>(firTime.value);
+    }
+    if (infoReceivedDate.present) {
+      map['info_received_date'] = Variable<DateTime>(infoReceivedDate.value);
+    }
+    if (infoReceivedTime.present) {
+      map['info_received_time'] = Variable<String>(infoReceivedTime.value);
+    }
+    if (gdDate.present) {
+      map['gd_date'] = Variable<DateTime>(gdDate.value);
+    }
+    if (gdTime.present) {
+      map['gd_time'] = Variable<String>(gdTime.value);
+    }
+    if (gdEntryNo.present) {
+      map['gd_entry_no'] = Variable<String>(gdEntryNo.value);
+    }
+    if (occurrenceDay.present) {
+      map['occurrence_day'] = Variable<String>(occurrenceDay.value);
+    }
+    if (typeOfInformation.present) {
+      map['type_of_information'] = Variable<String>(typeOfInformation.value);
+    }
+    if (beatNo.present) {
+      map['beat_no'] = Variable<String>(beatNo.value);
+    }
+    if (directionDistance.present) {
+      map['direction_distance'] = Variable<String>(directionDistance.value);
+    }
+    if (outsidePsName.present) {
+      map['outside_ps_name'] = Variable<String>(outsidePsName.value);
+    }
+    if (outsidePsDistrict.present) {
+      map['outside_ps_district'] = Variable<String>(outsidePsDistrict.value);
+    }
+    if (delayReason.present) {
+      map['delay_reason'] = Variable<String>(delayReason.value);
+    }
+    if (inquestUdNo.present) {
+      map['inquest_ud_no'] = Variable<String>(inquestUdNo.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -1021,13 +2058,33 @@ class CrimesCompanion extends UpdateCompanion<Crime> {
           ..write('district: $district, ')
           ..write('policeStation: $policeStation, ')
           ..write('dateOccurred: $dateOccurred, ')
+          ..write('dateOccurredTo: $dateOccurredTo, ')
           ..write('timeOccurred: $timeOccurred, ')
+          ..write('timeOccurredTo: $timeOccurredTo, ')
           ..write('placeOccurred: $placeOccurred, ')
           ..write('dateRegistered: $dateRegistered, ')
           ..write('timeRegistered: $timeRegistered, ')
           ..write('crimeType: $crimeType, ')
+          ..write('remoteUid: $remoteUid, ')
           ..write('status: $status, ')
+          ..write('courtType: $courtType, ')
+          ..write('caseStage: $caseStage, ')
           ..write('detailedDescription: $detailedDescription, ')
+          ..write('firDate: $firDate, ')
+          ..write('firTime: $firTime, ')
+          ..write('infoReceivedDate: $infoReceivedDate, ')
+          ..write('infoReceivedTime: $infoReceivedTime, ')
+          ..write('gdDate: $gdDate, ')
+          ..write('gdTime: $gdTime, ')
+          ..write('gdEntryNo: $gdEntryNo, ')
+          ..write('occurrenceDay: $occurrenceDay, ')
+          ..write('typeOfInformation: $typeOfInformation, ')
+          ..write('beatNo: $beatNo, ')
+          ..write('directionDistance: $directionDistance, ')
+          ..write('outsidePsName: $outsidePsName, ')
+          ..write('outsidePsDistrict: $outsidePsDistrict, ')
+          ..write('delayReason: $delayReason, ')
+          ..write('inquestUdNo: $inquestUdNo, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -1095,6 +2152,17 @@ class $ComplainantsTable extends Complainants
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _ageTextMeta = const VerificationMeta(
+    'ageText',
+  );
+  @override
+  late final GeneratedColumn<String> ageText = GeneratedColumn<String>(
+    'age_text',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _addressMeta = const VerificationMeta(
     'address',
   );
@@ -1155,6 +2223,82 @@ class $ComplainantsTable extends Complainants
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _fatherHusbandNameMeta = const VerificationMeta(
+    'fatherHusbandName',
+  );
+  @override
+  late final GeneratedColumn<String> fatherHusbandName =
+      GeneratedColumn<String>(
+        'father_husband_name',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _birthYearMeta = const VerificationMeta(
+    'birthYear',
+  );
+  @override
+  late final GeneratedColumn<int> birthYear = GeneratedColumn<int>(
+    'birth_year',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _nationalityMeta = const VerificationMeta(
+    'nationality',
+  );
+  @override
+  late final GeneratedColumn<String> nationality = GeneratedColumn<String>(
+    'nationality',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _occupationMeta = const VerificationMeta(
+    'occupation',
+  );
+  @override
+  late final GeneratedColumn<String> occupation = GeneratedColumn<String>(
+    'occupation',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _permanentAddressMeta = const VerificationMeta(
+    'permanentAddress',
+  );
+  @override
+  late final GeneratedColumn<String> permanentAddress = GeneratedColumn<String>(
+    'permanent_address',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _idTypeMeta = const VerificationMeta('idType');
+  @override
+  late final GeneratedColumn<String> idType = GeneratedColumn<String>(
+    'id_type',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _idNumberMeta = const VerificationMeta(
+    'idNumber',
+  );
+  @override
+  late final GeneratedColumn<String> idNumber = GeneratedColumn<String>(
+    'id_number',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1162,12 +2306,20 @@ class $ComplainantsTable extends Complainants
     name,
     gender,
     age,
+    ageText,
     address,
     mobile,
     email,
     aadhaarEnc,
     panEnc,
     passport,
+    fatherHusbandName,
+    birthYear,
+    nationality,
+    occupation,
+    permanentAddress,
+    idType,
+    idNumber,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1212,6 +2364,12 @@ class $ComplainantsTable extends Complainants
         age.isAcceptableOrUnknown(data['age']!, _ageMeta),
       );
     }
+    if (data.containsKey('age_text')) {
+      context.handle(
+        _ageTextMeta,
+        ageText.isAcceptableOrUnknown(data['age_text']!, _ageTextMeta),
+      );
+    }
     if (data.containsKey('address')) {
       context.handle(
         _addressMeta,
@@ -1248,6 +2406,57 @@ class $ComplainantsTable extends Complainants
         passport.isAcceptableOrUnknown(data['passport']!, _passportMeta),
       );
     }
+    if (data.containsKey('father_husband_name')) {
+      context.handle(
+        _fatherHusbandNameMeta,
+        fatherHusbandName.isAcceptableOrUnknown(
+          data['father_husband_name']!,
+          _fatherHusbandNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('birth_year')) {
+      context.handle(
+        _birthYearMeta,
+        birthYear.isAcceptableOrUnknown(data['birth_year']!, _birthYearMeta),
+      );
+    }
+    if (data.containsKey('nationality')) {
+      context.handle(
+        _nationalityMeta,
+        nationality.isAcceptableOrUnknown(
+          data['nationality']!,
+          _nationalityMeta,
+        ),
+      );
+    }
+    if (data.containsKey('occupation')) {
+      context.handle(
+        _occupationMeta,
+        occupation.isAcceptableOrUnknown(data['occupation']!, _occupationMeta),
+      );
+    }
+    if (data.containsKey('permanent_address')) {
+      context.handle(
+        _permanentAddressMeta,
+        permanentAddress.isAcceptableOrUnknown(
+          data['permanent_address']!,
+          _permanentAddressMeta,
+        ),
+      );
+    }
+    if (data.containsKey('id_type')) {
+      context.handle(
+        _idTypeMeta,
+        idType.isAcceptableOrUnknown(data['id_type']!, _idTypeMeta),
+      );
+    }
+    if (data.containsKey('id_number')) {
+      context.handle(
+        _idNumberMeta,
+        idNumber.isAcceptableOrUnknown(data['id_number']!, _idNumberMeta),
+      );
+    }
     return context;
   }
 
@@ -1277,6 +2486,10 @@ class $ComplainantsTable extends Complainants
         DriftSqlType.int,
         data['${effectivePrefix}age'],
       ),
+      ageText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}age_text'],
+      ),
       address: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}address'],
@@ -1301,6 +2514,34 @@ class $ComplainantsTable extends Complainants
         DriftSqlType.string,
         data['${effectivePrefix}passport'],
       ),
+      fatherHusbandName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}father_husband_name'],
+      ),
+      birthYear: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}birth_year'],
+      ),
+      nationality: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nationality'],
+      ),
+      occupation: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}occupation'],
+      ),
+      permanentAddress: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}permanent_address'],
+      ),
+      idType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id_type'],
+      ),
+      idNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id_number'],
+      ),
     );
   }
 
@@ -1316,24 +2557,40 @@ class Complainant extends DataClass implements Insertable<Complainant> {
   final String name;
   final String? gender;
   final int? age;
+  final String? ageText;
   final String? address;
   final String? mobile;
   final String? email;
   final String? aadhaarEnc;
   final String? panEnc;
   final String? passport;
+  final String? fatherHusbandName;
+  final int? birthYear;
+  final String? nationality;
+  final String? occupation;
+  final String? permanentAddress;
+  final String? idType;
+  final String? idNumber;
   const Complainant({
     required this.id,
     required this.crimeId,
     required this.name,
     this.gender,
     this.age,
+    this.ageText,
     this.address,
     this.mobile,
     this.email,
     this.aadhaarEnc,
     this.panEnc,
     this.passport,
+    this.fatherHusbandName,
+    this.birthYear,
+    this.nationality,
+    this.occupation,
+    this.permanentAddress,
+    this.idType,
+    this.idNumber,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1346,6 +2603,9 @@ class Complainant extends DataClass implements Insertable<Complainant> {
     }
     if (!nullToAbsent || age != null) {
       map['age'] = Variable<int>(age);
+    }
+    if (!nullToAbsent || ageText != null) {
+      map['age_text'] = Variable<String>(ageText);
     }
     if (!nullToAbsent || address != null) {
       map['address'] = Variable<String>(address);
@@ -1365,6 +2625,27 @@ class Complainant extends DataClass implements Insertable<Complainant> {
     if (!nullToAbsent || passport != null) {
       map['passport'] = Variable<String>(passport);
     }
+    if (!nullToAbsent || fatherHusbandName != null) {
+      map['father_husband_name'] = Variable<String>(fatherHusbandName);
+    }
+    if (!nullToAbsent || birthYear != null) {
+      map['birth_year'] = Variable<int>(birthYear);
+    }
+    if (!nullToAbsent || nationality != null) {
+      map['nationality'] = Variable<String>(nationality);
+    }
+    if (!nullToAbsent || occupation != null) {
+      map['occupation'] = Variable<String>(occupation);
+    }
+    if (!nullToAbsent || permanentAddress != null) {
+      map['permanent_address'] = Variable<String>(permanentAddress);
+    }
+    if (!nullToAbsent || idType != null) {
+      map['id_type'] = Variable<String>(idType);
+    }
+    if (!nullToAbsent || idNumber != null) {
+      map['id_number'] = Variable<String>(idNumber);
+    }
     return map;
   }
 
@@ -1377,6 +2658,9 @@ class Complainant extends DataClass implements Insertable<Complainant> {
           ? const Value.absent()
           : Value(gender),
       age: age == null && nullToAbsent ? const Value.absent() : Value(age),
+      ageText: ageText == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ageText),
       address: address == null && nullToAbsent
           ? const Value.absent()
           : Value(address),
@@ -1395,6 +2679,27 @@ class Complainant extends DataClass implements Insertable<Complainant> {
       passport: passport == null && nullToAbsent
           ? const Value.absent()
           : Value(passport),
+      fatherHusbandName: fatherHusbandName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fatherHusbandName),
+      birthYear: birthYear == null && nullToAbsent
+          ? const Value.absent()
+          : Value(birthYear),
+      nationality: nationality == null && nullToAbsent
+          ? const Value.absent()
+          : Value(nationality),
+      occupation: occupation == null && nullToAbsent
+          ? const Value.absent()
+          : Value(occupation),
+      permanentAddress: permanentAddress == null && nullToAbsent
+          ? const Value.absent()
+          : Value(permanentAddress),
+      idType: idType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(idType),
+      idNumber: idNumber == null && nullToAbsent
+          ? const Value.absent()
+          : Value(idNumber),
     );
   }
 
@@ -1409,12 +2714,22 @@ class Complainant extends DataClass implements Insertable<Complainant> {
       name: serializer.fromJson<String>(json['name']),
       gender: serializer.fromJson<String?>(json['gender']),
       age: serializer.fromJson<int?>(json['age']),
+      ageText: serializer.fromJson<String?>(json['ageText']),
       address: serializer.fromJson<String?>(json['address']),
       mobile: serializer.fromJson<String?>(json['mobile']),
       email: serializer.fromJson<String?>(json['email']),
       aadhaarEnc: serializer.fromJson<String?>(json['aadhaarEnc']),
       panEnc: serializer.fromJson<String?>(json['panEnc']),
       passport: serializer.fromJson<String?>(json['passport']),
+      fatherHusbandName: serializer.fromJson<String?>(
+        json['fatherHusbandName'],
+      ),
+      birthYear: serializer.fromJson<int?>(json['birthYear']),
+      nationality: serializer.fromJson<String?>(json['nationality']),
+      occupation: serializer.fromJson<String?>(json['occupation']),
+      permanentAddress: serializer.fromJson<String?>(json['permanentAddress']),
+      idType: serializer.fromJson<String?>(json['idType']),
+      idNumber: serializer.fromJson<String?>(json['idNumber']),
     );
   }
   @override
@@ -1426,12 +2741,20 @@ class Complainant extends DataClass implements Insertable<Complainant> {
       'name': serializer.toJson<String>(name),
       'gender': serializer.toJson<String?>(gender),
       'age': serializer.toJson<int?>(age),
+      'ageText': serializer.toJson<String?>(ageText),
       'address': serializer.toJson<String?>(address),
       'mobile': serializer.toJson<String?>(mobile),
       'email': serializer.toJson<String?>(email),
       'aadhaarEnc': serializer.toJson<String?>(aadhaarEnc),
       'panEnc': serializer.toJson<String?>(panEnc),
       'passport': serializer.toJson<String?>(passport),
+      'fatherHusbandName': serializer.toJson<String?>(fatherHusbandName),
+      'birthYear': serializer.toJson<int?>(birthYear),
+      'nationality': serializer.toJson<String?>(nationality),
+      'occupation': serializer.toJson<String?>(occupation),
+      'permanentAddress': serializer.toJson<String?>(permanentAddress),
+      'idType': serializer.toJson<String?>(idType),
+      'idNumber': serializer.toJson<String?>(idNumber),
     };
   }
 
@@ -1441,24 +2764,44 @@ class Complainant extends DataClass implements Insertable<Complainant> {
     String? name,
     Value<String?> gender = const Value.absent(),
     Value<int?> age = const Value.absent(),
+    Value<String?> ageText = const Value.absent(),
     Value<String?> address = const Value.absent(),
     Value<String?> mobile = const Value.absent(),
     Value<String?> email = const Value.absent(),
     Value<String?> aadhaarEnc = const Value.absent(),
     Value<String?> panEnc = const Value.absent(),
     Value<String?> passport = const Value.absent(),
+    Value<String?> fatherHusbandName = const Value.absent(),
+    Value<int?> birthYear = const Value.absent(),
+    Value<String?> nationality = const Value.absent(),
+    Value<String?> occupation = const Value.absent(),
+    Value<String?> permanentAddress = const Value.absent(),
+    Value<String?> idType = const Value.absent(),
+    Value<String?> idNumber = const Value.absent(),
   }) => Complainant(
     id: id ?? this.id,
     crimeId: crimeId ?? this.crimeId,
     name: name ?? this.name,
     gender: gender.present ? gender.value : this.gender,
     age: age.present ? age.value : this.age,
+    ageText: ageText.present ? ageText.value : this.ageText,
     address: address.present ? address.value : this.address,
     mobile: mobile.present ? mobile.value : this.mobile,
     email: email.present ? email.value : this.email,
     aadhaarEnc: aadhaarEnc.present ? aadhaarEnc.value : this.aadhaarEnc,
     panEnc: panEnc.present ? panEnc.value : this.panEnc,
     passport: passport.present ? passport.value : this.passport,
+    fatherHusbandName: fatherHusbandName.present
+        ? fatherHusbandName.value
+        : this.fatherHusbandName,
+    birthYear: birthYear.present ? birthYear.value : this.birthYear,
+    nationality: nationality.present ? nationality.value : this.nationality,
+    occupation: occupation.present ? occupation.value : this.occupation,
+    permanentAddress: permanentAddress.present
+        ? permanentAddress.value
+        : this.permanentAddress,
+    idType: idType.present ? idType.value : this.idType,
+    idNumber: idNumber.present ? idNumber.value : this.idNumber,
   );
   Complainant copyWithCompanion(ComplainantsCompanion data) {
     return Complainant(
@@ -1467,6 +2810,7 @@ class Complainant extends DataClass implements Insertable<Complainant> {
       name: data.name.present ? data.name.value : this.name,
       gender: data.gender.present ? data.gender.value : this.gender,
       age: data.age.present ? data.age.value : this.age,
+      ageText: data.ageText.present ? data.ageText.value : this.ageText,
       address: data.address.present ? data.address.value : this.address,
       mobile: data.mobile.present ? data.mobile.value : this.mobile,
       email: data.email.present ? data.email.value : this.email,
@@ -1475,6 +2819,21 @@ class Complainant extends DataClass implements Insertable<Complainant> {
           : this.aadhaarEnc,
       panEnc: data.panEnc.present ? data.panEnc.value : this.panEnc,
       passport: data.passport.present ? data.passport.value : this.passport,
+      fatherHusbandName: data.fatherHusbandName.present
+          ? data.fatherHusbandName.value
+          : this.fatherHusbandName,
+      birthYear: data.birthYear.present ? data.birthYear.value : this.birthYear,
+      nationality: data.nationality.present
+          ? data.nationality.value
+          : this.nationality,
+      occupation: data.occupation.present
+          ? data.occupation.value
+          : this.occupation,
+      permanentAddress: data.permanentAddress.present
+          ? data.permanentAddress.value
+          : this.permanentAddress,
+      idType: data.idType.present ? data.idType.value : this.idType,
+      idNumber: data.idNumber.present ? data.idNumber.value : this.idNumber,
     );
   }
 
@@ -1486,12 +2845,20 @@ class Complainant extends DataClass implements Insertable<Complainant> {
           ..write('name: $name, ')
           ..write('gender: $gender, ')
           ..write('age: $age, ')
+          ..write('ageText: $ageText, ')
           ..write('address: $address, ')
           ..write('mobile: $mobile, ')
           ..write('email: $email, ')
           ..write('aadhaarEnc: $aadhaarEnc, ')
           ..write('panEnc: $panEnc, ')
-          ..write('passport: $passport')
+          ..write('passport: $passport, ')
+          ..write('fatherHusbandName: $fatherHusbandName, ')
+          ..write('birthYear: $birthYear, ')
+          ..write('nationality: $nationality, ')
+          ..write('occupation: $occupation, ')
+          ..write('permanentAddress: $permanentAddress, ')
+          ..write('idType: $idType, ')
+          ..write('idNumber: $idNumber')
           ..write(')'))
         .toString();
   }
@@ -1503,12 +2870,20 @@ class Complainant extends DataClass implements Insertable<Complainant> {
     name,
     gender,
     age,
+    ageText,
     address,
     mobile,
     email,
     aadhaarEnc,
     panEnc,
     passport,
+    fatherHusbandName,
+    birthYear,
+    nationality,
+    occupation,
+    permanentAddress,
+    idType,
+    idNumber,
   );
   @override
   bool operator ==(Object other) =>
@@ -1519,12 +2894,20 @@ class Complainant extends DataClass implements Insertable<Complainant> {
           other.name == this.name &&
           other.gender == this.gender &&
           other.age == this.age &&
+          other.ageText == this.ageText &&
           other.address == this.address &&
           other.mobile == this.mobile &&
           other.email == this.email &&
           other.aadhaarEnc == this.aadhaarEnc &&
           other.panEnc == this.panEnc &&
-          other.passport == this.passport);
+          other.passport == this.passport &&
+          other.fatherHusbandName == this.fatherHusbandName &&
+          other.birthYear == this.birthYear &&
+          other.nationality == this.nationality &&
+          other.occupation == this.occupation &&
+          other.permanentAddress == this.permanentAddress &&
+          other.idType == this.idType &&
+          other.idNumber == this.idNumber);
 }
 
 class ComplainantsCompanion extends UpdateCompanion<Complainant> {
@@ -1533,24 +2916,40 @@ class ComplainantsCompanion extends UpdateCompanion<Complainant> {
   final Value<String> name;
   final Value<String?> gender;
   final Value<int?> age;
+  final Value<String?> ageText;
   final Value<String?> address;
   final Value<String?> mobile;
   final Value<String?> email;
   final Value<String?> aadhaarEnc;
   final Value<String?> panEnc;
   final Value<String?> passport;
+  final Value<String?> fatherHusbandName;
+  final Value<int?> birthYear;
+  final Value<String?> nationality;
+  final Value<String?> occupation;
+  final Value<String?> permanentAddress;
+  final Value<String?> idType;
+  final Value<String?> idNumber;
   const ComplainantsCompanion({
     this.id = const Value.absent(),
     this.crimeId = const Value.absent(),
     this.name = const Value.absent(),
     this.gender = const Value.absent(),
     this.age = const Value.absent(),
+    this.ageText = const Value.absent(),
     this.address = const Value.absent(),
     this.mobile = const Value.absent(),
     this.email = const Value.absent(),
     this.aadhaarEnc = const Value.absent(),
     this.panEnc = const Value.absent(),
     this.passport = const Value.absent(),
+    this.fatherHusbandName = const Value.absent(),
+    this.birthYear = const Value.absent(),
+    this.nationality = const Value.absent(),
+    this.occupation = const Value.absent(),
+    this.permanentAddress = const Value.absent(),
+    this.idType = const Value.absent(),
+    this.idNumber = const Value.absent(),
   });
   ComplainantsCompanion.insert({
     this.id = const Value.absent(),
@@ -1558,12 +2957,20 @@ class ComplainantsCompanion extends UpdateCompanion<Complainant> {
     required String name,
     this.gender = const Value.absent(),
     this.age = const Value.absent(),
+    this.ageText = const Value.absent(),
     this.address = const Value.absent(),
     this.mobile = const Value.absent(),
     this.email = const Value.absent(),
     this.aadhaarEnc = const Value.absent(),
     this.panEnc = const Value.absent(),
     this.passport = const Value.absent(),
+    this.fatherHusbandName = const Value.absent(),
+    this.birthYear = const Value.absent(),
+    this.nationality = const Value.absent(),
+    this.occupation = const Value.absent(),
+    this.permanentAddress = const Value.absent(),
+    this.idType = const Value.absent(),
+    this.idNumber = const Value.absent(),
   }) : crimeId = Value(crimeId),
        name = Value(name);
   static Insertable<Complainant> custom({
@@ -1572,12 +2979,20 @@ class ComplainantsCompanion extends UpdateCompanion<Complainant> {
     Expression<String>? name,
     Expression<String>? gender,
     Expression<int>? age,
+    Expression<String>? ageText,
     Expression<String>? address,
     Expression<String>? mobile,
     Expression<String>? email,
     Expression<String>? aadhaarEnc,
     Expression<String>? panEnc,
     Expression<String>? passport,
+    Expression<String>? fatherHusbandName,
+    Expression<int>? birthYear,
+    Expression<String>? nationality,
+    Expression<String>? occupation,
+    Expression<String>? permanentAddress,
+    Expression<String>? idType,
+    Expression<String>? idNumber,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1585,12 +3000,20 @@ class ComplainantsCompanion extends UpdateCompanion<Complainant> {
       if (name != null) 'name': name,
       if (gender != null) 'gender': gender,
       if (age != null) 'age': age,
+      if (ageText != null) 'age_text': ageText,
       if (address != null) 'address': address,
       if (mobile != null) 'mobile': mobile,
       if (email != null) 'email': email,
       if (aadhaarEnc != null) 'aadhaar_enc': aadhaarEnc,
       if (panEnc != null) 'pan_enc': panEnc,
       if (passport != null) 'passport': passport,
+      if (fatherHusbandName != null) 'father_husband_name': fatherHusbandName,
+      if (birthYear != null) 'birth_year': birthYear,
+      if (nationality != null) 'nationality': nationality,
+      if (occupation != null) 'occupation': occupation,
+      if (permanentAddress != null) 'permanent_address': permanentAddress,
+      if (idType != null) 'id_type': idType,
+      if (idNumber != null) 'id_number': idNumber,
     });
   }
 
@@ -1600,12 +3023,20 @@ class ComplainantsCompanion extends UpdateCompanion<Complainant> {
     Value<String>? name,
     Value<String?>? gender,
     Value<int?>? age,
+    Value<String?>? ageText,
     Value<String?>? address,
     Value<String?>? mobile,
     Value<String?>? email,
     Value<String?>? aadhaarEnc,
     Value<String?>? panEnc,
     Value<String?>? passport,
+    Value<String?>? fatherHusbandName,
+    Value<int?>? birthYear,
+    Value<String?>? nationality,
+    Value<String?>? occupation,
+    Value<String?>? permanentAddress,
+    Value<String?>? idType,
+    Value<String?>? idNumber,
   }) {
     return ComplainantsCompanion(
       id: id ?? this.id,
@@ -1613,12 +3044,20 @@ class ComplainantsCompanion extends UpdateCompanion<Complainant> {
       name: name ?? this.name,
       gender: gender ?? this.gender,
       age: age ?? this.age,
+      ageText: ageText ?? this.ageText,
       address: address ?? this.address,
       mobile: mobile ?? this.mobile,
       email: email ?? this.email,
       aadhaarEnc: aadhaarEnc ?? this.aadhaarEnc,
       panEnc: panEnc ?? this.panEnc,
       passport: passport ?? this.passport,
+      fatherHusbandName: fatherHusbandName ?? this.fatherHusbandName,
+      birthYear: birthYear ?? this.birthYear,
+      nationality: nationality ?? this.nationality,
+      occupation: occupation ?? this.occupation,
+      permanentAddress: permanentAddress ?? this.permanentAddress,
+      idType: idType ?? this.idType,
+      idNumber: idNumber ?? this.idNumber,
     );
   }
 
@@ -1640,6 +3079,9 @@ class ComplainantsCompanion extends UpdateCompanion<Complainant> {
     if (age.present) {
       map['age'] = Variable<int>(age.value);
     }
+    if (ageText.present) {
+      map['age_text'] = Variable<String>(ageText.value);
+    }
     if (address.present) {
       map['address'] = Variable<String>(address.value);
     }
@@ -1658,6 +3100,27 @@ class ComplainantsCompanion extends UpdateCompanion<Complainant> {
     if (passport.present) {
       map['passport'] = Variable<String>(passport.value);
     }
+    if (fatherHusbandName.present) {
+      map['father_husband_name'] = Variable<String>(fatherHusbandName.value);
+    }
+    if (birthYear.present) {
+      map['birth_year'] = Variable<int>(birthYear.value);
+    }
+    if (nationality.present) {
+      map['nationality'] = Variable<String>(nationality.value);
+    }
+    if (occupation.present) {
+      map['occupation'] = Variable<String>(occupation.value);
+    }
+    if (permanentAddress.present) {
+      map['permanent_address'] = Variable<String>(permanentAddress.value);
+    }
+    if (idType.present) {
+      map['id_type'] = Variable<String>(idType.value);
+    }
+    if (idNumber.present) {
+      map['id_number'] = Variable<String>(idNumber.value);
+    }
     return map;
   }
 
@@ -1669,12 +3132,20 @@ class ComplainantsCompanion extends UpdateCompanion<Complainant> {
           ..write('name: $name, ')
           ..write('gender: $gender, ')
           ..write('age: $age, ')
+          ..write('ageText: $ageText, ')
           ..write('address: $address, ')
           ..write('mobile: $mobile, ')
           ..write('email: $email, ')
           ..write('aadhaarEnc: $aadhaarEnc, ')
           ..write('panEnc: $panEnc, ')
-          ..write('passport: $passport')
+          ..write('passport: $passport, ')
+          ..write('fatherHusbandName: $fatherHusbandName, ')
+          ..write('birthYear: $birthYear, ')
+          ..write('nationality: $nationality, ')
+          ..write('occupation: $occupation, ')
+          ..write('permanentAddress: $permanentAddress, ')
+          ..write('idType: $idType, ')
+          ..write('idNumber: $idNumber')
           ..write(')'))
         .toString();
   }
@@ -1737,6 +3208,17 @@ class $AccusedTable extends Accused with TableInfo<$AccusedTable, AccusedData> {
     aliasedName,
     true,
     type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _ageTextMeta = const VerificationMeta(
+    'ageText',
+  );
+  @override
+  late final GeneratedColumn<String> ageText = GeneratedColumn<String>(
+    'age_text',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
   static const VerificationMeta _addressMeta = const VerificationMeta(
@@ -1843,6 +3325,37 @@ class $AccusedTable extends Accused with TableInfo<$AccusedTable, AccusedData> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _aliasMeta = const VerificationMeta('alias');
+  @override
+  late final GeneratedColumn<String> alias = GeneratedColumn<String>(
+    'alias',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _relativeNameMeta = const VerificationMeta(
+    'relativeName',
+  );
+  @override
+  late final GeneratedColumn<String> relativeName = GeneratedColumn<String>(
+    'relative_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _physicalJsonMeta = const VerificationMeta(
+    'physicalJson',
+  );
+  @override
+  late final GeneratedColumn<String> physicalJson = GeneratedColumn<String>(
+    'physical_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1850,6 +3363,7 @@ class $AccusedTable extends Accused with TableInfo<$AccusedTable, AccusedData> {
     name,
     gender,
     age,
+    ageText,
     address,
     mobile,
     email,
@@ -1860,6 +3374,9 @@ class $AccusedTable extends Accused with TableInfo<$AccusedTable, AccusedData> {
     arrestDate,
     arrestTime,
     photoPath,
+    alias,
+    relativeName,
+    physicalJson,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1902,6 +3419,12 @@ class $AccusedTable extends Accused with TableInfo<$AccusedTable, AccusedData> {
       context.handle(
         _ageMeta,
         age.isAcceptableOrUnknown(data['age']!, _ageMeta),
+      );
+    }
+    if (data.containsKey('age_text')) {
+      context.handle(
+        _ageTextMeta,
+        ageText.isAcceptableOrUnknown(data['age_text']!, _ageTextMeta),
       );
     }
     if (data.containsKey('address')) {
@@ -1967,6 +3490,30 @@ class $AccusedTable extends Accused with TableInfo<$AccusedTable, AccusedData> {
         photoPath.isAcceptableOrUnknown(data['photo_path']!, _photoPathMeta),
       );
     }
+    if (data.containsKey('alias')) {
+      context.handle(
+        _aliasMeta,
+        alias.isAcceptableOrUnknown(data['alias']!, _aliasMeta),
+      );
+    }
+    if (data.containsKey('relative_name')) {
+      context.handle(
+        _relativeNameMeta,
+        relativeName.isAcceptableOrUnknown(
+          data['relative_name']!,
+          _relativeNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('physical_json')) {
+      context.handle(
+        _physicalJsonMeta,
+        physicalJson.isAcceptableOrUnknown(
+          data['physical_json']!,
+          _physicalJsonMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1995,6 +3542,10 @@ class $AccusedTable extends Accused with TableInfo<$AccusedTable, AccusedData> {
       age: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}age'],
+      ),
+      ageText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}age_text'],
       ),
       address: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -2036,6 +3587,18 @@ class $AccusedTable extends Accused with TableInfo<$AccusedTable, AccusedData> {
         DriftSqlType.string,
         data['${effectivePrefix}photo_path'],
       ),
+      alias: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}alias'],
+      ),
+      relativeName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}relative_name'],
+      ),
+      physicalJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}physical_json'],
+      ),
     );
   }
 
@@ -2051,6 +3614,7 @@ class AccusedData extends DataClass implements Insertable<AccusedData> {
   final String name;
   final String? gender;
   final int? age;
+  final String? ageText;
   final String? address;
   final String? mobile;
   final String? email;
@@ -2061,12 +3625,16 @@ class AccusedData extends DataClass implements Insertable<AccusedData> {
   final DateTime? arrestDate;
   final String? arrestTime;
   final String? photoPath;
+  final String? alias;
+  final String? relativeName;
+  final String? physicalJson;
   const AccusedData({
     required this.id,
     required this.crimeId,
     required this.name,
     this.gender,
     this.age,
+    this.ageText,
     this.address,
     this.mobile,
     this.email,
@@ -2077,6 +3645,9 @@ class AccusedData extends DataClass implements Insertable<AccusedData> {
     this.arrestDate,
     this.arrestTime,
     this.photoPath,
+    this.alias,
+    this.relativeName,
+    this.physicalJson,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2089,6 +3660,9 @@ class AccusedData extends DataClass implements Insertable<AccusedData> {
     }
     if (!nullToAbsent || age != null) {
       map['age'] = Variable<int>(age);
+    }
+    if (!nullToAbsent || ageText != null) {
+      map['age_text'] = Variable<String>(ageText);
     }
     if (!nullToAbsent || address != null) {
       map['address'] = Variable<String>(address);
@@ -2120,6 +3694,15 @@ class AccusedData extends DataClass implements Insertable<AccusedData> {
     if (!nullToAbsent || photoPath != null) {
       map['photo_path'] = Variable<String>(photoPath);
     }
+    if (!nullToAbsent || alias != null) {
+      map['alias'] = Variable<String>(alias);
+    }
+    if (!nullToAbsent || relativeName != null) {
+      map['relative_name'] = Variable<String>(relativeName);
+    }
+    if (!nullToAbsent || physicalJson != null) {
+      map['physical_json'] = Variable<String>(physicalJson);
+    }
     return map;
   }
 
@@ -2132,6 +3715,9 @@ class AccusedData extends DataClass implements Insertable<AccusedData> {
           ? const Value.absent()
           : Value(gender),
       age: age == null && nullToAbsent ? const Value.absent() : Value(age),
+      ageText: ageText == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ageText),
       address: address == null && nullToAbsent
           ? const Value.absent()
           : Value(address),
@@ -2162,6 +3748,15 @@ class AccusedData extends DataClass implements Insertable<AccusedData> {
       photoPath: photoPath == null && nullToAbsent
           ? const Value.absent()
           : Value(photoPath),
+      alias: alias == null && nullToAbsent
+          ? const Value.absent()
+          : Value(alias),
+      relativeName: relativeName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(relativeName),
+      physicalJson: physicalJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(physicalJson),
     );
   }
 
@@ -2176,6 +3771,7 @@ class AccusedData extends DataClass implements Insertable<AccusedData> {
       name: serializer.fromJson<String>(json['name']),
       gender: serializer.fromJson<String?>(json['gender']),
       age: serializer.fromJson<int?>(json['age']),
+      ageText: serializer.fromJson<String?>(json['ageText']),
       address: serializer.fromJson<String?>(json['address']),
       mobile: serializer.fromJson<String?>(json['mobile']),
       email: serializer.fromJson<String?>(json['email']),
@@ -2186,6 +3782,9 @@ class AccusedData extends DataClass implements Insertable<AccusedData> {
       arrestDate: serializer.fromJson<DateTime?>(json['arrestDate']),
       arrestTime: serializer.fromJson<String?>(json['arrestTime']),
       photoPath: serializer.fromJson<String?>(json['photoPath']),
+      alias: serializer.fromJson<String?>(json['alias']),
+      relativeName: serializer.fromJson<String?>(json['relativeName']),
+      physicalJson: serializer.fromJson<String?>(json['physicalJson']),
     );
   }
   @override
@@ -2197,6 +3796,7 @@ class AccusedData extends DataClass implements Insertable<AccusedData> {
       'name': serializer.toJson<String>(name),
       'gender': serializer.toJson<String?>(gender),
       'age': serializer.toJson<int?>(age),
+      'ageText': serializer.toJson<String?>(ageText),
       'address': serializer.toJson<String?>(address),
       'mobile': serializer.toJson<String?>(mobile),
       'email': serializer.toJson<String?>(email),
@@ -2207,6 +3807,9 @@ class AccusedData extends DataClass implements Insertable<AccusedData> {
       'arrestDate': serializer.toJson<DateTime?>(arrestDate),
       'arrestTime': serializer.toJson<String?>(arrestTime),
       'photoPath': serializer.toJson<String?>(photoPath),
+      'alias': serializer.toJson<String?>(alias),
+      'relativeName': serializer.toJson<String?>(relativeName),
+      'physicalJson': serializer.toJson<String?>(physicalJson),
     };
   }
 
@@ -2216,6 +3819,7 @@ class AccusedData extends DataClass implements Insertable<AccusedData> {
     String? name,
     Value<String?> gender = const Value.absent(),
     Value<int?> age = const Value.absent(),
+    Value<String?> ageText = const Value.absent(),
     Value<String?> address = const Value.absent(),
     Value<String?> mobile = const Value.absent(),
     Value<String?> email = const Value.absent(),
@@ -2226,12 +3830,16 @@ class AccusedData extends DataClass implements Insertable<AccusedData> {
     Value<DateTime?> arrestDate = const Value.absent(),
     Value<String?> arrestTime = const Value.absent(),
     Value<String?> photoPath = const Value.absent(),
+    Value<String?> alias = const Value.absent(),
+    Value<String?> relativeName = const Value.absent(),
+    Value<String?> physicalJson = const Value.absent(),
   }) => AccusedData(
     id: id ?? this.id,
     crimeId: crimeId ?? this.crimeId,
     name: name ?? this.name,
     gender: gender.present ? gender.value : this.gender,
     age: age.present ? age.value : this.age,
+    ageText: ageText.present ? ageText.value : this.ageText,
     address: address.present ? address.value : this.address,
     mobile: mobile.present ? mobile.value : this.mobile,
     email: email.present ? email.value : this.email,
@@ -2242,6 +3850,9 @@ class AccusedData extends DataClass implements Insertable<AccusedData> {
     arrestDate: arrestDate.present ? arrestDate.value : this.arrestDate,
     arrestTime: arrestTime.present ? arrestTime.value : this.arrestTime,
     photoPath: photoPath.present ? photoPath.value : this.photoPath,
+    alias: alias.present ? alias.value : this.alias,
+    relativeName: relativeName.present ? relativeName.value : this.relativeName,
+    physicalJson: physicalJson.present ? physicalJson.value : this.physicalJson,
   );
   AccusedData copyWithCompanion(AccusedCompanion data) {
     return AccusedData(
@@ -2250,6 +3861,7 @@ class AccusedData extends DataClass implements Insertable<AccusedData> {
       name: data.name.present ? data.name.value : this.name,
       gender: data.gender.present ? data.gender.value : this.gender,
       age: data.age.present ? data.age.value : this.age,
+      ageText: data.ageText.present ? data.ageText.value : this.ageText,
       address: data.address.present ? data.address.value : this.address,
       mobile: data.mobile.present ? data.mobile.value : this.mobile,
       email: data.email.present ? data.email.value : this.email,
@@ -2268,6 +3880,13 @@ class AccusedData extends DataClass implements Insertable<AccusedData> {
           ? data.arrestTime.value
           : this.arrestTime,
       photoPath: data.photoPath.present ? data.photoPath.value : this.photoPath,
+      alias: data.alias.present ? data.alias.value : this.alias,
+      relativeName: data.relativeName.present
+          ? data.relativeName.value
+          : this.relativeName,
+      physicalJson: data.physicalJson.present
+          ? data.physicalJson.value
+          : this.physicalJson,
     );
   }
 
@@ -2279,6 +3898,7 @@ class AccusedData extends DataClass implements Insertable<AccusedData> {
           ..write('name: $name, ')
           ..write('gender: $gender, ')
           ..write('age: $age, ')
+          ..write('ageText: $ageText, ')
           ..write('address: $address, ')
           ..write('mobile: $mobile, ')
           ..write('email: $email, ')
@@ -2288,7 +3908,10 @@ class AccusedData extends DataClass implements Insertable<AccusedData> {
           ..write('arrestStatus: $arrestStatus, ')
           ..write('arrestDate: $arrestDate, ')
           ..write('arrestTime: $arrestTime, ')
-          ..write('photoPath: $photoPath')
+          ..write('photoPath: $photoPath, ')
+          ..write('alias: $alias, ')
+          ..write('relativeName: $relativeName, ')
+          ..write('physicalJson: $physicalJson')
           ..write(')'))
         .toString();
   }
@@ -2300,6 +3923,7 @@ class AccusedData extends DataClass implements Insertable<AccusedData> {
     name,
     gender,
     age,
+    ageText,
     address,
     mobile,
     email,
@@ -2310,6 +3934,9 @@ class AccusedData extends DataClass implements Insertable<AccusedData> {
     arrestDate,
     arrestTime,
     photoPath,
+    alias,
+    relativeName,
+    physicalJson,
   );
   @override
   bool operator ==(Object other) =>
@@ -2320,6 +3947,7 @@ class AccusedData extends DataClass implements Insertable<AccusedData> {
           other.name == this.name &&
           other.gender == this.gender &&
           other.age == this.age &&
+          other.ageText == this.ageText &&
           other.address == this.address &&
           other.mobile == this.mobile &&
           other.email == this.email &&
@@ -2329,7 +3957,10 @@ class AccusedData extends DataClass implements Insertable<AccusedData> {
           other.arrestStatus == this.arrestStatus &&
           other.arrestDate == this.arrestDate &&
           other.arrestTime == this.arrestTime &&
-          other.photoPath == this.photoPath);
+          other.photoPath == this.photoPath &&
+          other.alias == this.alias &&
+          other.relativeName == this.relativeName &&
+          other.physicalJson == this.physicalJson);
 }
 
 class AccusedCompanion extends UpdateCompanion<AccusedData> {
@@ -2338,6 +3969,7 @@ class AccusedCompanion extends UpdateCompanion<AccusedData> {
   final Value<String> name;
   final Value<String?> gender;
   final Value<int?> age;
+  final Value<String?> ageText;
   final Value<String?> address;
   final Value<String?> mobile;
   final Value<String?> email;
@@ -2348,12 +3980,16 @@ class AccusedCompanion extends UpdateCompanion<AccusedData> {
   final Value<DateTime?> arrestDate;
   final Value<String?> arrestTime;
   final Value<String?> photoPath;
+  final Value<String?> alias;
+  final Value<String?> relativeName;
+  final Value<String?> physicalJson;
   const AccusedCompanion({
     this.id = const Value.absent(),
     this.crimeId = const Value.absent(),
     this.name = const Value.absent(),
     this.gender = const Value.absent(),
     this.age = const Value.absent(),
+    this.ageText = const Value.absent(),
     this.address = const Value.absent(),
     this.mobile = const Value.absent(),
     this.email = const Value.absent(),
@@ -2364,6 +4000,9 @@ class AccusedCompanion extends UpdateCompanion<AccusedData> {
     this.arrestDate = const Value.absent(),
     this.arrestTime = const Value.absent(),
     this.photoPath = const Value.absent(),
+    this.alias = const Value.absent(),
+    this.relativeName = const Value.absent(),
+    this.physicalJson = const Value.absent(),
   });
   AccusedCompanion.insert({
     this.id = const Value.absent(),
@@ -2371,6 +4010,7 @@ class AccusedCompanion extends UpdateCompanion<AccusedData> {
     required String name,
     this.gender = const Value.absent(),
     this.age = const Value.absent(),
+    this.ageText = const Value.absent(),
     this.address = const Value.absent(),
     this.mobile = const Value.absent(),
     this.email = const Value.absent(),
@@ -2381,6 +4021,9 @@ class AccusedCompanion extends UpdateCompanion<AccusedData> {
     this.arrestDate = const Value.absent(),
     this.arrestTime = const Value.absent(),
     this.photoPath = const Value.absent(),
+    this.alias = const Value.absent(),
+    this.relativeName = const Value.absent(),
+    this.physicalJson = const Value.absent(),
   }) : crimeId = Value(crimeId),
        name = Value(name);
   static Insertable<AccusedData> custom({
@@ -2389,6 +4032,7 @@ class AccusedCompanion extends UpdateCompanion<AccusedData> {
     Expression<String>? name,
     Expression<String>? gender,
     Expression<int>? age,
+    Expression<String>? ageText,
     Expression<String>? address,
     Expression<String>? mobile,
     Expression<String>? email,
@@ -2399,6 +4043,9 @@ class AccusedCompanion extends UpdateCompanion<AccusedData> {
     Expression<DateTime>? arrestDate,
     Expression<String>? arrestTime,
     Expression<String>? photoPath,
+    Expression<String>? alias,
+    Expression<String>? relativeName,
+    Expression<String>? physicalJson,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2406,6 +4053,7 @@ class AccusedCompanion extends UpdateCompanion<AccusedData> {
       if (name != null) 'name': name,
       if (gender != null) 'gender': gender,
       if (age != null) 'age': age,
+      if (ageText != null) 'age_text': ageText,
       if (address != null) 'address': address,
       if (mobile != null) 'mobile': mobile,
       if (email != null) 'email': email,
@@ -2416,6 +4064,9 @@ class AccusedCompanion extends UpdateCompanion<AccusedData> {
       if (arrestDate != null) 'arrest_date': arrestDate,
       if (arrestTime != null) 'arrest_time': arrestTime,
       if (photoPath != null) 'photo_path': photoPath,
+      if (alias != null) 'alias': alias,
+      if (relativeName != null) 'relative_name': relativeName,
+      if (physicalJson != null) 'physical_json': physicalJson,
     });
   }
 
@@ -2425,6 +4076,7 @@ class AccusedCompanion extends UpdateCompanion<AccusedData> {
     Value<String>? name,
     Value<String?>? gender,
     Value<int?>? age,
+    Value<String?>? ageText,
     Value<String?>? address,
     Value<String?>? mobile,
     Value<String?>? email,
@@ -2435,6 +4087,9 @@ class AccusedCompanion extends UpdateCompanion<AccusedData> {
     Value<DateTime?>? arrestDate,
     Value<String?>? arrestTime,
     Value<String?>? photoPath,
+    Value<String?>? alias,
+    Value<String?>? relativeName,
+    Value<String?>? physicalJson,
   }) {
     return AccusedCompanion(
       id: id ?? this.id,
@@ -2442,6 +4097,7 @@ class AccusedCompanion extends UpdateCompanion<AccusedData> {
       name: name ?? this.name,
       gender: gender ?? this.gender,
       age: age ?? this.age,
+      ageText: ageText ?? this.ageText,
       address: address ?? this.address,
       mobile: mobile ?? this.mobile,
       email: email ?? this.email,
@@ -2452,6 +4108,9 @@ class AccusedCompanion extends UpdateCompanion<AccusedData> {
       arrestDate: arrestDate ?? this.arrestDate,
       arrestTime: arrestTime ?? this.arrestTime,
       photoPath: photoPath ?? this.photoPath,
+      alias: alias ?? this.alias,
+      relativeName: relativeName ?? this.relativeName,
+      physicalJson: physicalJson ?? this.physicalJson,
     );
   }
 
@@ -2472,6 +4131,9 @@ class AccusedCompanion extends UpdateCompanion<AccusedData> {
     }
     if (age.present) {
       map['age'] = Variable<int>(age.value);
+    }
+    if (ageText.present) {
+      map['age_text'] = Variable<String>(ageText.value);
     }
     if (address.present) {
       map['address'] = Variable<String>(address.value);
@@ -2503,6 +4165,15 @@ class AccusedCompanion extends UpdateCompanion<AccusedData> {
     if (photoPath.present) {
       map['photo_path'] = Variable<String>(photoPath.value);
     }
+    if (alias.present) {
+      map['alias'] = Variable<String>(alias.value);
+    }
+    if (relativeName.present) {
+      map['relative_name'] = Variable<String>(relativeName.value);
+    }
+    if (physicalJson.present) {
+      map['physical_json'] = Variable<String>(physicalJson.value);
+    }
     return map;
   }
 
@@ -2514,6 +4185,7 @@ class AccusedCompanion extends UpdateCompanion<AccusedData> {
           ..write('name: $name, ')
           ..write('gender: $gender, ')
           ..write('age: $age, ')
+          ..write('ageText: $ageText, ')
           ..write('address: $address, ')
           ..write('mobile: $mobile, ')
           ..write('email: $email, ')
@@ -2523,7 +4195,10 @@ class AccusedCompanion extends UpdateCompanion<AccusedData> {
           ..write('arrestStatus: $arrestStatus, ')
           ..write('arrestDate: $arrestDate, ')
           ..write('arrestTime: $arrestTime, ')
-          ..write('photoPath: $photoPath')
+          ..write('photoPath: $photoPath, ')
+          ..write('alias: $alias, ')
+          ..write('relativeName: $relativeName, ')
+          ..write('physicalJson: $physicalJson')
           ..write(')'))
         .toString();
   }
@@ -2562,6 +4237,17 @@ class $StolenPropertyTable extends StolenProperty
       'REFERENCES crimes (id) ON DELETE CASCADE',
     ),
   );
+  static const VerificationMeta _categoryMeta = const VerificationMeta(
+    'category',
+  );
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+    'category',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _typeMeta = const VerificationMeta('type');
   @override
   late final GeneratedColumn<String> type = GeneratedColumn<String>(
@@ -2592,7 +4278,14 @@ class $StolenPropertyTable extends StolenProperty
     requiredDuringInsert: false,
   );
   @override
-  List<GeneratedColumn> get $columns => [id, crimeId, type, description, value];
+  List<GeneratedColumn> get $columns => [
+    id,
+    crimeId,
+    category,
+    type,
+    description,
+    value,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -2615,6 +4308,12 @@ class $StolenPropertyTable extends StolenProperty
       );
     } else if (isInserting) {
       context.missing(_crimeIdMeta);
+    }
+    if (data.containsKey('category')) {
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
     }
     if (data.containsKey('type')) {
       context.handle(
@@ -2654,6 +4353,10 @@ class $StolenPropertyTable extends StolenProperty
         DriftSqlType.int,
         data['${effectivePrefix}crime_id'],
       )!,
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category'],
+      ),
       type: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}type'],
@@ -2679,12 +4382,14 @@ class StolenPropertyData extends DataClass
     implements Insertable<StolenPropertyData> {
   final int id;
   final int crimeId;
+  final String? category;
   final String? type;
   final String? description;
   final double? value;
   const StolenPropertyData({
     required this.id,
     required this.crimeId,
+    this.category,
     this.type,
     this.description,
     this.value,
@@ -2694,6 +4399,9 @@ class StolenPropertyData extends DataClass
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['crime_id'] = Variable<int>(crimeId);
+    if (!nullToAbsent || category != null) {
+      map['category'] = Variable<String>(category);
+    }
     if (!nullToAbsent || type != null) {
       map['type'] = Variable<String>(type);
     }
@@ -2710,6 +4418,9 @@ class StolenPropertyData extends DataClass
     return StolenPropertyCompanion(
       id: Value(id),
       crimeId: Value(crimeId),
+      category: category == null && nullToAbsent
+          ? const Value.absent()
+          : Value(category),
       type: type == null && nullToAbsent ? const Value.absent() : Value(type),
       description: description == null && nullToAbsent
           ? const Value.absent()
@@ -2728,6 +4439,7 @@ class StolenPropertyData extends DataClass
     return StolenPropertyData(
       id: serializer.fromJson<int>(json['id']),
       crimeId: serializer.fromJson<int>(json['crimeId']),
+      category: serializer.fromJson<String?>(json['category']),
       type: serializer.fromJson<String?>(json['type']),
       description: serializer.fromJson<String?>(json['description']),
       value: serializer.fromJson<double?>(json['value']),
@@ -2739,6 +4451,7 @@ class StolenPropertyData extends DataClass
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'crimeId': serializer.toJson<int>(crimeId),
+      'category': serializer.toJson<String?>(category),
       'type': serializer.toJson<String?>(type),
       'description': serializer.toJson<String?>(description),
       'value': serializer.toJson<double?>(value),
@@ -2748,12 +4461,14 @@ class StolenPropertyData extends DataClass
   StolenPropertyData copyWith({
     int? id,
     int? crimeId,
+    Value<String?> category = const Value.absent(),
     Value<String?> type = const Value.absent(),
     Value<String?> description = const Value.absent(),
     Value<double?> value = const Value.absent(),
   }) => StolenPropertyData(
     id: id ?? this.id,
     crimeId: crimeId ?? this.crimeId,
+    category: category.present ? category.value : this.category,
     type: type.present ? type.value : this.type,
     description: description.present ? description.value : this.description,
     value: value.present ? value.value : this.value,
@@ -2762,6 +4477,7 @@ class StolenPropertyData extends DataClass
     return StolenPropertyData(
       id: data.id.present ? data.id.value : this.id,
       crimeId: data.crimeId.present ? data.crimeId.value : this.crimeId,
+      category: data.category.present ? data.category.value : this.category,
       type: data.type.present ? data.type.value : this.type,
       description: data.description.present
           ? data.description.value
@@ -2775,6 +4491,7 @@ class StolenPropertyData extends DataClass
     return (StringBuffer('StolenPropertyData(')
           ..write('id: $id, ')
           ..write('crimeId: $crimeId, ')
+          ..write('category: $category, ')
           ..write('type: $type, ')
           ..write('description: $description, ')
           ..write('value: $value')
@@ -2783,13 +4500,15 @@ class StolenPropertyData extends DataClass
   }
 
   @override
-  int get hashCode => Object.hash(id, crimeId, type, description, value);
+  int get hashCode =>
+      Object.hash(id, crimeId, category, type, description, value);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is StolenPropertyData &&
           other.id == this.id &&
           other.crimeId == this.crimeId &&
+          other.category == this.category &&
           other.type == this.type &&
           other.description == this.description &&
           other.value == this.value);
@@ -2798,12 +4517,14 @@ class StolenPropertyData extends DataClass
 class StolenPropertyCompanion extends UpdateCompanion<StolenPropertyData> {
   final Value<int> id;
   final Value<int> crimeId;
+  final Value<String?> category;
   final Value<String?> type;
   final Value<String?> description;
   final Value<double?> value;
   const StolenPropertyCompanion({
     this.id = const Value.absent(),
     this.crimeId = const Value.absent(),
+    this.category = const Value.absent(),
     this.type = const Value.absent(),
     this.description = const Value.absent(),
     this.value = const Value.absent(),
@@ -2811,6 +4532,7 @@ class StolenPropertyCompanion extends UpdateCompanion<StolenPropertyData> {
   StolenPropertyCompanion.insert({
     this.id = const Value.absent(),
     required int crimeId,
+    this.category = const Value.absent(),
     this.type = const Value.absent(),
     this.description = const Value.absent(),
     this.value = const Value.absent(),
@@ -2818,6 +4540,7 @@ class StolenPropertyCompanion extends UpdateCompanion<StolenPropertyData> {
   static Insertable<StolenPropertyData> custom({
     Expression<int>? id,
     Expression<int>? crimeId,
+    Expression<String>? category,
     Expression<String>? type,
     Expression<String>? description,
     Expression<double>? value,
@@ -2825,6 +4548,7 @@ class StolenPropertyCompanion extends UpdateCompanion<StolenPropertyData> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (crimeId != null) 'crime_id': crimeId,
+      if (category != null) 'category': category,
       if (type != null) 'type': type,
       if (description != null) 'description': description,
       if (value != null) 'value': value,
@@ -2834,6 +4558,7 @@ class StolenPropertyCompanion extends UpdateCompanion<StolenPropertyData> {
   StolenPropertyCompanion copyWith({
     Value<int>? id,
     Value<int>? crimeId,
+    Value<String?>? category,
     Value<String?>? type,
     Value<String?>? description,
     Value<double?>? value,
@@ -2841,6 +4566,7 @@ class StolenPropertyCompanion extends UpdateCompanion<StolenPropertyData> {
     return StolenPropertyCompanion(
       id: id ?? this.id,
       crimeId: crimeId ?? this.crimeId,
+      category: category ?? this.category,
       type: type ?? this.type,
       description: description ?? this.description,
       value: value ?? this.value,
@@ -2855,6 +4581,9 @@ class StolenPropertyCompanion extends UpdateCompanion<StolenPropertyData> {
     }
     if (crimeId.present) {
       map['crime_id'] = Variable<int>(crimeId.value);
+    }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
     }
     if (type.present) {
       map['type'] = Variable<String>(type.value);
@@ -2873,6 +4602,7 @@ class StolenPropertyCompanion extends UpdateCompanion<StolenPropertyData> {
     return (StringBuffer('StolenPropertyCompanion(')
           ..write('id: $id, ')
           ..write('crimeId: $crimeId, ')
+          ..write('category: $category, ')
           ..write('type: $type, ')
           ..write('description: $description, ')
           ..write('value: $value')
@@ -3305,6 +5035,17 @@ class $InvestigationTable extends Investigation
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _officerDesignationMeta =
+      const VerificationMeta('officerDesignation');
+  @override
+  late final GeneratedColumn<String> officerDesignation =
+      GeneratedColumn<String>(
+        'officer_designation',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _officerMobileMeta = const VerificationMeta(
     'officerMobile',
   );
@@ -3372,18 +5113,93 @@ class $InvestigationTable extends Investigation
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _registeringOfficerNameMeta =
+      const VerificationMeta('registeringOfficerName');
+  @override
+  late final GeneratedColumn<String> registeringOfficerName =
+      GeneratedColumn<String>(
+        'registering_officer_name',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _registeringOfficerRankMeta =
+      const VerificationMeta('registeringOfficerRank');
+  @override
+  late final GeneratedColumn<String> registeringOfficerRank =
+      GeneratedColumn<String>(
+        'registering_officer_rank',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _registeringOfficerNoMeta =
+      const VerificationMeta('registeringOfficerNo');
+  @override
+  late final GeneratedColumn<String> registeringOfficerNo =
+      GeneratedColumn<String>(
+        'registering_officer_no',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _actionTakenMeta = const VerificationMeta(
+    'actionTaken',
+  );
+  @override
+  late final GeneratedColumn<String> actionTaken = GeneratedColumn<String>(
+    'action_taken',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _courtDispatchDateMeta = const VerificationMeta(
+    'courtDispatchDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> courtDispatchDate =
+      GeneratedColumn<DateTime>(
+        'court_dispatch_date',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _courtDispatchTimeMeta = const VerificationMeta(
+    'courtDispatchTime',
+  );
+  @override
+  late final GeneratedColumn<String> courtDispatchTime =
+      GeneratedColumn<String>(
+        'court_dispatch_time',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   @override
   List<GeneratedColumn> get $columns => [
     id,
     crimeId,
     officerName,
     officerId,
+    officerDesignation,
     officerMobile,
     filedBy,
     preventiveAction,
     preventiveNo,
     preventiveDate,
     wantedAccused,
+    registeringOfficerName,
+    registeringOfficerRank,
+    registeringOfficerNo,
+    actionTaken,
+    courtDispatchDate,
+    courtDispatchTime,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3421,6 +5237,15 @@ class $InvestigationTable extends Investigation
       context.handle(
         _officerIdMeta,
         officerId.isAcceptableOrUnknown(data['officer_id']!, _officerIdMeta),
+      );
+    }
+    if (data.containsKey('officer_designation')) {
+      context.handle(
+        _officerDesignationMeta,
+        officerDesignation.isAcceptableOrUnknown(
+          data['officer_designation']!,
+          _officerDesignationMeta,
+        ),
       );
     }
     if (data.containsKey('officer_mobile')) {
@@ -3474,6 +5299,60 @@ class $InvestigationTable extends Investigation
         ),
       );
     }
+    if (data.containsKey('registering_officer_name')) {
+      context.handle(
+        _registeringOfficerNameMeta,
+        registeringOfficerName.isAcceptableOrUnknown(
+          data['registering_officer_name']!,
+          _registeringOfficerNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('registering_officer_rank')) {
+      context.handle(
+        _registeringOfficerRankMeta,
+        registeringOfficerRank.isAcceptableOrUnknown(
+          data['registering_officer_rank']!,
+          _registeringOfficerRankMeta,
+        ),
+      );
+    }
+    if (data.containsKey('registering_officer_no')) {
+      context.handle(
+        _registeringOfficerNoMeta,
+        registeringOfficerNo.isAcceptableOrUnknown(
+          data['registering_officer_no']!,
+          _registeringOfficerNoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('action_taken')) {
+      context.handle(
+        _actionTakenMeta,
+        actionTaken.isAcceptableOrUnknown(
+          data['action_taken']!,
+          _actionTakenMeta,
+        ),
+      );
+    }
+    if (data.containsKey('court_dispatch_date')) {
+      context.handle(
+        _courtDispatchDateMeta,
+        courtDispatchDate.isAcceptableOrUnknown(
+          data['court_dispatch_date']!,
+          _courtDispatchDateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('court_dispatch_time')) {
+      context.handle(
+        _courtDispatchTimeMeta,
+        courtDispatchTime.isAcceptableOrUnknown(
+          data['court_dispatch_time']!,
+          _courtDispatchTimeMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -3499,6 +5378,10 @@ class $InvestigationTable extends Investigation
         DriftSqlType.string,
         data['${effectivePrefix}officer_id'],
       ),
+      officerDesignation: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}officer_designation'],
+      ),
       officerMobile: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}officer_mobile'],
@@ -3523,6 +5406,30 @@ class $InvestigationTable extends Investigation
         DriftSqlType.string,
         data['${effectivePrefix}wanted_accused'],
       ),
+      registeringOfficerName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}registering_officer_name'],
+      ),
+      registeringOfficerRank: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}registering_officer_rank'],
+      ),
+      registeringOfficerNo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}registering_officer_no'],
+      ),
+      actionTaken: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}action_taken'],
+      ),
+      courtDispatchDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}court_dispatch_date'],
+      ),
+      courtDispatchTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}court_dispatch_time'],
+      ),
     );
   }
 
@@ -3538,23 +5445,37 @@ class InvestigationData extends DataClass
   final int crimeId;
   final String? officerName;
   final String? officerId;
+  final String? officerDesignation;
   final String? officerMobile;
   final String? filedBy;
   final String? preventiveAction;
   final String? preventiveNo;
   final DateTime? preventiveDate;
   final String? wantedAccused;
+  final String? registeringOfficerName;
+  final String? registeringOfficerRank;
+  final String? registeringOfficerNo;
+  final String? actionTaken;
+  final DateTime? courtDispatchDate;
+  final String? courtDispatchTime;
   const InvestigationData({
     required this.id,
     required this.crimeId,
     this.officerName,
     this.officerId,
+    this.officerDesignation,
     this.officerMobile,
     this.filedBy,
     this.preventiveAction,
     this.preventiveNo,
     this.preventiveDate,
     this.wantedAccused,
+    this.registeringOfficerName,
+    this.registeringOfficerRank,
+    this.registeringOfficerNo,
+    this.actionTaken,
+    this.courtDispatchDate,
+    this.courtDispatchTime,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3566,6 +5487,9 @@ class InvestigationData extends DataClass
     }
     if (!nullToAbsent || officerId != null) {
       map['officer_id'] = Variable<String>(officerId);
+    }
+    if (!nullToAbsent || officerDesignation != null) {
+      map['officer_designation'] = Variable<String>(officerDesignation);
     }
     if (!nullToAbsent || officerMobile != null) {
       map['officer_mobile'] = Variable<String>(officerMobile);
@@ -3585,6 +5509,28 @@ class InvestigationData extends DataClass
     if (!nullToAbsent || wantedAccused != null) {
       map['wanted_accused'] = Variable<String>(wantedAccused);
     }
+    if (!nullToAbsent || registeringOfficerName != null) {
+      map['registering_officer_name'] = Variable<String>(
+        registeringOfficerName,
+      );
+    }
+    if (!nullToAbsent || registeringOfficerRank != null) {
+      map['registering_officer_rank'] = Variable<String>(
+        registeringOfficerRank,
+      );
+    }
+    if (!nullToAbsent || registeringOfficerNo != null) {
+      map['registering_officer_no'] = Variable<String>(registeringOfficerNo);
+    }
+    if (!nullToAbsent || actionTaken != null) {
+      map['action_taken'] = Variable<String>(actionTaken);
+    }
+    if (!nullToAbsent || courtDispatchDate != null) {
+      map['court_dispatch_date'] = Variable<DateTime>(courtDispatchDate);
+    }
+    if (!nullToAbsent || courtDispatchTime != null) {
+      map['court_dispatch_time'] = Variable<String>(courtDispatchTime);
+    }
     return map;
   }
 
@@ -3598,6 +5544,9 @@ class InvestigationData extends DataClass
       officerId: officerId == null && nullToAbsent
           ? const Value.absent()
           : Value(officerId),
+      officerDesignation: officerDesignation == null && nullToAbsent
+          ? const Value.absent()
+          : Value(officerDesignation),
       officerMobile: officerMobile == null && nullToAbsent
           ? const Value.absent()
           : Value(officerMobile),
@@ -3616,6 +5565,24 @@ class InvestigationData extends DataClass
       wantedAccused: wantedAccused == null && nullToAbsent
           ? const Value.absent()
           : Value(wantedAccused),
+      registeringOfficerName: registeringOfficerName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(registeringOfficerName),
+      registeringOfficerRank: registeringOfficerRank == null && nullToAbsent
+          ? const Value.absent()
+          : Value(registeringOfficerRank),
+      registeringOfficerNo: registeringOfficerNo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(registeringOfficerNo),
+      actionTaken: actionTaken == null && nullToAbsent
+          ? const Value.absent()
+          : Value(actionTaken),
+      courtDispatchDate: courtDispatchDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(courtDispatchDate),
+      courtDispatchTime: courtDispatchTime == null && nullToAbsent
+          ? const Value.absent()
+          : Value(courtDispatchTime),
     );
   }
 
@@ -3629,12 +5596,31 @@ class InvestigationData extends DataClass
       crimeId: serializer.fromJson<int>(json['crimeId']),
       officerName: serializer.fromJson<String?>(json['officerName']),
       officerId: serializer.fromJson<String?>(json['officerId']),
+      officerDesignation: serializer.fromJson<String?>(
+        json['officerDesignation'],
+      ),
       officerMobile: serializer.fromJson<String?>(json['officerMobile']),
       filedBy: serializer.fromJson<String?>(json['filedBy']),
       preventiveAction: serializer.fromJson<String?>(json['preventiveAction']),
       preventiveNo: serializer.fromJson<String?>(json['preventiveNo']),
       preventiveDate: serializer.fromJson<DateTime?>(json['preventiveDate']),
       wantedAccused: serializer.fromJson<String?>(json['wantedAccused']),
+      registeringOfficerName: serializer.fromJson<String?>(
+        json['registeringOfficerName'],
+      ),
+      registeringOfficerRank: serializer.fromJson<String?>(
+        json['registeringOfficerRank'],
+      ),
+      registeringOfficerNo: serializer.fromJson<String?>(
+        json['registeringOfficerNo'],
+      ),
+      actionTaken: serializer.fromJson<String?>(json['actionTaken']),
+      courtDispatchDate: serializer.fromJson<DateTime?>(
+        json['courtDispatchDate'],
+      ),
+      courtDispatchTime: serializer.fromJson<String?>(
+        json['courtDispatchTime'],
+      ),
     );
   }
   @override
@@ -3645,12 +5631,23 @@ class InvestigationData extends DataClass
       'crimeId': serializer.toJson<int>(crimeId),
       'officerName': serializer.toJson<String?>(officerName),
       'officerId': serializer.toJson<String?>(officerId),
+      'officerDesignation': serializer.toJson<String?>(officerDesignation),
       'officerMobile': serializer.toJson<String?>(officerMobile),
       'filedBy': serializer.toJson<String?>(filedBy),
       'preventiveAction': serializer.toJson<String?>(preventiveAction),
       'preventiveNo': serializer.toJson<String?>(preventiveNo),
       'preventiveDate': serializer.toJson<DateTime?>(preventiveDate),
       'wantedAccused': serializer.toJson<String?>(wantedAccused),
+      'registeringOfficerName': serializer.toJson<String?>(
+        registeringOfficerName,
+      ),
+      'registeringOfficerRank': serializer.toJson<String?>(
+        registeringOfficerRank,
+      ),
+      'registeringOfficerNo': serializer.toJson<String?>(registeringOfficerNo),
+      'actionTaken': serializer.toJson<String?>(actionTaken),
+      'courtDispatchDate': serializer.toJson<DateTime?>(courtDispatchDate),
+      'courtDispatchTime': serializer.toJson<String?>(courtDispatchTime),
     };
   }
 
@@ -3659,17 +5656,27 @@ class InvestigationData extends DataClass
     int? crimeId,
     Value<String?> officerName = const Value.absent(),
     Value<String?> officerId = const Value.absent(),
+    Value<String?> officerDesignation = const Value.absent(),
     Value<String?> officerMobile = const Value.absent(),
     Value<String?> filedBy = const Value.absent(),
     Value<String?> preventiveAction = const Value.absent(),
     Value<String?> preventiveNo = const Value.absent(),
     Value<DateTime?> preventiveDate = const Value.absent(),
     Value<String?> wantedAccused = const Value.absent(),
+    Value<String?> registeringOfficerName = const Value.absent(),
+    Value<String?> registeringOfficerRank = const Value.absent(),
+    Value<String?> registeringOfficerNo = const Value.absent(),
+    Value<String?> actionTaken = const Value.absent(),
+    Value<DateTime?> courtDispatchDate = const Value.absent(),
+    Value<String?> courtDispatchTime = const Value.absent(),
   }) => InvestigationData(
     id: id ?? this.id,
     crimeId: crimeId ?? this.crimeId,
     officerName: officerName.present ? officerName.value : this.officerName,
     officerId: officerId.present ? officerId.value : this.officerId,
+    officerDesignation: officerDesignation.present
+        ? officerDesignation.value
+        : this.officerDesignation,
     officerMobile: officerMobile.present
         ? officerMobile.value
         : this.officerMobile,
@@ -3684,6 +5691,22 @@ class InvestigationData extends DataClass
     wantedAccused: wantedAccused.present
         ? wantedAccused.value
         : this.wantedAccused,
+    registeringOfficerName: registeringOfficerName.present
+        ? registeringOfficerName.value
+        : this.registeringOfficerName,
+    registeringOfficerRank: registeringOfficerRank.present
+        ? registeringOfficerRank.value
+        : this.registeringOfficerRank,
+    registeringOfficerNo: registeringOfficerNo.present
+        ? registeringOfficerNo.value
+        : this.registeringOfficerNo,
+    actionTaken: actionTaken.present ? actionTaken.value : this.actionTaken,
+    courtDispatchDate: courtDispatchDate.present
+        ? courtDispatchDate.value
+        : this.courtDispatchDate,
+    courtDispatchTime: courtDispatchTime.present
+        ? courtDispatchTime.value
+        : this.courtDispatchTime,
   );
   InvestigationData copyWithCompanion(InvestigationCompanion data) {
     return InvestigationData(
@@ -3693,6 +5716,9 @@ class InvestigationData extends DataClass
           ? data.officerName.value
           : this.officerName,
       officerId: data.officerId.present ? data.officerId.value : this.officerId,
+      officerDesignation: data.officerDesignation.present
+          ? data.officerDesignation.value
+          : this.officerDesignation,
       officerMobile: data.officerMobile.present
           ? data.officerMobile.value
           : this.officerMobile,
@@ -3709,6 +5735,24 @@ class InvestigationData extends DataClass
       wantedAccused: data.wantedAccused.present
           ? data.wantedAccused.value
           : this.wantedAccused,
+      registeringOfficerName: data.registeringOfficerName.present
+          ? data.registeringOfficerName.value
+          : this.registeringOfficerName,
+      registeringOfficerRank: data.registeringOfficerRank.present
+          ? data.registeringOfficerRank.value
+          : this.registeringOfficerRank,
+      registeringOfficerNo: data.registeringOfficerNo.present
+          ? data.registeringOfficerNo.value
+          : this.registeringOfficerNo,
+      actionTaken: data.actionTaken.present
+          ? data.actionTaken.value
+          : this.actionTaken,
+      courtDispatchDate: data.courtDispatchDate.present
+          ? data.courtDispatchDate.value
+          : this.courtDispatchDate,
+      courtDispatchTime: data.courtDispatchTime.present
+          ? data.courtDispatchTime.value
+          : this.courtDispatchTime,
     );
   }
 
@@ -3719,12 +5763,19 @@ class InvestigationData extends DataClass
           ..write('crimeId: $crimeId, ')
           ..write('officerName: $officerName, ')
           ..write('officerId: $officerId, ')
+          ..write('officerDesignation: $officerDesignation, ')
           ..write('officerMobile: $officerMobile, ')
           ..write('filedBy: $filedBy, ')
           ..write('preventiveAction: $preventiveAction, ')
           ..write('preventiveNo: $preventiveNo, ')
           ..write('preventiveDate: $preventiveDate, ')
-          ..write('wantedAccused: $wantedAccused')
+          ..write('wantedAccused: $wantedAccused, ')
+          ..write('registeringOfficerName: $registeringOfficerName, ')
+          ..write('registeringOfficerRank: $registeringOfficerRank, ')
+          ..write('registeringOfficerNo: $registeringOfficerNo, ')
+          ..write('actionTaken: $actionTaken, ')
+          ..write('courtDispatchDate: $courtDispatchDate, ')
+          ..write('courtDispatchTime: $courtDispatchTime')
           ..write(')'))
         .toString();
   }
@@ -3735,12 +5786,19 @@ class InvestigationData extends DataClass
     crimeId,
     officerName,
     officerId,
+    officerDesignation,
     officerMobile,
     filedBy,
     preventiveAction,
     preventiveNo,
     preventiveDate,
     wantedAccused,
+    registeringOfficerName,
+    registeringOfficerRank,
+    registeringOfficerNo,
+    actionTaken,
+    courtDispatchDate,
+    courtDispatchTime,
   );
   @override
   bool operator ==(Object other) =>
@@ -3750,12 +5808,19 @@ class InvestigationData extends DataClass
           other.crimeId == this.crimeId &&
           other.officerName == this.officerName &&
           other.officerId == this.officerId &&
+          other.officerDesignation == this.officerDesignation &&
           other.officerMobile == this.officerMobile &&
           other.filedBy == this.filedBy &&
           other.preventiveAction == this.preventiveAction &&
           other.preventiveNo == this.preventiveNo &&
           other.preventiveDate == this.preventiveDate &&
-          other.wantedAccused == this.wantedAccused);
+          other.wantedAccused == this.wantedAccused &&
+          other.registeringOfficerName == this.registeringOfficerName &&
+          other.registeringOfficerRank == this.registeringOfficerRank &&
+          other.registeringOfficerNo == this.registeringOfficerNo &&
+          other.actionTaken == this.actionTaken &&
+          other.courtDispatchDate == this.courtDispatchDate &&
+          other.courtDispatchTime == this.courtDispatchTime);
 }
 
 class InvestigationCompanion extends UpdateCompanion<InvestigationData> {
@@ -3763,59 +5828,97 @@ class InvestigationCompanion extends UpdateCompanion<InvestigationData> {
   final Value<int> crimeId;
   final Value<String?> officerName;
   final Value<String?> officerId;
+  final Value<String?> officerDesignation;
   final Value<String?> officerMobile;
   final Value<String?> filedBy;
   final Value<String?> preventiveAction;
   final Value<String?> preventiveNo;
   final Value<DateTime?> preventiveDate;
   final Value<String?> wantedAccused;
+  final Value<String?> registeringOfficerName;
+  final Value<String?> registeringOfficerRank;
+  final Value<String?> registeringOfficerNo;
+  final Value<String?> actionTaken;
+  final Value<DateTime?> courtDispatchDate;
+  final Value<String?> courtDispatchTime;
   const InvestigationCompanion({
     this.id = const Value.absent(),
     this.crimeId = const Value.absent(),
     this.officerName = const Value.absent(),
     this.officerId = const Value.absent(),
+    this.officerDesignation = const Value.absent(),
     this.officerMobile = const Value.absent(),
     this.filedBy = const Value.absent(),
     this.preventiveAction = const Value.absent(),
     this.preventiveNo = const Value.absent(),
     this.preventiveDate = const Value.absent(),
     this.wantedAccused = const Value.absent(),
+    this.registeringOfficerName = const Value.absent(),
+    this.registeringOfficerRank = const Value.absent(),
+    this.registeringOfficerNo = const Value.absent(),
+    this.actionTaken = const Value.absent(),
+    this.courtDispatchDate = const Value.absent(),
+    this.courtDispatchTime = const Value.absent(),
   });
   InvestigationCompanion.insert({
     this.id = const Value.absent(),
     required int crimeId,
     this.officerName = const Value.absent(),
     this.officerId = const Value.absent(),
+    this.officerDesignation = const Value.absent(),
     this.officerMobile = const Value.absent(),
     this.filedBy = const Value.absent(),
     this.preventiveAction = const Value.absent(),
     this.preventiveNo = const Value.absent(),
     this.preventiveDate = const Value.absent(),
     this.wantedAccused = const Value.absent(),
+    this.registeringOfficerName = const Value.absent(),
+    this.registeringOfficerRank = const Value.absent(),
+    this.registeringOfficerNo = const Value.absent(),
+    this.actionTaken = const Value.absent(),
+    this.courtDispatchDate = const Value.absent(),
+    this.courtDispatchTime = const Value.absent(),
   }) : crimeId = Value(crimeId);
   static Insertable<InvestigationData> custom({
     Expression<int>? id,
     Expression<int>? crimeId,
     Expression<String>? officerName,
     Expression<String>? officerId,
+    Expression<String>? officerDesignation,
     Expression<String>? officerMobile,
     Expression<String>? filedBy,
     Expression<String>? preventiveAction,
     Expression<String>? preventiveNo,
     Expression<DateTime>? preventiveDate,
     Expression<String>? wantedAccused,
+    Expression<String>? registeringOfficerName,
+    Expression<String>? registeringOfficerRank,
+    Expression<String>? registeringOfficerNo,
+    Expression<String>? actionTaken,
+    Expression<DateTime>? courtDispatchDate,
+    Expression<String>? courtDispatchTime,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (crimeId != null) 'crime_id': crimeId,
       if (officerName != null) 'officer_name': officerName,
       if (officerId != null) 'officer_id': officerId,
+      if (officerDesignation != null) 'officer_designation': officerDesignation,
       if (officerMobile != null) 'officer_mobile': officerMobile,
       if (filedBy != null) 'filed_by': filedBy,
       if (preventiveAction != null) 'preventive_action': preventiveAction,
       if (preventiveNo != null) 'preventive_no': preventiveNo,
       if (preventiveDate != null) 'preventive_date': preventiveDate,
       if (wantedAccused != null) 'wanted_accused': wantedAccused,
+      if (registeringOfficerName != null)
+        'registering_officer_name': registeringOfficerName,
+      if (registeringOfficerRank != null)
+        'registering_officer_rank': registeringOfficerRank,
+      if (registeringOfficerNo != null)
+        'registering_officer_no': registeringOfficerNo,
+      if (actionTaken != null) 'action_taken': actionTaken,
+      if (courtDispatchDate != null) 'court_dispatch_date': courtDispatchDate,
+      if (courtDispatchTime != null) 'court_dispatch_time': courtDispatchTime,
     });
   }
 
@@ -3824,24 +5927,40 @@ class InvestigationCompanion extends UpdateCompanion<InvestigationData> {
     Value<int>? crimeId,
     Value<String?>? officerName,
     Value<String?>? officerId,
+    Value<String?>? officerDesignation,
     Value<String?>? officerMobile,
     Value<String?>? filedBy,
     Value<String?>? preventiveAction,
     Value<String?>? preventiveNo,
     Value<DateTime?>? preventiveDate,
     Value<String?>? wantedAccused,
+    Value<String?>? registeringOfficerName,
+    Value<String?>? registeringOfficerRank,
+    Value<String?>? registeringOfficerNo,
+    Value<String?>? actionTaken,
+    Value<DateTime?>? courtDispatchDate,
+    Value<String?>? courtDispatchTime,
   }) {
     return InvestigationCompanion(
       id: id ?? this.id,
       crimeId: crimeId ?? this.crimeId,
       officerName: officerName ?? this.officerName,
       officerId: officerId ?? this.officerId,
+      officerDesignation: officerDesignation ?? this.officerDesignation,
       officerMobile: officerMobile ?? this.officerMobile,
       filedBy: filedBy ?? this.filedBy,
       preventiveAction: preventiveAction ?? this.preventiveAction,
       preventiveNo: preventiveNo ?? this.preventiveNo,
       preventiveDate: preventiveDate ?? this.preventiveDate,
       wantedAccused: wantedAccused ?? this.wantedAccused,
+      registeringOfficerName:
+          registeringOfficerName ?? this.registeringOfficerName,
+      registeringOfficerRank:
+          registeringOfficerRank ?? this.registeringOfficerRank,
+      registeringOfficerNo: registeringOfficerNo ?? this.registeringOfficerNo,
+      actionTaken: actionTaken ?? this.actionTaken,
+      courtDispatchDate: courtDispatchDate ?? this.courtDispatchDate,
+      courtDispatchTime: courtDispatchTime ?? this.courtDispatchTime,
     );
   }
 
@@ -3859,6 +5978,9 @@ class InvestigationCompanion extends UpdateCompanion<InvestigationData> {
     }
     if (officerId.present) {
       map['officer_id'] = Variable<String>(officerId.value);
+    }
+    if (officerDesignation.present) {
+      map['officer_designation'] = Variable<String>(officerDesignation.value);
     }
     if (officerMobile.present) {
       map['officer_mobile'] = Variable<String>(officerMobile.value);
@@ -3878,6 +6000,30 @@ class InvestigationCompanion extends UpdateCompanion<InvestigationData> {
     if (wantedAccused.present) {
       map['wanted_accused'] = Variable<String>(wantedAccused.value);
     }
+    if (registeringOfficerName.present) {
+      map['registering_officer_name'] = Variable<String>(
+        registeringOfficerName.value,
+      );
+    }
+    if (registeringOfficerRank.present) {
+      map['registering_officer_rank'] = Variable<String>(
+        registeringOfficerRank.value,
+      );
+    }
+    if (registeringOfficerNo.present) {
+      map['registering_officer_no'] = Variable<String>(
+        registeringOfficerNo.value,
+      );
+    }
+    if (actionTaken.present) {
+      map['action_taken'] = Variable<String>(actionTaken.value);
+    }
+    if (courtDispatchDate.present) {
+      map['court_dispatch_date'] = Variable<DateTime>(courtDispatchDate.value);
+    }
+    if (courtDispatchTime.present) {
+      map['court_dispatch_time'] = Variable<String>(courtDispatchTime.value);
+    }
     return map;
   }
 
@@ -3888,12 +6034,19 @@ class InvestigationCompanion extends UpdateCompanion<InvestigationData> {
           ..write('crimeId: $crimeId, ')
           ..write('officerName: $officerName, ')
           ..write('officerId: $officerId, ')
+          ..write('officerDesignation: $officerDesignation, ')
           ..write('officerMobile: $officerMobile, ')
           ..write('filedBy: $filedBy, ')
           ..write('preventiveAction: $preventiveAction, ')
           ..write('preventiveNo: $preventiveNo, ')
           ..write('preventiveDate: $preventiveDate, ')
-          ..write('wantedAccused: $wantedAccused')
+          ..write('wantedAccused: $wantedAccused, ')
+          ..write('registeringOfficerName: $registeringOfficerName, ')
+          ..write('registeringOfficerRank: $registeringOfficerRank, ')
+          ..write('registeringOfficerNo: $registeringOfficerNo, ')
+          ..write('actionTaken: $actionTaken, ')
+          ..write('courtDispatchDate: $courtDispatchDate, ')
+          ..write('courtDispatchTime: $courtDispatchTime')
           ..write(')'))
         .toString();
   }
@@ -7602,6 +9755,2900 @@ class AuditLogCompanion extends UpdateCompanion<AuditLogData> {
   }
 }
 
+class $IoCasesTable extends IoCases with TableInfo<$IoCasesTable, IoCase> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $IoCasesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _remoteUidMeta = const VerificationMeta(
+    'remoteUid',
+  );
+  @override
+  late final GeneratedColumn<String> remoteUid = GeneratedColumn<String>(
+    'remote_uid',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _crimeTypeMeta = const VerificationMeta(
+    'crimeType',
+  );
+  @override
+  late final GeneratedColumn<String> crimeType = GeneratedColumn<String>(
+    'crime_type',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _crimeCategoryMeta = const VerificationMeta(
+    'crimeCategory',
+  );
+  @override
+  late final GeneratedColumn<String> crimeCategory = GeneratedColumn<String>(
+    'crime_category',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _firNoMeta = const VerificationMeta('firNo');
+  @override
+  late final GeneratedColumn<String> firNo = GeneratedColumn<String>(
+    'fir_no',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _yearMeta = const VerificationMeta('year');
+  @override
+  late final GeneratedColumn<int> year = GeneratedColumn<int>(
+    'year',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _districtMeta = const VerificationMeta(
+    'district',
+  );
+  @override
+  late final GeneratedColumn<String> district = GeneratedColumn<String>(
+    'district',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _policeStationMeta = const VerificationMeta(
+    'policeStation',
+  );
+  @override
+  late final GeneratedColumn<String> policeStation = GeneratedColumn<String>(
+    'police_station',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _linkedCrimeUidMeta = const VerificationMeta(
+    'linkedCrimeUid',
+  );
+  @override
+  late final GeneratedColumn<String> linkedCrimeUid = GeneratedColumn<String>(
+    'linked_crime_uid',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _ownerEmailMeta = const VerificationMeta(
+    'ownerEmail',
+  );
+  @override
+  late final GeneratedColumn<String> ownerEmail = GeneratedColumn<String>(
+    'owner_email',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('active'),
+  );
+  static const VerificationMeta _dataJsonMeta = const VerificationMeta(
+    'dataJson',
+  );
+  @override
+  late final GeneratedColumn<String> dataJson = GeneratedColumn<String>(
+    'data_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    remoteUid,
+    title,
+    crimeType,
+    crimeCategory,
+    firNo,
+    year,
+    district,
+    policeStation,
+    linkedCrimeUid,
+    ownerEmail,
+    status,
+    dataJson,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'io_cases';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<IoCase> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('remote_uid')) {
+      context.handle(
+        _remoteUidMeta,
+        remoteUid.isAcceptableOrUnknown(data['remote_uid']!, _remoteUidMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_remoteUidMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    }
+    if (data.containsKey('crime_type')) {
+      context.handle(
+        _crimeTypeMeta,
+        crimeType.isAcceptableOrUnknown(data['crime_type']!, _crimeTypeMeta),
+      );
+    }
+    if (data.containsKey('crime_category')) {
+      context.handle(
+        _crimeCategoryMeta,
+        crimeCategory.isAcceptableOrUnknown(
+          data['crime_category']!,
+          _crimeCategoryMeta,
+        ),
+      );
+    }
+    if (data.containsKey('fir_no')) {
+      context.handle(
+        _firNoMeta,
+        firNo.isAcceptableOrUnknown(data['fir_no']!, _firNoMeta),
+      );
+    }
+    if (data.containsKey('year')) {
+      context.handle(
+        _yearMeta,
+        year.isAcceptableOrUnknown(data['year']!, _yearMeta),
+      );
+    }
+    if (data.containsKey('district')) {
+      context.handle(
+        _districtMeta,
+        district.isAcceptableOrUnknown(data['district']!, _districtMeta),
+      );
+    }
+    if (data.containsKey('police_station')) {
+      context.handle(
+        _policeStationMeta,
+        policeStation.isAcceptableOrUnknown(
+          data['police_station']!,
+          _policeStationMeta,
+        ),
+      );
+    }
+    if (data.containsKey('linked_crime_uid')) {
+      context.handle(
+        _linkedCrimeUidMeta,
+        linkedCrimeUid.isAcceptableOrUnknown(
+          data['linked_crime_uid']!,
+          _linkedCrimeUidMeta,
+        ),
+      );
+    }
+    if (data.containsKey('owner_email')) {
+      context.handle(
+        _ownerEmailMeta,
+        ownerEmail.isAcceptableOrUnknown(data['owner_email']!, _ownerEmailMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('data_json')) {
+      context.handle(
+        _dataJsonMeta,
+        dataJson.isAcceptableOrUnknown(data['data_json']!, _dataJsonMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  IoCase map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return IoCase(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      remoteUid: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remote_uid'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      ),
+      crimeType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}crime_type'],
+      ),
+      crimeCategory: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}crime_category'],
+      ),
+      firNo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}fir_no'],
+      ),
+      year: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}year'],
+      ),
+      district: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}district'],
+      ),
+      policeStation: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}police_station'],
+      ),
+      linkedCrimeUid: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}linked_crime_uid'],
+      ),
+      ownerEmail: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}owner_email'],
+      ),
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      dataJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}data_json'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $IoCasesTable createAlias(String alias) {
+    return $IoCasesTable(attachedDatabase, alias);
+  }
+}
+
+class IoCase extends DataClass implements Insertable<IoCase> {
+  final int id;
+
+  /// Stable, globally-unique case id (`io_<random hex>`) used as the identity on
+  /// the central server for phone↔PC sync. Generated once, never reused.
+  final String remoteUid;
+
+  /// Display title (e.g. "गुन्हा रजि.नं 123/2026 — चोरी"). Optional; derived when blank.
+  final String? title;
+
+  /// Crime classification driving which forms apply. [crimeType] is the full
+  /// "English / Marathi" label; [crimeCategory] is its parent category label.
+  final String? crimeType;
+  final String? crimeCategory;
+
+  /// FIR identity (when known). A fresh case may leave these blank until filed.
+  final String? firNo;
+  final int? year;
+  final String? district;
+  final String? policeStation;
+
+  /// When the case was opened from an existing central FIR, its remote_uid — so
+  /// the two stay associated. Null for a fresh (scene-first) case.
+  final String? linkedCrimeUid;
+
+  /// The IO who owns the case (Google account email). Used for "own cases only".
+  final String? ownerEmail;
+
+  /// active | closed.
+  final String status;
+
+  /// Case-level shared data (a JSON map) — every field the government forms need
+  /// that isn't per-person / per-exhibit: FIR header extras, death/PM details,
+  /// medical, DNA, juvenile, final-report, modus-operandi, etc. Entered once and
+  /// read by all the auto-filled forms. Per-person deep fields live on the
+  /// party's valuesJson; per-item fields on the exhibit's valuesJson.
+  final String? dataJson;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const IoCase({
+    required this.id,
+    required this.remoteUid,
+    this.title,
+    this.crimeType,
+    this.crimeCategory,
+    this.firNo,
+    this.year,
+    this.district,
+    this.policeStation,
+    this.linkedCrimeUid,
+    this.ownerEmail,
+    required this.status,
+    this.dataJson,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['remote_uid'] = Variable<String>(remoteUid);
+    if (!nullToAbsent || title != null) {
+      map['title'] = Variable<String>(title);
+    }
+    if (!nullToAbsent || crimeType != null) {
+      map['crime_type'] = Variable<String>(crimeType);
+    }
+    if (!nullToAbsent || crimeCategory != null) {
+      map['crime_category'] = Variable<String>(crimeCategory);
+    }
+    if (!nullToAbsent || firNo != null) {
+      map['fir_no'] = Variable<String>(firNo);
+    }
+    if (!nullToAbsent || year != null) {
+      map['year'] = Variable<int>(year);
+    }
+    if (!nullToAbsent || district != null) {
+      map['district'] = Variable<String>(district);
+    }
+    if (!nullToAbsent || policeStation != null) {
+      map['police_station'] = Variable<String>(policeStation);
+    }
+    if (!nullToAbsent || linkedCrimeUid != null) {
+      map['linked_crime_uid'] = Variable<String>(linkedCrimeUid);
+    }
+    if (!nullToAbsent || ownerEmail != null) {
+      map['owner_email'] = Variable<String>(ownerEmail);
+    }
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || dataJson != null) {
+      map['data_json'] = Variable<String>(dataJson);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  IoCasesCompanion toCompanion(bool nullToAbsent) {
+    return IoCasesCompanion(
+      id: Value(id),
+      remoteUid: Value(remoteUid),
+      title: title == null && nullToAbsent
+          ? const Value.absent()
+          : Value(title),
+      crimeType: crimeType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(crimeType),
+      crimeCategory: crimeCategory == null && nullToAbsent
+          ? const Value.absent()
+          : Value(crimeCategory),
+      firNo: firNo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(firNo),
+      year: year == null && nullToAbsent ? const Value.absent() : Value(year),
+      district: district == null && nullToAbsent
+          ? const Value.absent()
+          : Value(district),
+      policeStation: policeStation == null && nullToAbsent
+          ? const Value.absent()
+          : Value(policeStation),
+      linkedCrimeUid: linkedCrimeUid == null && nullToAbsent
+          ? const Value.absent()
+          : Value(linkedCrimeUid),
+      ownerEmail: ownerEmail == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ownerEmail),
+      status: Value(status),
+      dataJson: dataJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dataJson),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory IoCase.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return IoCase(
+      id: serializer.fromJson<int>(json['id']),
+      remoteUid: serializer.fromJson<String>(json['remoteUid']),
+      title: serializer.fromJson<String?>(json['title']),
+      crimeType: serializer.fromJson<String?>(json['crimeType']),
+      crimeCategory: serializer.fromJson<String?>(json['crimeCategory']),
+      firNo: serializer.fromJson<String?>(json['firNo']),
+      year: serializer.fromJson<int?>(json['year']),
+      district: serializer.fromJson<String?>(json['district']),
+      policeStation: serializer.fromJson<String?>(json['policeStation']),
+      linkedCrimeUid: serializer.fromJson<String?>(json['linkedCrimeUid']),
+      ownerEmail: serializer.fromJson<String?>(json['ownerEmail']),
+      status: serializer.fromJson<String>(json['status']),
+      dataJson: serializer.fromJson<String?>(json['dataJson']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'remoteUid': serializer.toJson<String>(remoteUid),
+      'title': serializer.toJson<String?>(title),
+      'crimeType': serializer.toJson<String?>(crimeType),
+      'crimeCategory': serializer.toJson<String?>(crimeCategory),
+      'firNo': serializer.toJson<String?>(firNo),
+      'year': serializer.toJson<int?>(year),
+      'district': serializer.toJson<String?>(district),
+      'policeStation': serializer.toJson<String?>(policeStation),
+      'linkedCrimeUid': serializer.toJson<String?>(linkedCrimeUid),
+      'ownerEmail': serializer.toJson<String?>(ownerEmail),
+      'status': serializer.toJson<String>(status),
+      'dataJson': serializer.toJson<String?>(dataJson),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  IoCase copyWith({
+    int? id,
+    String? remoteUid,
+    Value<String?> title = const Value.absent(),
+    Value<String?> crimeType = const Value.absent(),
+    Value<String?> crimeCategory = const Value.absent(),
+    Value<String?> firNo = const Value.absent(),
+    Value<int?> year = const Value.absent(),
+    Value<String?> district = const Value.absent(),
+    Value<String?> policeStation = const Value.absent(),
+    Value<String?> linkedCrimeUid = const Value.absent(),
+    Value<String?> ownerEmail = const Value.absent(),
+    String? status,
+    Value<String?> dataJson = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => IoCase(
+    id: id ?? this.id,
+    remoteUid: remoteUid ?? this.remoteUid,
+    title: title.present ? title.value : this.title,
+    crimeType: crimeType.present ? crimeType.value : this.crimeType,
+    crimeCategory: crimeCategory.present
+        ? crimeCategory.value
+        : this.crimeCategory,
+    firNo: firNo.present ? firNo.value : this.firNo,
+    year: year.present ? year.value : this.year,
+    district: district.present ? district.value : this.district,
+    policeStation: policeStation.present
+        ? policeStation.value
+        : this.policeStation,
+    linkedCrimeUid: linkedCrimeUid.present
+        ? linkedCrimeUid.value
+        : this.linkedCrimeUid,
+    ownerEmail: ownerEmail.present ? ownerEmail.value : this.ownerEmail,
+    status: status ?? this.status,
+    dataJson: dataJson.present ? dataJson.value : this.dataJson,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  IoCase copyWithCompanion(IoCasesCompanion data) {
+    return IoCase(
+      id: data.id.present ? data.id.value : this.id,
+      remoteUid: data.remoteUid.present ? data.remoteUid.value : this.remoteUid,
+      title: data.title.present ? data.title.value : this.title,
+      crimeType: data.crimeType.present ? data.crimeType.value : this.crimeType,
+      crimeCategory: data.crimeCategory.present
+          ? data.crimeCategory.value
+          : this.crimeCategory,
+      firNo: data.firNo.present ? data.firNo.value : this.firNo,
+      year: data.year.present ? data.year.value : this.year,
+      district: data.district.present ? data.district.value : this.district,
+      policeStation: data.policeStation.present
+          ? data.policeStation.value
+          : this.policeStation,
+      linkedCrimeUid: data.linkedCrimeUid.present
+          ? data.linkedCrimeUid.value
+          : this.linkedCrimeUid,
+      ownerEmail: data.ownerEmail.present
+          ? data.ownerEmail.value
+          : this.ownerEmail,
+      status: data.status.present ? data.status.value : this.status,
+      dataJson: data.dataJson.present ? data.dataJson.value : this.dataJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('IoCase(')
+          ..write('id: $id, ')
+          ..write('remoteUid: $remoteUid, ')
+          ..write('title: $title, ')
+          ..write('crimeType: $crimeType, ')
+          ..write('crimeCategory: $crimeCategory, ')
+          ..write('firNo: $firNo, ')
+          ..write('year: $year, ')
+          ..write('district: $district, ')
+          ..write('policeStation: $policeStation, ')
+          ..write('linkedCrimeUid: $linkedCrimeUid, ')
+          ..write('ownerEmail: $ownerEmail, ')
+          ..write('status: $status, ')
+          ..write('dataJson: $dataJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    remoteUid,
+    title,
+    crimeType,
+    crimeCategory,
+    firNo,
+    year,
+    district,
+    policeStation,
+    linkedCrimeUid,
+    ownerEmail,
+    status,
+    dataJson,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is IoCase &&
+          other.id == this.id &&
+          other.remoteUid == this.remoteUid &&
+          other.title == this.title &&
+          other.crimeType == this.crimeType &&
+          other.crimeCategory == this.crimeCategory &&
+          other.firNo == this.firNo &&
+          other.year == this.year &&
+          other.district == this.district &&
+          other.policeStation == this.policeStation &&
+          other.linkedCrimeUid == this.linkedCrimeUid &&
+          other.ownerEmail == this.ownerEmail &&
+          other.status == this.status &&
+          other.dataJson == this.dataJson &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class IoCasesCompanion extends UpdateCompanion<IoCase> {
+  final Value<int> id;
+  final Value<String> remoteUid;
+  final Value<String?> title;
+  final Value<String?> crimeType;
+  final Value<String?> crimeCategory;
+  final Value<String?> firNo;
+  final Value<int?> year;
+  final Value<String?> district;
+  final Value<String?> policeStation;
+  final Value<String?> linkedCrimeUid;
+  final Value<String?> ownerEmail;
+  final Value<String> status;
+  final Value<String?> dataJson;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const IoCasesCompanion({
+    this.id = const Value.absent(),
+    this.remoteUid = const Value.absent(),
+    this.title = const Value.absent(),
+    this.crimeType = const Value.absent(),
+    this.crimeCategory = const Value.absent(),
+    this.firNo = const Value.absent(),
+    this.year = const Value.absent(),
+    this.district = const Value.absent(),
+    this.policeStation = const Value.absent(),
+    this.linkedCrimeUid = const Value.absent(),
+    this.ownerEmail = const Value.absent(),
+    this.status = const Value.absent(),
+    this.dataJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  IoCasesCompanion.insert({
+    this.id = const Value.absent(),
+    required String remoteUid,
+    this.title = const Value.absent(),
+    this.crimeType = const Value.absent(),
+    this.crimeCategory = const Value.absent(),
+    this.firNo = const Value.absent(),
+    this.year = const Value.absent(),
+    this.district = const Value.absent(),
+    this.policeStation = const Value.absent(),
+    this.linkedCrimeUid = const Value.absent(),
+    this.ownerEmail = const Value.absent(),
+    this.status = const Value.absent(),
+    this.dataJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : remoteUid = Value(remoteUid);
+  static Insertable<IoCase> custom({
+    Expression<int>? id,
+    Expression<String>? remoteUid,
+    Expression<String>? title,
+    Expression<String>? crimeType,
+    Expression<String>? crimeCategory,
+    Expression<String>? firNo,
+    Expression<int>? year,
+    Expression<String>? district,
+    Expression<String>? policeStation,
+    Expression<String>? linkedCrimeUid,
+    Expression<String>? ownerEmail,
+    Expression<String>? status,
+    Expression<String>? dataJson,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (remoteUid != null) 'remote_uid': remoteUid,
+      if (title != null) 'title': title,
+      if (crimeType != null) 'crime_type': crimeType,
+      if (crimeCategory != null) 'crime_category': crimeCategory,
+      if (firNo != null) 'fir_no': firNo,
+      if (year != null) 'year': year,
+      if (district != null) 'district': district,
+      if (policeStation != null) 'police_station': policeStation,
+      if (linkedCrimeUid != null) 'linked_crime_uid': linkedCrimeUid,
+      if (ownerEmail != null) 'owner_email': ownerEmail,
+      if (status != null) 'status': status,
+      if (dataJson != null) 'data_json': dataJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  IoCasesCompanion copyWith({
+    Value<int>? id,
+    Value<String>? remoteUid,
+    Value<String?>? title,
+    Value<String?>? crimeType,
+    Value<String?>? crimeCategory,
+    Value<String?>? firNo,
+    Value<int?>? year,
+    Value<String?>? district,
+    Value<String?>? policeStation,
+    Value<String?>? linkedCrimeUid,
+    Value<String?>? ownerEmail,
+    Value<String>? status,
+    Value<String?>? dataJson,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return IoCasesCompanion(
+      id: id ?? this.id,
+      remoteUid: remoteUid ?? this.remoteUid,
+      title: title ?? this.title,
+      crimeType: crimeType ?? this.crimeType,
+      crimeCategory: crimeCategory ?? this.crimeCategory,
+      firNo: firNo ?? this.firNo,
+      year: year ?? this.year,
+      district: district ?? this.district,
+      policeStation: policeStation ?? this.policeStation,
+      linkedCrimeUid: linkedCrimeUid ?? this.linkedCrimeUid,
+      ownerEmail: ownerEmail ?? this.ownerEmail,
+      status: status ?? this.status,
+      dataJson: dataJson ?? this.dataJson,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (remoteUid.present) {
+      map['remote_uid'] = Variable<String>(remoteUid.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (crimeType.present) {
+      map['crime_type'] = Variable<String>(crimeType.value);
+    }
+    if (crimeCategory.present) {
+      map['crime_category'] = Variable<String>(crimeCategory.value);
+    }
+    if (firNo.present) {
+      map['fir_no'] = Variable<String>(firNo.value);
+    }
+    if (year.present) {
+      map['year'] = Variable<int>(year.value);
+    }
+    if (district.present) {
+      map['district'] = Variable<String>(district.value);
+    }
+    if (policeStation.present) {
+      map['police_station'] = Variable<String>(policeStation.value);
+    }
+    if (linkedCrimeUid.present) {
+      map['linked_crime_uid'] = Variable<String>(linkedCrimeUid.value);
+    }
+    if (ownerEmail.present) {
+      map['owner_email'] = Variable<String>(ownerEmail.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (dataJson.present) {
+      map['data_json'] = Variable<String>(dataJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('IoCasesCompanion(')
+          ..write('id: $id, ')
+          ..write('remoteUid: $remoteUid, ')
+          ..write('title: $title, ')
+          ..write('crimeType: $crimeType, ')
+          ..write('crimeCategory: $crimeCategory, ')
+          ..write('firNo: $firNo, ')
+          ..write('year: $year, ')
+          ..write('district: $district, ')
+          ..write('policeStation: $policeStation, ')
+          ..write('linkedCrimeUid: $linkedCrimeUid, ')
+          ..write('ownerEmail: $ownerEmail, ')
+          ..write('status: $status, ')
+          ..write('dataJson: $dataJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $IoPartiesTable extends IoParties
+    with TableInfo<$IoPartiesTable, IoParty> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $IoPartiesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _caseIdMeta = const VerificationMeta('caseId');
+  @override
+  late final GeneratedColumn<int> caseId = GeneratedColumn<int>(
+    'case_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES io_cases (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _roleMeta = const VerificationMeta('role');
+  @override
+  late final GeneratedColumn<String> role = GeneratedColumn<String>(
+    'role',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _valuesJsonMeta = const VerificationMeta(
+    'valuesJson',
+  );
+  @override
+  late final GeneratedColumn<String> valuesJson = GeneratedColumn<String>(
+    'values_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sortOrderMeta = const VerificationMeta(
+    'sortOrder',
+  );
+  @override
+  late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
+    'sort_order',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    caseId,
+    role,
+    name,
+    valuesJson,
+    sortOrder,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'io_parties';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<IoParty> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('case_id')) {
+      context.handle(
+        _caseIdMeta,
+        caseId.isAcceptableOrUnknown(data['case_id']!, _caseIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_caseIdMeta);
+    }
+    if (data.containsKey('role')) {
+      context.handle(
+        _roleMeta,
+        role.isAcceptableOrUnknown(data['role']!, _roleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_roleMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('values_json')) {
+      context.handle(
+        _valuesJsonMeta,
+        valuesJson.isAcceptableOrUnknown(data['values_json']!, _valuesJsonMeta),
+      );
+    }
+    if (data.containsKey('sort_order')) {
+      context.handle(
+        _sortOrderMeta,
+        sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  IoParty map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return IoParty(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      caseId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}case_id'],
+      )!,
+      role: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}role'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      valuesJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}values_json'],
+      ),
+      sortOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sort_order'],
+      )!,
+    );
+  }
+
+  @override
+  $IoPartiesTable createAlias(String alias) {
+    return $IoPartiesTable(attachedDatabase, alias);
+  }
+}
+
+class IoParty extends DataClass implements Insertable<IoParty> {
+  final int id;
+  final int caseId;
+
+  /// panch | complainant | accused | deceased | witness | io.
+  final String role;
+  final String name;
+
+  /// Extra structured fields (father/husband, age, address, mobile, occupation,
+  /// idType/idNumber, thumbPhotoPath, encrypted id blobs, …) as a JSON map.
+  final String? valuesJson;
+  final int sortOrder;
+  const IoParty({
+    required this.id,
+    required this.caseId,
+    required this.role,
+    required this.name,
+    this.valuesJson,
+    required this.sortOrder,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['case_id'] = Variable<int>(caseId);
+    map['role'] = Variable<String>(role);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || valuesJson != null) {
+      map['values_json'] = Variable<String>(valuesJson);
+    }
+    map['sort_order'] = Variable<int>(sortOrder);
+    return map;
+  }
+
+  IoPartiesCompanion toCompanion(bool nullToAbsent) {
+    return IoPartiesCompanion(
+      id: Value(id),
+      caseId: Value(caseId),
+      role: Value(role),
+      name: Value(name),
+      valuesJson: valuesJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(valuesJson),
+      sortOrder: Value(sortOrder),
+    );
+  }
+
+  factory IoParty.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return IoParty(
+      id: serializer.fromJson<int>(json['id']),
+      caseId: serializer.fromJson<int>(json['caseId']),
+      role: serializer.fromJson<String>(json['role']),
+      name: serializer.fromJson<String>(json['name']),
+      valuesJson: serializer.fromJson<String?>(json['valuesJson']),
+      sortOrder: serializer.fromJson<int>(json['sortOrder']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'caseId': serializer.toJson<int>(caseId),
+      'role': serializer.toJson<String>(role),
+      'name': serializer.toJson<String>(name),
+      'valuesJson': serializer.toJson<String?>(valuesJson),
+      'sortOrder': serializer.toJson<int>(sortOrder),
+    };
+  }
+
+  IoParty copyWith({
+    int? id,
+    int? caseId,
+    String? role,
+    String? name,
+    Value<String?> valuesJson = const Value.absent(),
+    int? sortOrder,
+  }) => IoParty(
+    id: id ?? this.id,
+    caseId: caseId ?? this.caseId,
+    role: role ?? this.role,
+    name: name ?? this.name,
+    valuesJson: valuesJson.present ? valuesJson.value : this.valuesJson,
+    sortOrder: sortOrder ?? this.sortOrder,
+  );
+  IoParty copyWithCompanion(IoPartiesCompanion data) {
+    return IoParty(
+      id: data.id.present ? data.id.value : this.id,
+      caseId: data.caseId.present ? data.caseId.value : this.caseId,
+      role: data.role.present ? data.role.value : this.role,
+      name: data.name.present ? data.name.value : this.name,
+      valuesJson: data.valuesJson.present
+          ? data.valuesJson.value
+          : this.valuesJson,
+      sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('IoParty(')
+          ..write('id: $id, ')
+          ..write('caseId: $caseId, ')
+          ..write('role: $role, ')
+          ..write('name: $name, ')
+          ..write('valuesJson: $valuesJson, ')
+          ..write('sortOrder: $sortOrder')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, caseId, role, name, valuesJson, sortOrder);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is IoParty &&
+          other.id == this.id &&
+          other.caseId == this.caseId &&
+          other.role == this.role &&
+          other.name == this.name &&
+          other.valuesJson == this.valuesJson &&
+          other.sortOrder == this.sortOrder);
+}
+
+class IoPartiesCompanion extends UpdateCompanion<IoParty> {
+  final Value<int> id;
+  final Value<int> caseId;
+  final Value<String> role;
+  final Value<String> name;
+  final Value<String?> valuesJson;
+  final Value<int> sortOrder;
+  const IoPartiesCompanion({
+    this.id = const Value.absent(),
+    this.caseId = const Value.absent(),
+    this.role = const Value.absent(),
+    this.name = const Value.absent(),
+    this.valuesJson = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+  });
+  IoPartiesCompanion.insert({
+    this.id = const Value.absent(),
+    required int caseId,
+    required String role,
+    required String name,
+    this.valuesJson = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+  }) : caseId = Value(caseId),
+       role = Value(role),
+       name = Value(name);
+  static Insertable<IoParty> custom({
+    Expression<int>? id,
+    Expression<int>? caseId,
+    Expression<String>? role,
+    Expression<String>? name,
+    Expression<String>? valuesJson,
+    Expression<int>? sortOrder,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (caseId != null) 'case_id': caseId,
+      if (role != null) 'role': role,
+      if (name != null) 'name': name,
+      if (valuesJson != null) 'values_json': valuesJson,
+      if (sortOrder != null) 'sort_order': sortOrder,
+    });
+  }
+
+  IoPartiesCompanion copyWith({
+    Value<int>? id,
+    Value<int>? caseId,
+    Value<String>? role,
+    Value<String>? name,
+    Value<String?>? valuesJson,
+    Value<int>? sortOrder,
+  }) {
+    return IoPartiesCompanion(
+      id: id ?? this.id,
+      caseId: caseId ?? this.caseId,
+      role: role ?? this.role,
+      name: name ?? this.name,
+      valuesJson: valuesJson ?? this.valuesJson,
+      sortOrder: sortOrder ?? this.sortOrder,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (caseId.present) {
+      map['case_id'] = Variable<int>(caseId.value);
+    }
+    if (role.present) {
+      map['role'] = Variable<String>(role.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (valuesJson.present) {
+      map['values_json'] = Variable<String>(valuesJson.value);
+    }
+    if (sortOrder.present) {
+      map['sort_order'] = Variable<int>(sortOrder.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('IoPartiesCompanion(')
+          ..write('id: $id, ')
+          ..write('caseId: $caseId, ')
+          ..write('role: $role, ')
+          ..write('name: $name, ')
+          ..write('valuesJson: $valuesJson, ')
+          ..write('sortOrder: $sortOrder')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $IoExhibitsTable extends IoExhibits
+    with TableInfo<$IoExhibitsTable, IoExhibit> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $IoExhibitsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _caseIdMeta = const VerificationMeta('caseId');
+  @override
+  late final GeneratedColumn<int> caseId = GeneratedColumn<int>(
+    'case_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES io_cases (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _categoryMeta = const VerificationMeta(
+    'category',
+  );
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+    'category',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _seizedFromMeta = const VerificationMeta(
+    'seizedFrom',
+  );
+  @override
+  late final GeneratedColumn<String> seizedFrom = GeneratedColumn<String>(
+    'seized_from',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _exhibitNoMeta = const VerificationMeta(
+    'exhibitNo',
+  );
+  @override
+  late final GeneratedColumn<String> exhibitNo = GeneratedColumn<String>(
+    'exhibit_no',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  @override
+  late final GeneratedColumn<double> value = GeneratedColumn<double>(
+    'value',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _valuesJsonMeta = const VerificationMeta(
+    'valuesJson',
+  );
+  @override
+  late final GeneratedColumn<String> valuesJson = GeneratedColumn<String>(
+    'values_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sortOrderMeta = const VerificationMeta(
+    'sortOrder',
+  );
+  @override
+  late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
+    'sort_order',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    caseId,
+    description,
+    category,
+    seizedFrom,
+    exhibitNo,
+    value,
+    valuesJson,
+    sortOrder,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'io_exhibits';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<IoExhibit> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('case_id')) {
+      context.handle(
+        _caseIdMeta,
+        caseId.isAcceptableOrUnknown(data['case_id']!, _caseIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_caseIdMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_descriptionMeta);
+    }
+    if (data.containsKey('category')) {
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
+    }
+    if (data.containsKey('seized_from')) {
+      context.handle(
+        _seizedFromMeta,
+        seizedFrom.isAcceptableOrUnknown(data['seized_from']!, _seizedFromMeta),
+      );
+    }
+    if (data.containsKey('exhibit_no')) {
+      context.handle(
+        _exhibitNoMeta,
+        exhibitNo.isAcceptableOrUnknown(data['exhibit_no']!, _exhibitNoMeta),
+      );
+    }
+    if (data.containsKey('value')) {
+      context.handle(
+        _valueMeta,
+        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
+      );
+    }
+    if (data.containsKey('values_json')) {
+      context.handle(
+        _valuesJsonMeta,
+        valuesJson.isAcceptableOrUnknown(data['values_json']!, _valuesJsonMeta),
+      );
+    }
+    if (data.containsKey('sort_order')) {
+      context.handle(
+        _sortOrderMeta,
+        sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  IoExhibit map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return IoExhibit(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      caseId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}case_id'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category'],
+      ),
+      seizedFrom: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}seized_from'],
+      ),
+      exhibitNo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}exhibit_no'],
+      ),
+      value: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}value'],
+      ),
+      valuesJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}values_json'],
+      ),
+      sortOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sort_order'],
+      )!,
+    );
+  }
+
+  @override
+  $IoExhibitsTable createAlias(String alias) {
+    return $IoExhibitsTable(attachedDatabase, alias);
+  }
+}
+
+class IoExhibit extends DataClass implements Insertable<IoExhibit> {
+  final int id;
+  final int caseId;
+  final String description;
+
+  /// Category (two-wheeler / four-wheeler / jewellery / mobile / cash / other) to
+  /// drive specialised labels (e.g. mobile-seal form) and report bucketing.
+  final String? category;
+  final String? seizedFrom;
+  final String? exhibitNo;
+  final double? value;
+
+  /// Extra fields (make/model, IMEI, colour, marks, sealNo, …) as a JSON map.
+  final String? valuesJson;
+  final int sortOrder;
+  const IoExhibit({
+    required this.id,
+    required this.caseId,
+    required this.description,
+    this.category,
+    this.seizedFrom,
+    this.exhibitNo,
+    this.value,
+    this.valuesJson,
+    required this.sortOrder,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['case_id'] = Variable<int>(caseId);
+    map['description'] = Variable<String>(description);
+    if (!nullToAbsent || category != null) {
+      map['category'] = Variable<String>(category);
+    }
+    if (!nullToAbsent || seizedFrom != null) {
+      map['seized_from'] = Variable<String>(seizedFrom);
+    }
+    if (!nullToAbsent || exhibitNo != null) {
+      map['exhibit_no'] = Variable<String>(exhibitNo);
+    }
+    if (!nullToAbsent || value != null) {
+      map['value'] = Variable<double>(value);
+    }
+    if (!nullToAbsent || valuesJson != null) {
+      map['values_json'] = Variable<String>(valuesJson);
+    }
+    map['sort_order'] = Variable<int>(sortOrder);
+    return map;
+  }
+
+  IoExhibitsCompanion toCompanion(bool nullToAbsent) {
+    return IoExhibitsCompanion(
+      id: Value(id),
+      caseId: Value(caseId),
+      description: Value(description),
+      category: category == null && nullToAbsent
+          ? const Value.absent()
+          : Value(category),
+      seizedFrom: seizedFrom == null && nullToAbsent
+          ? const Value.absent()
+          : Value(seizedFrom),
+      exhibitNo: exhibitNo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(exhibitNo),
+      value: value == null && nullToAbsent
+          ? const Value.absent()
+          : Value(value),
+      valuesJson: valuesJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(valuesJson),
+      sortOrder: Value(sortOrder),
+    );
+  }
+
+  factory IoExhibit.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return IoExhibit(
+      id: serializer.fromJson<int>(json['id']),
+      caseId: serializer.fromJson<int>(json['caseId']),
+      description: serializer.fromJson<String>(json['description']),
+      category: serializer.fromJson<String?>(json['category']),
+      seizedFrom: serializer.fromJson<String?>(json['seizedFrom']),
+      exhibitNo: serializer.fromJson<String?>(json['exhibitNo']),
+      value: serializer.fromJson<double?>(json['value']),
+      valuesJson: serializer.fromJson<String?>(json['valuesJson']),
+      sortOrder: serializer.fromJson<int>(json['sortOrder']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'caseId': serializer.toJson<int>(caseId),
+      'description': serializer.toJson<String>(description),
+      'category': serializer.toJson<String?>(category),
+      'seizedFrom': serializer.toJson<String?>(seizedFrom),
+      'exhibitNo': serializer.toJson<String?>(exhibitNo),
+      'value': serializer.toJson<double?>(value),
+      'valuesJson': serializer.toJson<String?>(valuesJson),
+      'sortOrder': serializer.toJson<int>(sortOrder),
+    };
+  }
+
+  IoExhibit copyWith({
+    int? id,
+    int? caseId,
+    String? description,
+    Value<String?> category = const Value.absent(),
+    Value<String?> seizedFrom = const Value.absent(),
+    Value<String?> exhibitNo = const Value.absent(),
+    Value<double?> value = const Value.absent(),
+    Value<String?> valuesJson = const Value.absent(),
+    int? sortOrder,
+  }) => IoExhibit(
+    id: id ?? this.id,
+    caseId: caseId ?? this.caseId,
+    description: description ?? this.description,
+    category: category.present ? category.value : this.category,
+    seizedFrom: seizedFrom.present ? seizedFrom.value : this.seizedFrom,
+    exhibitNo: exhibitNo.present ? exhibitNo.value : this.exhibitNo,
+    value: value.present ? value.value : this.value,
+    valuesJson: valuesJson.present ? valuesJson.value : this.valuesJson,
+    sortOrder: sortOrder ?? this.sortOrder,
+  );
+  IoExhibit copyWithCompanion(IoExhibitsCompanion data) {
+    return IoExhibit(
+      id: data.id.present ? data.id.value : this.id,
+      caseId: data.caseId.present ? data.caseId.value : this.caseId,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      category: data.category.present ? data.category.value : this.category,
+      seizedFrom: data.seizedFrom.present
+          ? data.seizedFrom.value
+          : this.seizedFrom,
+      exhibitNo: data.exhibitNo.present ? data.exhibitNo.value : this.exhibitNo,
+      value: data.value.present ? data.value.value : this.value,
+      valuesJson: data.valuesJson.present
+          ? data.valuesJson.value
+          : this.valuesJson,
+      sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('IoExhibit(')
+          ..write('id: $id, ')
+          ..write('caseId: $caseId, ')
+          ..write('description: $description, ')
+          ..write('category: $category, ')
+          ..write('seizedFrom: $seizedFrom, ')
+          ..write('exhibitNo: $exhibitNo, ')
+          ..write('value: $value, ')
+          ..write('valuesJson: $valuesJson, ')
+          ..write('sortOrder: $sortOrder')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    caseId,
+    description,
+    category,
+    seizedFrom,
+    exhibitNo,
+    value,
+    valuesJson,
+    sortOrder,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is IoExhibit &&
+          other.id == this.id &&
+          other.caseId == this.caseId &&
+          other.description == this.description &&
+          other.category == this.category &&
+          other.seizedFrom == this.seizedFrom &&
+          other.exhibitNo == this.exhibitNo &&
+          other.value == this.value &&
+          other.valuesJson == this.valuesJson &&
+          other.sortOrder == this.sortOrder);
+}
+
+class IoExhibitsCompanion extends UpdateCompanion<IoExhibit> {
+  final Value<int> id;
+  final Value<int> caseId;
+  final Value<String> description;
+  final Value<String?> category;
+  final Value<String?> seizedFrom;
+  final Value<String?> exhibitNo;
+  final Value<double?> value;
+  final Value<String?> valuesJson;
+  final Value<int> sortOrder;
+  const IoExhibitsCompanion({
+    this.id = const Value.absent(),
+    this.caseId = const Value.absent(),
+    this.description = const Value.absent(),
+    this.category = const Value.absent(),
+    this.seizedFrom = const Value.absent(),
+    this.exhibitNo = const Value.absent(),
+    this.value = const Value.absent(),
+    this.valuesJson = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+  });
+  IoExhibitsCompanion.insert({
+    this.id = const Value.absent(),
+    required int caseId,
+    required String description,
+    this.category = const Value.absent(),
+    this.seizedFrom = const Value.absent(),
+    this.exhibitNo = const Value.absent(),
+    this.value = const Value.absent(),
+    this.valuesJson = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+  }) : caseId = Value(caseId),
+       description = Value(description);
+  static Insertable<IoExhibit> custom({
+    Expression<int>? id,
+    Expression<int>? caseId,
+    Expression<String>? description,
+    Expression<String>? category,
+    Expression<String>? seizedFrom,
+    Expression<String>? exhibitNo,
+    Expression<double>? value,
+    Expression<String>? valuesJson,
+    Expression<int>? sortOrder,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (caseId != null) 'case_id': caseId,
+      if (description != null) 'description': description,
+      if (category != null) 'category': category,
+      if (seizedFrom != null) 'seized_from': seizedFrom,
+      if (exhibitNo != null) 'exhibit_no': exhibitNo,
+      if (value != null) 'value': value,
+      if (valuesJson != null) 'values_json': valuesJson,
+      if (sortOrder != null) 'sort_order': sortOrder,
+    });
+  }
+
+  IoExhibitsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? caseId,
+    Value<String>? description,
+    Value<String?>? category,
+    Value<String?>? seizedFrom,
+    Value<String?>? exhibitNo,
+    Value<double?>? value,
+    Value<String?>? valuesJson,
+    Value<int>? sortOrder,
+  }) {
+    return IoExhibitsCompanion(
+      id: id ?? this.id,
+      caseId: caseId ?? this.caseId,
+      description: description ?? this.description,
+      category: category ?? this.category,
+      seizedFrom: seizedFrom ?? this.seizedFrom,
+      exhibitNo: exhibitNo ?? this.exhibitNo,
+      value: value ?? this.value,
+      valuesJson: valuesJson ?? this.valuesJson,
+      sortOrder: sortOrder ?? this.sortOrder,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (caseId.present) {
+      map['case_id'] = Variable<int>(caseId.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    if (seizedFrom.present) {
+      map['seized_from'] = Variable<String>(seizedFrom.value);
+    }
+    if (exhibitNo.present) {
+      map['exhibit_no'] = Variable<String>(exhibitNo.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<double>(value.value);
+    }
+    if (valuesJson.present) {
+      map['values_json'] = Variable<String>(valuesJson.value);
+    }
+    if (sortOrder.present) {
+      map['sort_order'] = Variable<int>(sortOrder.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('IoExhibitsCompanion(')
+          ..write('id: $id, ')
+          ..write('caseId: $caseId, ')
+          ..write('description: $description, ')
+          ..write('category: $category, ')
+          ..write('seizedFrom: $seizedFrom, ')
+          ..write('exhibitNo: $exhibitNo, ')
+          ..write('value: $value, ')
+          ..write('valuesJson: $valuesJson, ')
+          ..write('sortOrder: $sortOrder')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $IoFormsTable extends IoForms with TableInfo<$IoFormsTable, IoForm> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $IoFormsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _caseIdMeta = const VerificationMeta('caseId');
+  @override
+  late final GeneratedColumn<int> caseId = GeneratedColumn<int>(
+    'case_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES io_cases (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _formIdMeta = const VerificationMeta('formId');
+  @override
+  late final GeneratedColumn<String> formId = GeneratedColumn<String>(
+    'form_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _valuesJsonMeta = const VerificationMeta(
+    'valuesJson',
+  );
+  @override
+  late final GeneratedColumn<String> valuesJson = GeneratedColumn<String>(
+    'values_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('draft'),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    caseId,
+    formId,
+    title,
+    valuesJson,
+    status,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'io_forms';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<IoForm> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('case_id')) {
+      context.handle(
+        _caseIdMeta,
+        caseId.isAcceptableOrUnknown(data['case_id']!, _caseIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_caseIdMeta);
+    }
+    if (data.containsKey('form_id')) {
+      context.handle(
+        _formIdMeta,
+        formId.isAcceptableOrUnknown(data['form_id']!, _formIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_formIdMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    }
+    if (data.containsKey('values_json')) {
+      context.handle(
+        _valuesJsonMeta,
+        valuesJson.isAcceptableOrUnknown(data['values_json']!, _valuesJsonMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  IoForm map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return IoForm(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      caseId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}case_id'],
+      )!,
+      formId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}form_id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      ),
+      valuesJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}values_json'],
+      ),
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $IoFormsTable createAlias(String alias) {
+    return $IoFormsTable(attachedDatabase, alias);
+  }
+}
+
+class IoForm extends DataClass implements Insertable<IoForm> {
+  final int id;
+  final int caseId;
+
+  /// The form spec id (see io_forms_catalog.dart), e.g. 'scene_panchnama'.
+  final String formId;
+  final String? title;
+
+  /// field-id → value map for this form instance.
+  final String? valuesJson;
+
+  /// draft | complete.
+  final String status;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const IoForm({
+    required this.id,
+    required this.caseId,
+    required this.formId,
+    this.title,
+    this.valuesJson,
+    required this.status,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['case_id'] = Variable<int>(caseId);
+    map['form_id'] = Variable<String>(formId);
+    if (!nullToAbsent || title != null) {
+      map['title'] = Variable<String>(title);
+    }
+    if (!nullToAbsent || valuesJson != null) {
+      map['values_json'] = Variable<String>(valuesJson);
+    }
+    map['status'] = Variable<String>(status);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  IoFormsCompanion toCompanion(bool nullToAbsent) {
+    return IoFormsCompanion(
+      id: Value(id),
+      caseId: Value(caseId),
+      formId: Value(formId),
+      title: title == null && nullToAbsent
+          ? const Value.absent()
+          : Value(title),
+      valuesJson: valuesJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(valuesJson),
+      status: Value(status),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory IoForm.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return IoForm(
+      id: serializer.fromJson<int>(json['id']),
+      caseId: serializer.fromJson<int>(json['caseId']),
+      formId: serializer.fromJson<String>(json['formId']),
+      title: serializer.fromJson<String?>(json['title']),
+      valuesJson: serializer.fromJson<String?>(json['valuesJson']),
+      status: serializer.fromJson<String>(json['status']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'caseId': serializer.toJson<int>(caseId),
+      'formId': serializer.toJson<String>(formId),
+      'title': serializer.toJson<String?>(title),
+      'valuesJson': serializer.toJson<String?>(valuesJson),
+      'status': serializer.toJson<String>(status),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  IoForm copyWith({
+    int? id,
+    int? caseId,
+    String? formId,
+    Value<String?> title = const Value.absent(),
+    Value<String?> valuesJson = const Value.absent(),
+    String? status,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => IoForm(
+    id: id ?? this.id,
+    caseId: caseId ?? this.caseId,
+    formId: formId ?? this.formId,
+    title: title.present ? title.value : this.title,
+    valuesJson: valuesJson.present ? valuesJson.value : this.valuesJson,
+    status: status ?? this.status,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  IoForm copyWithCompanion(IoFormsCompanion data) {
+    return IoForm(
+      id: data.id.present ? data.id.value : this.id,
+      caseId: data.caseId.present ? data.caseId.value : this.caseId,
+      formId: data.formId.present ? data.formId.value : this.formId,
+      title: data.title.present ? data.title.value : this.title,
+      valuesJson: data.valuesJson.present
+          ? data.valuesJson.value
+          : this.valuesJson,
+      status: data.status.present ? data.status.value : this.status,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('IoForm(')
+          ..write('id: $id, ')
+          ..write('caseId: $caseId, ')
+          ..write('formId: $formId, ')
+          ..write('title: $title, ')
+          ..write('valuesJson: $valuesJson, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    caseId,
+    formId,
+    title,
+    valuesJson,
+    status,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is IoForm &&
+          other.id == this.id &&
+          other.caseId == this.caseId &&
+          other.formId == this.formId &&
+          other.title == this.title &&
+          other.valuesJson == this.valuesJson &&
+          other.status == this.status &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class IoFormsCompanion extends UpdateCompanion<IoForm> {
+  final Value<int> id;
+  final Value<int> caseId;
+  final Value<String> formId;
+  final Value<String?> title;
+  final Value<String?> valuesJson;
+  final Value<String> status;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const IoFormsCompanion({
+    this.id = const Value.absent(),
+    this.caseId = const Value.absent(),
+    this.formId = const Value.absent(),
+    this.title = const Value.absent(),
+    this.valuesJson = const Value.absent(),
+    this.status = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  IoFormsCompanion.insert({
+    this.id = const Value.absent(),
+    required int caseId,
+    required String formId,
+    this.title = const Value.absent(),
+    this.valuesJson = const Value.absent(),
+    this.status = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : caseId = Value(caseId),
+       formId = Value(formId);
+  static Insertable<IoForm> custom({
+    Expression<int>? id,
+    Expression<int>? caseId,
+    Expression<String>? formId,
+    Expression<String>? title,
+    Expression<String>? valuesJson,
+    Expression<String>? status,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (caseId != null) 'case_id': caseId,
+      if (formId != null) 'form_id': formId,
+      if (title != null) 'title': title,
+      if (valuesJson != null) 'values_json': valuesJson,
+      if (status != null) 'status': status,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  IoFormsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? caseId,
+    Value<String>? formId,
+    Value<String?>? title,
+    Value<String?>? valuesJson,
+    Value<String>? status,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return IoFormsCompanion(
+      id: id ?? this.id,
+      caseId: caseId ?? this.caseId,
+      formId: formId ?? this.formId,
+      title: title ?? this.title,
+      valuesJson: valuesJson ?? this.valuesJson,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (caseId.present) {
+      map['case_id'] = Variable<int>(caseId.value);
+    }
+    if (formId.present) {
+      map['form_id'] = Variable<String>(formId.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (valuesJson.present) {
+      map['values_json'] = Variable<String>(valuesJson.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('IoFormsCompanion(')
+          ..write('id: $id, ')
+          ..write('caseId: $caseId, ')
+          ..write('formId: $formId, ')
+          ..write('title: $title, ')
+          ..write('valuesJson: $valuesJson, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $IoMediaTable extends IoMedia with TableInfo<$IoMediaTable, IoMediaData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $IoMediaTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _caseIdMeta = const VerificationMeta('caseId');
+  @override
+  late final GeneratedColumn<int> caseId = GeneratedColumn<int>(
+    'case_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES io_cases (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _formIdMeta = const VerificationMeta('formId');
+  @override
+  late final GeneratedColumn<String> formId = GeneratedColumn<String>(
+    'form_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _filePathMeta = const VerificationMeta(
+    'filePath',
+  );
+  @override
+  late final GeneratedColumn<String> filePath = GeneratedColumn<String>(
+    'file_path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _captionMeta = const VerificationMeta(
+    'caption',
+  );
+  @override
+  late final GeneratedColumn<String> caption = GeneratedColumn<String>(
+    'caption',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _latMeta = const VerificationMeta('lat');
+  @override
+  late final GeneratedColumn<double> lat = GeneratedColumn<double>(
+    'lat',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lngMeta = const VerificationMeta('lng');
+  @override
+  late final GeneratedColumn<double> lng = GeneratedColumn<double>(
+    'lng',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _capturedAtMeta = const VerificationMeta(
+    'capturedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> capturedAt = GeneratedColumn<DateTime>(
+    'captured_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    caseId,
+    formId,
+    kind,
+    filePath,
+    caption,
+    lat,
+    lng,
+    capturedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'io_media';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<IoMediaData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('case_id')) {
+      context.handle(
+        _caseIdMeta,
+        caseId.isAcceptableOrUnknown(data['case_id']!, _caseIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_caseIdMeta);
+    }
+    if (data.containsKey('form_id')) {
+      context.handle(
+        _formIdMeta,
+        formId.isAcceptableOrUnknown(data['form_id']!, _formIdMeta),
+      );
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('file_path')) {
+      context.handle(
+        _filePathMeta,
+        filePath.isAcceptableOrUnknown(data['file_path']!, _filePathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_filePathMeta);
+    }
+    if (data.containsKey('caption')) {
+      context.handle(
+        _captionMeta,
+        caption.isAcceptableOrUnknown(data['caption']!, _captionMeta),
+      );
+    }
+    if (data.containsKey('lat')) {
+      context.handle(
+        _latMeta,
+        lat.isAcceptableOrUnknown(data['lat']!, _latMeta),
+      );
+    }
+    if (data.containsKey('lng')) {
+      context.handle(
+        _lngMeta,
+        lng.isAcceptableOrUnknown(data['lng']!, _lngMeta),
+      );
+    }
+    if (data.containsKey('captured_at')) {
+      context.handle(
+        _capturedAtMeta,
+        capturedAt.isAcceptableOrUnknown(data['captured_at']!, _capturedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  IoMediaData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return IoMediaData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      caseId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}case_id'],
+      )!,
+      formId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}form_id'],
+      ),
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      filePath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}file_path'],
+      )!,
+      caption: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}caption'],
+      ),
+      lat: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}lat'],
+      ),
+      lng: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}lng'],
+      ),
+      capturedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}captured_at'],
+      )!,
+    );
+  }
+
+  @override
+  $IoMediaTable createAlias(String alias) {
+    return $IoMediaTable(attachedDatabase, alias);
+  }
+}
+
+class IoMediaData extends DataClass implements Insertable<IoMediaData> {
+  final int id;
+  final int caseId;
+
+  /// Optional form the media belongs to (null = case-level scene gallery).
+  final String? formId;
+
+  /// photo | signature | audio | video.
+  final String kind;
+  final String filePath;
+  final String? caption;
+
+  /// Scene GPS at capture time (from the device), for the panchnama's location.
+  final double? lat;
+  final double? lng;
+  final DateTime capturedAt;
+  const IoMediaData({
+    required this.id,
+    required this.caseId,
+    this.formId,
+    required this.kind,
+    required this.filePath,
+    this.caption,
+    this.lat,
+    this.lng,
+    required this.capturedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['case_id'] = Variable<int>(caseId);
+    if (!nullToAbsent || formId != null) {
+      map['form_id'] = Variable<String>(formId);
+    }
+    map['kind'] = Variable<String>(kind);
+    map['file_path'] = Variable<String>(filePath);
+    if (!nullToAbsent || caption != null) {
+      map['caption'] = Variable<String>(caption);
+    }
+    if (!nullToAbsent || lat != null) {
+      map['lat'] = Variable<double>(lat);
+    }
+    if (!nullToAbsent || lng != null) {
+      map['lng'] = Variable<double>(lng);
+    }
+    map['captured_at'] = Variable<DateTime>(capturedAt);
+    return map;
+  }
+
+  IoMediaCompanion toCompanion(bool nullToAbsent) {
+    return IoMediaCompanion(
+      id: Value(id),
+      caseId: Value(caseId),
+      formId: formId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(formId),
+      kind: Value(kind),
+      filePath: Value(filePath),
+      caption: caption == null && nullToAbsent
+          ? const Value.absent()
+          : Value(caption),
+      lat: lat == null && nullToAbsent ? const Value.absent() : Value(lat),
+      lng: lng == null && nullToAbsent ? const Value.absent() : Value(lng),
+      capturedAt: Value(capturedAt),
+    );
+  }
+
+  factory IoMediaData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return IoMediaData(
+      id: serializer.fromJson<int>(json['id']),
+      caseId: serializer.fromJson<int>(json['caseId']),
+      formId: serializer.fromJson<String?>(json['formId']),
+      kind: serializer.fromJson<String>(json['kind']),
+      filePath: serializer.fromJson<String>(json['filePath']),
+      caption: serializer.fromJson<String?>(json['caption']),
+      lat: serializer.fromJson<double?>(json['lat']),
+      lng: serializer.fromJson<double?>(json['lng']),
+      capturedAt: serializer.fromJson<DateTime>(json['capturedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'caseId': serializer.toJson<int>(caseId),
+      'formId': serializer.toJson<String?>(formId),
+      'kind': serializer.toJson<String>(kind),
+      'filePath': serializer.toJson<String>(filePath),
+      'caption': serializer.toJson<String?>(caption),
+      'lat': serializer.toJson<double?>(lat),
+      'lng': serializer.toJson<double?>(lng),
+      'capturedAt': serializer.toJson<DateTime>(capturedAt),
+    };
+  }
+
+  IoMediaData copyWith({
+    int? id,
+    int? caseId,
+    Value<String?> formId = const Value.absent(),
+    String? kind,
+    String? filePath,
+    Value<String?> caption = const Value.absent(),
+    Value<double?> lat = const Value.absent(),
+    Value<double?> lng = const Value.absent(),
+    DateTime? capturedAt,
+  }) => IoMediaData(
+    id: id ?? this.id,
+    caseId: caseId ?? this.caseId,
+    formId: formId.present ? formId.value : this.formId,
+    kind: kind ?? this.kind,
+    filePath: filePath ?? this.filePath,
+    caption: caption.present ? caption.value : this.caption,
+    lat: lat.present ? lat.value : this.lat,
+    lng: lng.present ? lng.value : this.lng,
+    capturedAt: capturedAt ?? this.capturedAt,
+  );
+  IoMediaData copyWithCompanion(IoMediaCompanion data) {
+    return IoMediaData(
+      id: data.id.present ? data.id.value : this.id,
+      caseId: data.caseId.present ? data.caseId.value : this.caseId,
+      formId: data.formId.present ? data.formId.value : this.formId,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      filePath: data.filePath.present ? data.filePath.value : this.filePath,
+      caption: data.caption.present ? data.caption.value : this.caption,
+      lat: data.lat.present ? data.lat.value : this.lat,
+      lng: data.lng.present ? data.lng.value : this.lng,
+      capturedAt: data.capturedAt.present
+          ? data.capturedAt.value
+          : this.capturedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('IoMediaData(')
+          ..write('id: $id, ')
+          ..write('caseId: $caseId, ')
+          ..write('formId: $formId, ')
+          ..write('kind: $kind, ')
+          ..write('filePath: $filePath, ')
+          ..write('caption: $caption, ')
+          ..write('lat: $lat, ')
+          ..write('lng: $lng, ')
+          ..write('capturedAt: $capturedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    caseId,
+    formId,
+    kind,
+    filePath,
+    caption,
+    lat,
+    lng,
+    capturedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is IoMediaData &&
+          other.id == this.id &&
+          other.caseId == this.caseId &&
+          other.formId == this.formId &&
+          other.kind == this.kind &&
+          other.filePath == this.filePath &&
+          other.caption == this.caption &&
+          other.lat == this.lat &&
+          other.lng == this.lng &&
+          other.capturedAt == this.capturedAt);
+}
+
+class IoMediaCompanion extends UpdateCompanion<IoMediaData> {
+  final Value<int> id;
+  final Value<int> caseId;
+  final Value<String?> formId;
+  final Value<String> kind;
+  final Value<String> filePath;
+  final Value<String?> caption;
+  final Value<double?> lat;
+  final Value<double?> lng;
+  final Value<DateTime> capturedAt;
+  const IoMediaCompanion({
+    this.id = const Value.absent(),
+    this.caseId = const Value.absent(),
+    this.formId = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.filePath = const Value.absent(),
+    this.caption = const Value.absent(),
+    this.lat = const Value.absent(),
+    this.lng = const Value.absent(),
+    this.capturedAt = const Value.absent(),
+  });
+  IoMediaCompanion.insert({
+    this.id = const Value.absent(),
+    required int caseId,
+    this.formId = const Value.absent(),
+    required String kind,
+    required String filePath,
+    this.caption = const Value.absent(),
+    this.lat = const Value.absent(),
+    this.lng = const Value.absent(),
+    this.capturedAt = const Value.absent(),
+  }) : caseId = Value(caseId),
+       kind = Value(kind),
+       filePath = Value(filePath);
+  static Insertable<IoMediaData> custom({
+    Expression<int>? id,
+    Expression<int>? caseId,
+    Expression<String>? formId,
+    Expression<String>? kind,
+    Expression<String>? filePath,
+    Expression<String>? caption,
+    Expression<double>? lat,
+    Expression<double>? lng,
+    Expression<DateTime>? capturedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (caseId != null) 'case_id': caseId,
+      if (formId != null) 'form_id': formId,
+      if (kind != null) 'kind': kind,
+      if (filePath != null) 'file_path': filePath,
+      if (caption != null) 'caption': caption,
+      if (lat != null) 'lat': lat,
+      if (lng != null) 'lng': lng,
+      if (capturedAt != null) 'captured_at': capturedAt,
+    });
+  }
+
+  IoMediaCompanion copyWith({
+    Value<int>? id,
+    Value<int>? caseId,
+    Value<String?>? formId,
+    Value<String>? kind,
+    Value<String>? filePath,
+    Value<String?>? caption,
+    Value<double?>? lat,
+    Value<double?>? lng,
+    Value<DateTime>? capturedAt,
+  }) {
+    return IoMediaCompanion(
+      id: id ?? this.id,
+      caseId: caseId ?? this.caseId,
+      formId: formId ?? this.formId,
+      kind: kind ?? this.kind,
+      filePath: filePath ?? this.filePath,
+      caption: caption ?? this.caption,
+      lat: lat ?? this.lat,
+      lng: lng ?? this.lng,
+      capturedAt: capturedAt ?? this.capturedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (caseId.present) {
+      map['case_id'] = Variable<int>(caseId.value);
+    }
+    if (formId.present) {
+      map['form_id'] = Variable<String>(formId.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (filePath.present) {
+      map['file_path'] = Variable<String>(filePath.value);
+    }
+    if (caption.present) {
+      map['caption'] = Variable<String>(caption.value);
+    }
+    if (lat.present) {
+      map['lat'] = Variable<double>(lat.value);
+    }
+    if (lng.present) {
+      map['lng'] = Variable<double>(lng.value);
+    }
+    if (capturedAt.present) {
+      map['captured_at'] = Variable<DateTime>(capturedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('IoMediaCompanion(')
+          ..write('id: $id, ')
+          ..write('caseId: $caseId, ')
+          ..write('formId: $formId, ')
+          ..write('kind: $kind, ')
+          ..write('filePath: $filePath, ')
+          ..write('caption: $caption, ')
+          ..write('lat: $lat, ')
+          ..write('lng: $lng, ')
+          ..write('capturedAt: $capturedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -7623,6 +12670,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $AuditLogTable auditLog = $AuditLogTable(this);
+  late final $IoCasesTable ioCases = $IoCasesTable(this);
+  late final $IoPartiesTable ioParties = $IoPartiesTable(this);
+  late final $IoExhibitsTable ioExhibits = $IoExhibitsTable(this);
+  late final $IoFormsTable ioForms = $IoFormsTable(this);
+  late final $IoMediaTable ioMedia = $IoMediaTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -7642,6 +12694,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     users,
     reportTemplates,
     auditLog,
+    ioCases,
+    ioParties,
+    ioExhibits,
+    ioForms,
+    ioMedia,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -7708,6 +12765,34 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       ),
       result: [TableUpdate('custom_field_values', kind: UpdateKind.delete)],
     ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'io_cases',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('io_parties', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'io_cases',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('io_exhibits', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'io_cases',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('io_forms', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'io_cases',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('io_media', kind: UpdateKind.delete)],
+    ),
   ]);
 }
 
@@ -7722,13 +12807,33 @@ typedef $$CrimesTableCreateCompanionBuilder =
       Value<String?> district,
       Value<String?> policeStation,
       Value<DateTime?> dateOccurred,
+      Value<DateTime?> dateOccurredTo,
       Value<String?> timeOccurred,
+      Value<String?> timeOccurredTo,
       Value<String?> placeOccurred,
       Value<DateTime?> dateRegistered,
       Value<String?> timeRegistered,
       Value<String?> crimeType,
+      Value<String?> remoteUid,
       Value<String> status,
+      Value<String?> courtType,
+      Value<String> caseStage,
       Value<String?> detailedDescription,
+      Value<DateTime?> firDate,
+      Value<String?> firTime,
+      Value<DateTime?> infoReceivedDate,
+      Value<String?> infoReceivedTime,
+      Value<DateTime?> gdDate,
+      Value<String?> gdTime,
+      Value<String?> gdEntryNo,
+      Value<String?> occurrenceDay,
+      Value<String?> typeOfInformation,
+      Value<String?> beatNo,
+      Value<String?> directionDistance,
+      Value<String?> outsidePsName,
+      Value<String?> outsidePsDistrict,
+      Value<String?> delayReason,
+      Value<String?> inquestUdNo,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
     });
@@ -7743,13 +12848,33 @@ typedef $$CrimesTableUpdateCompanionBuilder =
       Value<String?> district,
       Value<String?> policeStation,
       Value<DateTime?> dateOccurred,
+      Value<DateTime?> dateOccurredTo,
       Value<String?> timeOccurred,
+      Value<String?> timeOccurredTo,
       Value<String?> placeOccurred,
       Value<DateTime?> dateRegistered,
       Value<String?> timeRegistered,
       Value<String?> crimeType,
+      Value<String?> remoteUid,
       Value<String> status,
+      Value<String?> courtType,
+      Value<String> caseStage,
       Value<String?> detailedDescription,
+      Value<DateTime?> firDate,
+      Value<String?> firTime,
+      Value<DateTime?> infoReceivedDate,
+      Value<String?> infoReceivedTime,
+      Value<DateTime?> gdDate,
+      Value<String?> gdTime,
+      Value<String?> gdEntryNo,
+      Value<String?> occurrenceDay,
+      Value<String?> typeOfInformation,
+      Value<String?> beatNo,
+      Value<String?> directionDistance,
+      Value<String?> outsidePsName,
+      Value<String?> outsidePsDistrict,
+      Value<String?> delayReason,
+      Value<String?> inquestUdNo,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
     });
@@ -7966,8 +13091,18 @@ class $$CrimesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<DateTime> get dateOccurredTo => $composableBuilder(
+    column: $table.dateOccurredTo,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get timeOccurred => $composableBuilder(
     column: $table.timeOccurred,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get timeOccurredTo => $composableBuilder(
+    column: $table.timeOccurredTo,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7991,13 +13126,103 @@ class $$CrimesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get remoteUid => $composableBuilder(
+    column: $table.remoteUid,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get status => $composableBuilder(
     column: $table.status,
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get courtType => $composableBuilder(
+    column: $table.courtType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get caseStage => $composableBuilder(
+    column: $table.caseStage,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get detailedDescription => $composableBuilder(
     column: $table.detailedDescription,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get firDate => $composableBuilder(
+    column: $table.firDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get firTime => $composableBuilder(
+    column: $table.firTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get infoReceivedDate => $composableBuilder(
+    column: $table.infoReceivedDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get infoReceivedTime => $composableBuilder(
+    column: $table.infoReceivedTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get gdDate => $composableBuilder(
+    column: $table.gdDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get gdTime => $composableBuilder(
+    column: $table.gdTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get gdEntryNo => $composableBuilder(
+    column: $table.gdEntryNo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get occurrenceDay => $composableBuilder(
+    column: $table.occurrenceDay,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get typeOfInformation => $composableBuilder(
+    column: $table.typeOfInformation,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get beatNo => $composableBuilder(
+    column: $table.beatNo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get directionDistance => $composableBuilder(
+    column: $table.directionDistance,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get outsidePsName => $composableBuilder(
+    column: $table.outsidePsName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get outsidePsDistrict => $composableBuilder(
+    column: $table.outsidePsDistrict,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get delayReason => $composableBuilder(
+    column: $table.delayReason,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get inquestUdNo => $composableBuilder(
+    column: $table.inquestUdNo,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -8266,8 +13491,18 @@ class $$CrimesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get dateOccurredTo => $composableBuilder(
+    column: $table.dateOccurredTo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get timeOccurred => $composableBuilder(
     column: $table.timeOccurred,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get timeOccurredTo => $composableBuilder(
+    column: $table.timeOccurredTo,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -8291,13 +13526,103 @@ class $$CrimesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get remoteUid => $composableBuilder(
+    column: $table.remoteUid,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get status => $composableBuilder(
     column: $table.status,
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get courtType => $composableBuilder(
+    column: $table.courtType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get caseStage => $composableBuilder(
+    column: $table.caseStage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get detailedDescription => $composableBuilder(
     column: $table.detailedDescription,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get firDate => $composableBuilder(
+    column: $table.firDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get firTime => $composableBuilder(
+    column: $table.firTime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get infoReceivedDate => $composableBuilder(
+    column: $table.infoReceivedDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get infoReceivedTime => $composableBuilder(
+    column: $table.infoReceivedTime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get gdDate => $composableBuilder(
+    column: $table.gdDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get gdTime => $composableBuilder(
+    column: $table.gdTime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get gdEntryNo => $composableBuilder(
+    column: $table.gdEntryNo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get occurrenceDay => $composableBuilder(
+    column: $table.occurrenceDay,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get typeOfInformation => $composableBuilder(
+    column: $table.typeOfInformation,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get beatNo => $composableBuilder(
+    column: $table.beatNo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get directionDistance => $composableBuilder(
+    column: $table.directionDistance,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get outsidePsName => $composableBuilder(
+    column: $table.outsidePsName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get outsidePsDistrict => $composableBuilder(
+    column: $table.outsidePsDistrict,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get delayReason => $composableBuilder(
+    column: $table.delayReason,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get inquestUdNo => $composableBuilder(
+    column: $table.inquestUdNo,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -8354,8 +13679,18 @@ class $$CrimesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<DateTime> get dateOccurredTo => $composableBuilder(
+    column: $table.dateOccurredTo,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get timeOccurred => $composableBuilder(
     column: $table.timeOccurred,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get timeOccurredTo => $composableBuilder(
+    column: $table.timeOccurredTo,
     builder: (column) => column,
   );
 
@@ -8377,11 +13712,83 @@ class $$CrimesTableAnnotationComposer
   GeneratedColumn<String> get crimeType =>
       $composableBuilder(column: $table.crimeType, builder: (column) => column);
 
+  GeneratedColumn<String> get remoteUid =>
+      $composableBuilder(column: $table.remoteUid, builder: (column) => column);
+
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
 
+  GeneratedColumn<String> get courtType =>
+      $composableBuilder(column: $table.courtType, builder: (column) => column);
+
+  GeneratedColumn<String> get caseStage =>
+      $composableBuilder(column: $table.caseStage, builder: (column) => column);
+
   GeneratedColumn<String> get detailedDescription => $composableBuilder(
     column: $table.detailedDescription,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get firDate =>
+      $composableBuilder(column: $table.firDate, builder: (column) => column);
+
+  GeneratedColumn<String> get firTime =>
+      $composableBuilder(column: $table.firTime, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get infoReceivedDate => $composableBuilder(
+    column: $table.infoReceivedDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get infoReceivedTime => $composableBuilder(
+    column: $table.infoReceivedTime,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get gdDate =>
+      $composableBuilder(column: $table.gdDate, builder: (column) => column);
+
+  GeneratedColumn<String> get gdTime =>
+      $composableBuilder(column: $table.gdTime, builder: (column) => column);
+
+  GeneratedColumn<String> get gdEntryNo =>
+      $composableBuilder(column: $table.gdEntryNo, builder: (column) => column);
+
+  GeneratedColumn<String> get occurrenceDay => $composableBuilder(
+    column: $table.occurrenceDay,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get typeOfInformation => $composableBuilder(
+    column: $table.typeOfInformation,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get beatNo =>
+      $composableBuilder(column: $table.beatNo, builder: (column) => column);
+
+  GeneratedColumn<String> get directionDistance => $composableBuilder(
+    column: $table.directionDistance,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get outsidePsName => $composableBuilder(
+    column: $table.outsidePsName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get outsidePsDistrict => $composableBuilder(
+    column: $table.outsidePsDistrict,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get delayReason => $composableBuilder(
+    column: $table.delayReason,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get inquestUdNo => $composableBuilder(
+    column: $table.inquestUdNo,
     builder: (column) => column,
   );
 
@@ -8640,13 +14047,33 @@ class $$CrimesTableTableManager
                 Value<String?> district = const Value.absent(),
                 Value<String?> policeStation = const Value.absent(),
                 Value<DateTime?> dateOccurred = const Value.absent(),
+                Value<DateTime?> dateOccurredTo = const Value.absent(),
                 Value<String?> timeOccurred = const Value.absent(),
+                Value<String?> timeOccurredTo = const Value.absent(),
                 Value<String?> placeOccurred = const Value.absent(),
                 Value<DateTime?> dateRegistered = const Value.absent(),
                 Value<String?> timeRegistered = const Value.absent(),
                 Value<String?> crimeType = const Value.absent(),
+                Value<String?> remoteUid = const Value.absent(),
                 Value<String> status = const Value.absent(),
+                Value<String?> courtType = const Value.absent(),
+                Value<String> caseStage = const Value.absent(),
                 Value<String?> detailedDescription = const Value.absent(),
+                Value<DateTime?> firDate = const Value.absent(),
+                Value<String?> firTime = const Value.absent(),
+                Value<DateTime?> infoReceivedDate = const Value.absent(),
+                Value<String?> infoReceivedTime = const Value.absent(),
+                Value<DateTime?> gdDate = const Value.absent(),
+                Value<String?> gdTime = const Value.absent(),
+                Value<String?> gdEntryNo = const Value.absent(),
+                Value<String?> occurrenceDay = const Value.absent(),
+                Value<String?> typeOfInformation = const Value.absent(),
+                Value<String?> beatNo = const Value.absent(),
+                Value<String?> directionDistance = const Value.absent(),
+                Value<String?> outsidePsName = const Value.absent(),
+                Value<String?> outsidePsDistrict = const Value.absent(),
+                Value<String?> delayReason = const Value.absent(),
+                Value<String?> inquestUdNo = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => CrimesCompanion(
@@ -8659,13 +14086,33 @@ class $$CrimesTableTableManager
                 district: district,
                 policeStation: policeStation,
                 dateOccurred: dateOccurred,
+                dateOccurredTo: dateOccurredTo,
                 timeOccurred: timeOccurred,
+                timeOccurredTo: timeOccurredTo,
                 placeOccurred: placeOccurred,
                 dateRegistered: dateRegistered,
                 timeRegistered: timeRegistered,
                 crimeType: crimeType,
+                remoteUid: remoteUid,
                 status: status,
+                courtType: courtType,
+                caseStage: caseStage,
                 detailedDescription: detailedDescription,
+                firDate: firDate,
+                firTime: firTime,
+                infoReceivedDate: infoReceivedDate,
+                infoReceivedTime: infoReceivedTime,
+                gdDate: gdDate,
+                gdTime: gdTime,
+                gdEntryNo: gdEntryNo,
+                occurrenceDay: occurrenceDay,
+                typeOfInformation: typeOfInformation,
+                beatNo: beatNo,
+                directionDistance: directionDistance,
+                outsidePsName: outsidePsName,
+                outsidePsDistrict: outsidePsDistrict,
+                delayReason: delayReason,
+                inquestUdNo: inquestUdNo,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),
@@ -8680,13 +14127,33 @@ class $$CrimesTableTableManager
                 Value<String?> district = const Value.absent(),
                 Value<String?> policeStation = const Value.absent(),
                 Value<DateTime?> dateOccurred = const Value.absent(),
+                Value<DateTime?> dateOccurredTo = const Value.absent(),
                 Value<String?> timeOccurred = const Value.absent(),
+                Value<String?> timeOccurredTo = const Value.absent(),
                 Value<String?> placeOccurred = const Value.absent(),
                 Value<DateTime?> dateRegistered = const Value.absent(),
                 Value<String?> timeRegistered = const Value.absent(),
                 Value<String?> crimeType = const Value.absent(),
+                Value<String?> remoteUid = const Value.absent(),
                 Value<String> status = const Value.absent(),
+                Value<String?> courtType = const Value.absent(),
+                Value<String> caseStage = const Value.absent(),
                 Value<String?> detailedDescription = const Value.absent(),
+                Value<DateTime?> firDate = const Value.absent(),
+                Value<String?> firTime = const Value.absent(),
+                Value<DateTime?> infoReceivedDate = const Value.absent(),
+                Value<String?> infoReceivedTime = const Value.absent(),
+                Value<DateTime?> gdDate = const Value.absent(),
+                Value<String?> gdTime = const Value.absent(),
+                Value<String?> gdEntryNo = const Value.absent(),
+                Value<String?> occurrenceDay = const Value.absent(),
+                Value<String?> typeOfInformation = const Value.absent(),
+                Value<String?> beatNo = const Value.absent(),
+                Value<String?> directionDistance = const Value.absent(),
+                Value<String?> outsidePsName = const Value.absent(),
+                Value<String?> outsidePsDistrict = const Value.absent(),
+                Value<String?> delayReason = const Value.absent(),
+                Value<String?> inquestUdNo = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => CrimesCompanion.insert(
@@ -8699,13 +14166,33 @@ class $$CrimesTableTableManager
                 district: district,
                 policeStation: policeStation,
                 dateOccurred: dateOccurred,
+                dateOccurredTo: dateOccurredTo,
                 timeOccurred: timeOccurred,
+                timeOccurredTo: timeOccurredTo,
                 placeOccurred: placeOccurred,
                 dateRegistered: dateRegistered,
                 timeRegistered: timeRegistered,
                 crimeType: crimeType,
+                remoteUid: remoteUid,
                 status: status,
+                courtType: courtType,
+                caseStage: caseStage,
                 detailedDescription: detailedDescription,
+                firDate: firDate,
+                firTime: firTime,
+                infoReceivedDate: infoReceivedDate,
+                infoReceivedTime: infoReceivedTime,
+                gdDate: gdDate,
+                gdTime: gdTime,
+                gdEntryNo: gdEntryNo,
+                occurrenceDay: occurrenceDay,
+                typeOfInformation: typeOfInformation,
+                beatNo: beatNo,
+                directionDistance: directionDistance,
+                outsidePsName: outsidePsName,
+                outsidePsDistrict: outsidePsDistrict,
+                delayReason: delayReason,
+                inquestUdNo: inquestUdNo,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),
@@ -8947,12 +14434,20 @@ typedef $$ComplainantsTableCreateCompanionBuilder =
       required String name,
       Value<String?> gender,
       Value<int?> age,
+      Value<String?> ageText,
       Value<String?> address,
       Value<String?> mobile,
       Value<String?> email,
       Value<String?> aadhaarEnc,
       Value<String?> panEnc,
       Value<String?> passport,
+      Value<String?> fatherHusbandName,
+      Value<int?> birthYear,
+      Value<String?> nationality,
+      Value<String?> occupation,
+      Value<String?> permanentAddress,
+      Value<String?> idType,
+      Value<String?> idNumber,
     });
 typedef $$ComplainantsTableUpdateCompanionBuilder =
     ComplainantsCompanion Function({
@@ -8961,12 +14456,20 @@ typedef $$ComplainantsTableUpdateCompanionBuilder =
       Value<String> name,
       Value<String?> gender,
       Value<int?> age,
+      Value<String?> ageText,
       Value<String?> address,
       Value<String?> mobile,
       Value<String?> email,
       Value<String?> aadhaarEnc,
       Value<String?> panEnc,
       Value<String?> passport,
+      Value<String?> fatherHusbandName,
+      Value<int?> birthYear,
+      Value<String?> nationality,
+      Value<String?> occupation,
+      Value<String?> permanentAddress,
+      Value<String?> idType,
+      Value<String?> idNumber,
     });
 
 final class $$ComplainantsTableReferences
@@ -9020,6 +14523,11 @@ class $$ComplainantsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get ageText => $composableBuilder(
+    column: $table.ageText,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get address => $composableBuilder(
     column: $table.address,
     builder: (column) => ColumnFilters(column),
@@ -9047,6 +14555,41 @@ class $$ComplainantsTableFilterComposer
 
   ColumnFilters<String> get passport => $composableBuilder(
     column: $table.passport,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fatherHusbandName => $composableBuilder(
+    column: $table.fatherHusbandName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get birthYear => $composableBuilder(
+    column: $table.birthYear,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nationality => $composableBuilder(
+    column: $table.nationality,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get occupation => $composableBuilder(
+    column: $table.occupation,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get permanentAddress => $composableBuilder(
+    column: $table.permanentAddress,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get idType => $composableBuilder(
+    column: $table.idType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get idNumber => $composableBuilder(
+    column: $table.idNumber,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9103,6 +14646,11 @@ class $$ComplainantsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get ageText => $composableBuilder(
+    column: $table.ageText,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get address => $composableBuilder(
     column: $table.address,
     builder: (column) => ColumnOrderings(column),
@@ -9130,6 +14678,41 @@ class $$ComplainantsTableOrderingComposer
 
   ColumnOrderings<String> get passport => $composableBuilder(
     column: $table.passport,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get fatherHusbandName => $composableBuilder(
+    column: $table.fatherHusbandName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get birthYear => $composableBuilder(
+    column: $table.birthYear,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nationality => $composableBuilder(
+    column: $table.nationality,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get occupation => $composableBuilder(
+    column: $table.occupation,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get permanentAddress => $composableBuilder(
+    column: $table.permanentAddress,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get idType => $composableBuilder(
+    column: $table.idType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get idNumber => $composableBuilder(
+    column: $table.idNumber,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -9178,6 +14761,9 @@ class $$ComplainantsTableAnnotationComposer
   GeneratedColumn<int> get age =>
       $composableBuilder(column: $table.age, builder: (column) => column);
 
+  GeneratedColumn<String> get ageText =>
+      $composableBuilder(column: $table.ageText, builder: (column) => column);
+
   GeneratedColumn<String> get address =>
       $composableBuilder(column: $table.address, builder: (column) => column);
 
@@ -9197,6 +14783,35 @@ class $$ComplainantsTableAnnotationComposer
 
   GeneratedColumn<String> get passport =>
       $composableBuilder(column: $table.passport, builder: (column) => column);
+
+  GeneratedColumn<String> get fatherHusbandName => $composableBuilder(
+    column: $table.fatherHusbandName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get birthYear =>
+      $composableBuilder(column: $table.birthYear, builder: (column) => column);
+
+  GeneratedColumn<String> get nationality => $composableBuilder(
+    column: $table.nationality,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get occupation => $composableBuilder(
+    column: $table.occupation,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get permanentAddress => $composableBuilder(
+    column: $table.permanentAddress,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get idType =>
+      $composableBuilder(column: $table.idType, builder: (column) => column);
+
+  GeneratedColumn<String> get idNumber =>
+      $composableBuilder(column: $table.idNumber, builder: (column) => column);
 
   $$CrimesTableAnnotationComposer get crimeId {
     final $$CrimesTableAnnotationComposer composer = $composerBuilder(
@@ -9255,24 +14870,40 @@ class $$ComplainantsTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<String?> gender = const Value.absent(),
                 Value<int?> age = const Value.absent(),
+                Value<String?> ageText = const Value.absent(),
                 Value<String?> address = const Value.absent(),
                 Value<String?> mobile = const Value.absent(),
                 Value<String?> email = const Value.absent(),
                 Value<String?> aadhaarEnc = const Value.absent(),
                 Value<String?> panEnc = const Value.absent(),
                 Value<String?> passport = const Value.absent(),
+                Value<String?> fatherHusbandName = const Value.absent(),
+                Value<int?> birthYear = const Value.absent(),
+                Value<String?> nationality = const Value.absent(),
+                Value<String?> occupation = const Value.absent(),
+                Value<String?> permanentAddress = const Value.absent(),
+                Value<String?> idType = const Value.absent(),
+                Value<String?> idNumber = const Value.absent(),
               }) => ComplainantsCompanion(
                 id: id,
                 crimeId: crimeId,
                 name: name,
                 gender: gender,
                 age: age,
+                ageText: ageText,
                 address: address,
                 mobile: mobile,
                 email: email,
                 aadhaarEnc: aadhaarEnc,
                 panEnc: panEnc,
                 passport: passport,
+                fatherHusbandName: fatherHusbandName,
+                birthYear: birthYear,
+                nationality: nationality,
+                occupation: occupation,
+                permanentAddress: permanentAddress,
+                idType: idType,
+                idNumber: idNumber,
               ),
           createCompanionCallback:
               ({
@@ -9281,24 +14912,40 @@ class $$ComplainantsTableTableManager
                 required String name,
                 Value<String?> gender = const Value.absent(),
                 Value<int?> age = const Value.absent(),
+                Value<String?> ageText = const Value.absent(),
                 Value<String?> address = const Value.absent(),
                 Value<String?> mobile = const Value.absent(),
                 Value<String?> email = const Value.absent(),
                 Value<String?> aadhaarEnc = const Value.absent(),
                 Value<String?> panEnc = const Value.absent(),
                 Value<String?> passport = const Value.absent(),
+                Value<String?> fatherHusbandName = const Value.absent(),
+                Value<int?> birthYear = const Value.absent(),
+                Value<String?> nationality = const Value.absent(),
+                Value<String?> occupation = const Value.absent(),
+                Value<String?> permanentAddress = const Value.absent(),
+                Value<String?> idType = const Value.absent(),
+                Value<String?> idNumber = const Value.absent(),
               }) => ComplainantsCompanion.insert(
                 id: id,
                 crimeId: crimeId,
                 name: name,
                 gender: gender,
                 age: age,
+                ageText: ageText,
                 address: address,
                 mobile: mobile,
                 email: email,
                 aadhaarEnc: aadhaarEnc,
                 panEnc: panEnc,
                 passport: passport,
+                fatherHusbandName: fatherHusbandName,
+                birthYear: birthYear,
+                nationality: nationality,
+                occupation: occupation,
+                permanentAddress: permanentAddress,
+                idType: idType,
+                idNumber: idNumber,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -9374,6 +15021,7 @@ typedef $$AccusedTableCreateCompanionBuilder =
       required String name,
       Value<String?> gender,
       Value<int?> age,
+      Value<String?> ageText,
       Value<String?> address,
       Value<String?> mobile,
       Value<String?> email,
@@ -9384,6 +15032,9 @@ typedef $$AccusedTableCreateCompanionBuilder =
       Value<DateTime?> arrestDate,
       Value<String?> arrestTime,
       Value<String?> photoPath,
+      Value<String?> alias,
+      Value<String?> relativeName,
+      Value<String?> physicalJson,
     });
 typedef $$AccusedTableUpdateCompanionBuilder =
     AccusedCompanion Function({
@@ -9392,6 +15043,7 @@ typedef $$AccusedTableUpdateCompanionBuilder =
       Value<String> name,
       Value<String?> gender,
       Value<int?> age,
+      Value<String?> ageText,
       Value<String?> address,
       Value<String?> mobile,
       Value<String?> email,
@@ -9402,6 +15054,9 @@ typedef $$AccusedTableUpdateCompanionBuilder =
       Value<DateTime?> arrestDate,
       Value<String?> arrestTime,
       Value<String?> photoPath,
+      Value<String?> alias,
+      Value<String?> relativeName,
+      Value<String?> physicalJson,
     });
 
 final class $$AccusedTableReferences
@@ -9455,6 +15110,11 @@ class $$AccusedTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get ageText => $composableBuilder(
+    column: $table.ageText,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get address => $composableBuilder(
     column: $table.address,
     builder: (column) => ColumnFilters(column),
@@ -9502,6 +15162,21 @@ class $$AccusedTableFilterComposer
 
   ColumnFilters<String> get photoPath => $composableBuilder(
     column: $table.photoPath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get alias => $composableBuilder(
+    column: $table.alias,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get relativeName => $composableBuilder(
+    column: $table.relativeName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get physicalJson => $composableBuilder(
+    column: $table.physicalJson,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9558,6 +15233,11 @@ class $$AccusedTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get ageText => $composableBuilder(
+    column: $table.ageText,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get address => $composableBuilder(
     column: $table.address,
     builder: (column) => ColumnOrderings(column),
@@ -9608,6 +15288,21 @@ class $$AccusedTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get alias => $composableBuilder(
+    column: $table.alias,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get relativeName => $composableBuilder(
+    column: $table.relativeName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get physicalJson => $composableBuilder(
+    column: $table.physicalJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$CrimesTableOrderingComposer get crimeId {
     final $$CrimesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -9653,6 +15348,9 @@ class $$AccusedTableAnnotationComposer
   GeneratedColumn<int> get age =>
       $composableBuilder(column: $table.age, builder: (column) => column);
 
+  GeneratedColumn<String> get ageText =>
+      $composableBuilder(column: $table.ageText, builder: (column) => column);
+
   GeneratedColumn<String> get address =>
       $composableBuilder(column: $table.address, builder: (column) => column);
 
@@ -9690,6 +15388,19 @@ class $$AccusedTableAnnotationComposer
 
   GeneratedColumn<String> get photoPath =>
       $composableBuilder(column: $table.photoPath, builder: (column) => column);
+
+  GeneratedColumn<String> get alias =>
+      $composableBuilder(column: $table.alias, builder: (column) => column);
+
+  GeneratedColumn<String> get relativeName => $composableBuilder(
+    column: $table.relativeName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get physicalJson => $composableBuilder(
+    column: $table.physicalJson,
+    builder: (column) => column,
+  );
 
   $$CrimesTableAnnotationComposer get crimeId {
     final $$CrimesTableAnnotationComposer composer = $composerBuilder(
@@ -9748,6 +15459,7 @@ class $$AccusedTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<String?> gender = const Value.absent(),
                 Value<int?> age = const Value.absent(),
+                Value<String?> ageText = const Value.absent(),
                 Value<String?> address = const Value.absent(),
                 Value<String?> mobile = const Value.absent(),
                 Value<String?> email = const Value.absent(),
@@ -9758,12 +15470,16 @@ class $$AccusedTableTableManager
                 Value<DateTime?> arrestDate = const Value.absent(),
                 Value<String?> arrestTime = const Value.absent(),
                 Value<String?> photoPath = const Value.absent(),
+                Value<String?> alias = const Value.absent(),
+                Value<String?> relativeName = const Value.absent(),
+                Value<String?> physicalJson = const Value.absent(),
               }) => AccusedCompanion(
                 id: id,
                 crimeId: crimeId,
                 name: name,
                 gender: gender,
                 age: age,
+                ageText: ageText,
                 address: address,
                 mobile: mobile,
                 email: email,
@@ -9774,6 +15490,9 @@ class $$AccusedTableTableManager
                 arrestDate: arrestDate,
                 arrestTime: arrestTime,
                 photoPath: photoPath,
+                alias: alias,
+                relativeName: relativeName,
+                physicalJson: physicalJson,
               ),
           createCompanionCallback:
               ({
@@ -9782,6 +15501,7 @@ class $$AccusedTableTableManager
                 required String name,
                 Value<String?> gender = const Value.absent(),
                 Value<int?> age = const Value.absent(),
+                Value<String?> ageText = const Value.absent(),
                 Value<String?> address = const Value.absent(),
                 Value<String?> mobile = const Value.absent(),
                 Value<String?> email = const Value.absent(),
@@ -9792,12 +15512,16 @@ class $$AccusedTableTableManager
                 Value<DateTime?> arrestDate = const Value.absent(),
                 Value<String?> arrestTime = const Value.absent(),
                 Value<String?> photoPath = const Value.absent(),
+                Value<String?> alias = const Value.absent(),
+                Value<String?> relativeName = const Value.absent(),
+                Value<String?> physicalJson = const Value.absent(),
               }) => AccusedCompanion.insert(
                 id: id,
                 crimeId: crimeId,
                 name: name,
                 gender: gender,
                 age: age,
+                ageText: ageText,
                 address: address,
                 mobile: mobile,
                 email: email,
@@ -9808,6 +15532,9 @@ class $$AccusedTableTableManager
                 arrestDate: arrestDate,
                 arrestTime: arrestTime,
                 photoPath: photoPath,
+                alias: alias,
+                relativeName: relativeName,
+                physicalJson: physicalJson,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -9880,6 +15607,7 @@ typedef $$StolenPropertyTableCreateCompanionBuilder =
     StolenPropertyCompanion Function({
       Value<int> id,
       required int crimeId,
+      Value<String?> category,
       Value<String?> type,
       Value<String?> description,
       Value<double?> value,
@@ -9888,6 +15616,7 @@ typedef $$StolenPropertyTableUpdateCompanionBuilder =
     StolenPropertyCompanion Function({
       Value<int> id,
       Value<int> crimeId,
+      Value<String?> category,
       Value<String?> type,
       Value<String?> description,
       Value<double?> value,
@@ -9935,6 +15664,11 @@ class $$StolenPropertyTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get category => $composableBuilder(
+    column: $table.category,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9991,6 +15725,11 @@ class $$StolenPropertyTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get type => $composableBuilder(
     column: $table.type,
     builder: (column) => ColumnOrderings(column),
@@ -10041,6 +15780,9 @@ class $$StolenPropertyTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
 
   GeneratedColumn<String> get type =>
       $composableBuilder(column: $table.type, builder: (column) => column);
@@ -10109,12 +15851,14 @@ class $$StolenPropertyTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<int> crimeId = const Value.absent(),
+                Value<String?> category = const Value.absent(),
                 Value<String?> type = const Value.absent(),
                 Value<String?> description = const Value.absent(),
                 Value<double?> value = const Value.absent(),
               }) => StolenPropertyCompanion(
                 id: id,
                 crimeId: crimeId,
+                category: category,
                 type: type,
                 description: description,
                 value: value,
@@ -10123,12 +15867,14 @@ class $$StolenPropertyTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required int crimeId,
+                Value<String?> category = const Value.absent(),
                 Value<String?> type = const Value.absent(),
                 Value<String?> description = const Value.absent(),
                 Value<double?> value = const Value.absent(),
               }) => StolenPropertyCompanion.insert(
                 id: id,
                 crimeId: crimeId,
+                category: category,
                 type: type,
                 description: description,
                 value: value,
@@ -10538,12 +16284,19 @@ typedef $$InvestigationTableCreateCompanionBuilder =
       required int crimeId,
       Value<String?> officerName,
       Value<String?> officerId,
+      Value<String?> officerDesignation,
       Value<String?> officerMobile,
       Value<String?> filedBy,
       Value<String?> preventiveAction,
       Value<String?> preventiveNo,
       Value<DateTime?> preventiveDate,
       Value<String?> wantedAccused,
+      Value<String?> registeringOfficerName,
+      Value<String?> registeringOfficerRank,
+      Value<String?> registeringOfficerNo,
+      Value<String?> actionTaken,
+      Value<DateTime?> courtDispatchDate,
+      Value<String?> courtDispatchTime,
     });
 typedef $$InvestigationTableUpdateCompanionBuilder =
     InvestigationCompanion Function({
@@ -10551,12 +16304,19 @@ typedef $$InvestigationTableUpdateCompanionBuilder =
       Value<int> crimeId,
       Value<String?> officerName,
       Value<String?> officerId,
+      Value<String?> officerDesignation,
       Value<String?> officerMobile,
       Value<String?> filedBy,
       Value<String?> preventiveAction,
       Value<String?> preventiveNo,
       Value<DateTime?> preventiveDate,
       Value<String?> wantedAccused,
+      Value<String?> registeringOfficerName,
+      Value<String?> registeringOfficerRank,
+      Value<String?> registeringOfficerNo,
+      Value<String?> actionTaken,
+      Value<DateTime?> courtDispatchDate,
+      Value<String?> courtDispatchTime,
     });
 
 final class $$InvestigationTableReferences
@@ -10610,6 +16370,11 @@ class $$InvestigationTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get officerDesignation => $composableBuilder(
+    column: $table.officerDesignation,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get officerMobile => $composableBuilder(
     column: $table.officerMobile,
     builder: (column) => ColumnFilters(column),
@@ -10637,6 +16402,36 @@ class $$InvestigationTableFilterComposer
 
   ColumnFilters<String> get wantedAccused => $composableBuilder(
     column: $table.wantedAccused,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get registeringOfficerName => $composableBuilder(
+    column: $table.registeringOfficerName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get registeringOfficerRank => $composableBuilder(
+    column: $table.registeringOfficerRank,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get registeringOfficerNo => $composableBuilder(
+    column: $table.registeringOfficerNo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get actionTaken => $composableBuilder(
+    column: $table.actionTaken,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get courtDispatchDate => $composableBuilder(
+    column: $table.courtDispatchDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get courtDispatchTime => $composableBuilder(
+    column: $table.courtDispatchTime,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -10688,6 +16483,11 @@ class $$InvestigationTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get officerDesignation => $composableBuilder(
+    column: $table.officerDesignation,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get officerMobile => $composableBuilder(
     column: $table.officerMobile,
     builder: (column) => ColumnOrderings(column),
@@ -10715,6 +16515,36 @@ class $$InvestigationTableOrderingComposer
 
   ColumnOrderings<String> get wantedAccused => $composableBuilder(
     column: $table.wantedAccused,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get registeringOfficerName => $composableBuilder(
+    column: $table.registeringOfficerName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get registeringOfficerRank => $composableBuilder(
+    column: $table.registeringOfficerRank,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get registeringOfficerNo => $composableBuilder(
+    column: $table.registeringOfficerNo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get actionTaken => $composableBuilder(
+    column: $table.actionTaken,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get courtDispatchDate => $composableBuilder(
+    column: $table.courtDispatchDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get courtDispatchTime => $composableBuilder(
+    column: $table.courtDispatchTime,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -10762,6 +16592,11 @@ class $$InvestigationTableAnnotationComposer
   GeneratedColumn<String> get officerId =>
       $composableBuilder(column: $table.officerId, builder: (column) => column);
 
+  GeneratedColumn<String> get officerDesignation => $composableBuilder(
+    column: $table.officerDesignation,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get officerMobile => $composableBuilder(
     column: $table.officerMobile,
     builder: (column) => column,
@@ -10787,6 +16622,36 @@ class $$InvestigationTableAnnotationComposer
 
   GeneratedColumn<String> get wantedAccused => $composableBuilder(
     column: $table.wantedAccused,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get registeringOfficerName => $composableBuilder(
+    column: $table.registeringOfficerName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get registeringOfficerRank => $composableBuilder(
+    column: $table.registeringOfficerRank,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get registeringOfficerNo => $composableBuilder(
+    column: $table.registeringOfficerNo,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get actionTaken => $composableBuilder(
+    column: $table.actionTaken,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get courtDispatchDate => $composableBuilder(
+    column: $table.courtDispatchDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get courtDispatchTime => $composableBuilder(
+    column: $table.courtDispatchTime,
     builder: (column) => column,
   );
 
@@ -10846,23 +16711,37 @@ class $$InvestigationTableTableManager
                 Value<int> crimeId = const Value.absent(),
                 Value<String?> officerName = const Value.absent(),
                 Value<String?> officerId = const Value.absent(),
+                Value<String?> officerDesignation = const Value.absent(),
                 Value<String?> officerMobile = const Value.absent(),
                 Value<String?> filedBy = const Value.absent(),
                 Value<String?> preventiveAction = const Value.absent(),
                 Value<String?> preventiveNo = const Value.absent(),
                 Value<DateTime?> preventiveDate = const Value.absent(),
                 Value<String?> wantedAccused = const Value.absent(),
+                Value<String?> registeringOfficerName = const Value.absent(),
+                Value<String?> registeringOfficerRank = const Value.absent(),
+                Value<String?> registeringOfficerNo = const Value.absent(),
+                Value<String?> actionTaken = const Value.absent(),
+                Value<DateTime?> courtDispatchDate = const Value.absent(),
+                Value<String?> courtDispatchTime = const Value.absent(),
               }) => InvestigationCompanion(
                 id: id,
                 crimeId: crimeId,
                 officerName: officerName,
                 officerId: officerId,
+                officerDesignation: officerDesignation,
                 officerMobile: officerMobile,
                 filedBy: filedBy,
                 preventiveAction: preventiveAction,
                 preventiveNo: preventiveNo,
                 preventiveDate: preventiveDate,
                 wantedAccused: wantedAccused,
+                registeringOfficerName: registeringOfficerName,
+                registeringOfficerRank: registeringOfficerRank,
+                registeringOfficerNo: registeringOfficerNo,
+                actionTaken: actionTaken,
+                courtDispatchDate: courtDispatchDate,
+                courtDispatchTime: courtDispatchTime,
               ),
           createCompanionCallback:
               ({
@@ -10870,23 +16749,37 @@ class $$InvestigationTableTableManager
                 required int crimeId,
                 Value<String?> officerName = const Value.absent(),
                 Value<String?> officerId = const Value.absent(),
+                Value<String?> officerDesignation = const Value.absent(),
                 Value<String?> officerMobile = const Value.absent(),
                 Value<String?> filedBy = const Value.absent(),
                 Value<String?> preventiveAction = const Value.absent(),
                 Value<String?> preventiveNo = const Value.absent(),
                 Value<DateTime?> preventiveDate = const Value.absent(),
                 Value<String?> wantedAccused = const Value.absent(),
+                Value<String?> registeringOfficerName = const Value.absent(),
+                Value<String?> registeringOfficerRank = const Value.absent(),
+                Value<String?> registeringOfficerNo = const Value.absent(),
+                Value<String?> actionTaken = const Value.absent(),
+                Value<DateTime?> courtDispatchDate = const Value.absent(),
+                Value<String?> courtDispatchTime = const Value.absent(),
               }) => InvestigationCompanion.insert(
                 id: id,
                 crimeId: crimeId,
                 officerName: officerName,
                 officerId: officerId,
+                officerDesignation: officerDesignation,
                 officerMobile: officerMobile,
                 filedBy: filedBy,
                 preventiveAction: preventiveAction,
                 preventiveNo: preventiveNo,
                 preventiveDate: preventiveDate,
                 wantedAccused: wantedAccused,
+                registeringOfficerName: registeringOfficerName,
+                registeringOfficerRank: registeringOfficerRank,
+                registeringOfficerNo: registeringOfficerNo,
+                actionTaken: actionTaken,
+                courtDispatchDate: courtDispatchDate,
+                courtDispatchTime: courtDispatchTime,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -13407,6 +19300,2274 @@ typedef $$AuditLogTableProcessedTableManager =
       AuditLogData,
       PrefetchHooks Function()
     >;
+typedef $$IoCasesTableCreateCompanionBuilder =
+    IoCasesCompanion Function({
+      Value<int> id,
+      required String remoteUid,
+      Value<String?> title,
+      Value<String?> crimeType,
+      Value<String?> crimeCategory,
+      Value<String?> firNo,
+      Value<int?> year,
+      Value<String?> district,
+      Value<String?> policeStation,
+      Value<String?> linkedCrimeUid,
+      Value<String?> ownerEmail,
+      Value<String> status,
+      Value<String?> dataJson,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+typedef $$IoCasesTableUpdateCompanionBuilder =
+    IoCasesCompanion Function({
+      Value<int> id,
+      Value<String> remoteUid,
+      Value<String?> title,
+      Value<String?> crimeType,
+      Value<String?> crimeCategory,
+      Value<String?> firNo,
+      Value<int?> year,
+      Value<String?> district,
+      Value<String?> policeStation,
+      Value<String?> linkedCrimeUid,
+      Value<String?> ownerEmail,
+      Value<String> status,
+      Value<String?> dataJson,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+
+final class $$IoCasesTableReferences
+    extends BaseReferences<_$AppDatabase, $IoCasesTable, IoCase> {
+  $$IoCasesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$IoPartiesTable, List<IoParty>>
+  _ioPartiesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.ioParties,
+    aliasName: 'io_cases__id__io_parties__case_id',
+  );
+
+  $$IoPartiesTableProcessedTableManager get ioPartiesRefs {
+    final manager = $$IoPartiesTableTableManager(
+      $_db,
+      $_db.ioParties,
+    ).filter((f) => f.caseId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_ioPartiesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$IoExhibitsTable, List<IoExhibit>>
+  _ioExhibitsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.ioExhibits,
+    aliasName: 'io_cases__id__io_exhibits__case_id',
+  );
+
+  $$IoExhibitsTableProcessedTableManager get ioExhibitsRefs {
+    final manager = $$IoExhibitsTableTableManager(
+      $_db,
+      $_db.ioExhibits,
+    ).filter((f) => f.caseId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_ioExhibitsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$IoFormsTable, List<IoForm>> _ioFormsRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.ioForms,
+    aliasName: 'io_cases__id__io_forms__case_id',
+  );
+
+  $$IoFormsTableProcessedTableManager get ioFormsRefs {
+    final manager = $$IoFormsTableTableManager(
+      $_db,
+      $_db.ioForms,
+    ).filter((f) => f.caseId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_ioFormsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$IoMediaTable, List<IoMediaData>>
+  _ioMediaRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.ioMedia,
+    aliasName: 'io_cases__id__io_media__case_id',
+  );
+
+  $$IoMediaTableProcessedTableManager get ioMediaRefs {
+    final manager = $$IoMediaTableTableManager(
+      $_db,
+      $_db.ioMedia,
+    ).filter((f) => f.caseId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_ioMediaRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$IoCasesTableFilterComposer
+    extends Composer<_$AppDatabase, $IoCasesTable> {
+  $$IoCasesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get remoteUid => $composableBuilder(
+    column: $table.remoteUid,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get crimeType => $composableBuilder(
+    column: $table.crimeType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get crimeCategory => $composableBuilder(
+    column: $table.crimeCategory,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get firNo => $composableBuilder(
+    column: $table.firNo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get year => $composableBuilder(
+    column: $table.year,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get district => $composableBuilder(
+    column: $table.district,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get policeStation => $composableBuilder(
+    column: $table.policeStation,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get linkedCrimeUid => $composableBuilder(
+    column: $table.linkedCrimeUid,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ownerEmail => $composableBuilder(
+    column: $table.ownerEmail,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dataJson => $composableBuilder(
+    column: $table.dataJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> ioPartiesRefs(
+    Expression<bool> Function($$IoPartiesTableFilterComposer f) f,
+  ) {
+    final $$IoPartiesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.ioParties,
+      getReferencedColumn: (t) => t.caseId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IoPartiesTableFilterComposer(
+            $db: $db,
+            $table: $db.ioParties,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> ioExhibitsRefs(
+    Expression<bool> Function($$IoExhibitsTableFilterComposer f) f,
+  ) {
+    final $$IoExhibitsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.ioExhibits,
+      getReferencedColumn: (t) => t.caseId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IoExhibitsTableFilterComposer(
+            $db: $db,
+            $table: $db.ioExhibits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> ioFormsRefs(
+    Expression<bool> Function($$IoFormsTableFilterComposer f) f,
+  ) {
+    final $$IoFormsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.ioForms,
+      getReferencedColumn: (t) => t.caseId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IoFormsTableFilterComposer(
+            $db: $db,
+            $table: $db.ioForms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> ioMediaRefs(
+    Expression<bool> Function($$IoMediaTableFilterComposer f) f,
+  ) {
+    final $$IoMediaTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.ioMedia,
+      getReferencedColumn: (t) => t.caseId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IoMediaTableFilterComposer(
+            $db: $db,
+            $table: $db.ioMedia,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$IoCasesTableOrderingComposer
+    extends Composer<_$AppDatabase, $IoCasesTable> {
+  $$IoCasesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get remoteUid => $composableBuilder(
+    column: $table.remoteUid,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get crimeType => $composableBuilder(
+    column: $table.crimeType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get crimeCategory => $composableBuilder(
+    column: $table.crimeCategory,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get firNo => $composableBuilder(
+    column: $table.firNo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get year => $composableBuilder(
+    column: $table.year,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get district => $composableBuilder(
+    column: $table.district,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get policeStation => $composableBuilder(
+    column: $table.policeStation,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get linkedCrimeUid => $composableBuilder(
+    column: $table.linkedCrimeUid,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ownerEmail => $composableBuilder(
+    column: $table.ownerEmail,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get dataJson => $composableBuilder(
+    column: $table.dataJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$IoCasesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $IoCasesTable> {
+  $$IoCasesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get remoteUid =>
+      $composableBuilder(column: $table.remoteUid, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get crimeType =>
+      $composableBuilder(column: $table.crimeType, builder: (column) => column);
+
+  GeneratedColumn<String> get crimeCategory => $composableBuilder(
+    column: $table.crimeCategory,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get firNo =>
+      $composableBuilder(column: $table.firNo, builder: (column) => column);
+
+  GeneratedColumn<int> get year =>
+      $composableBuilder(column: $table.year, builder: (column) => column);
+
+  GeneratedColumn<String> get district =>
+      $composableBuilder(column: $table.district, builder: (column) => column);
+
+  GeneratedColumn<String> get policeStation => $composableBuilder(
+    column: $table.policeStation,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get linkedCrimeUid => $composableBuilder(
+    column: $table.linkedCrimeUid,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get ownerEmail => $composableBuilder(
+    column: $table.ownerEmail,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get dataJson =>
+      $composableBuilder(column: $table.dataJson, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  Expression<T> ioPartiesRefs<T extends Object>(
+    Expression<T> Function($$IoPartiesTableAnnotationComposer a) f,
+  ) {
+    final $$IoPartiesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.ioParties,
+      getReferencedColumn: (t) => t.caseId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IoPartiesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.ioParties,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> ioExhibitsRefs<T extends Object>(
+    Expression<T> Function($$IoExhibitsTableAnnotationComposer a) f,
+  ) {
+    final $$IoExhibitsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.ioExhibits,
+      getReferencedColumn: (t) => t.caseId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IoExhibitsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.ioExhibits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> ioFormsRefs<T extends Object>(
+    Expression<T> Function($$IoFormsTableAnnotationComposer a) f,
+  ) {
+    final $$IoFormsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.ioForms,
+      getReferencedColumn: (t) => t.caseId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IoFormsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.ioForms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> ioMediaRefs<T extends Object>(
+    Expression<T> Function($$IoMediaTableAnnotationComposer a) f,
+  ) {
+    final $$IoMediaTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.ioMedia,
+      getReferencedColumn: (t) => t.caseId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IoMediaTableAnnotationComposer(
+            $db: $db,
+            $table: $db.ioMedia,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$IoCasesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $IoCasesTable,
+          IoCase,
+          $$IoCasesTableFilterComposer,
+          $$IoCasesTableOrderingComposer,
+          $$IoCasesTableAnnotationComposer,
+          $$IoCasesTableCreateCompanionBuilder,
+          $$IoCasesTableUpdateCompanionBuilder,
+          (IoCase, $$IoCasesTableReferences),
+          IoCase,
+          PrefetchHooks Function({
+            bool ioPartiesRefs,
+            bool ioExhibitsRefs,
+            bool ioFormsRefs,
+            bool ioMediaRefs,
+          })
+        > {
+  $$IoCasesTableTableManager(_$AppDatabase db, $IoCasesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$IoCasesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$IoCasesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$IoCasesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> remoteUid = const Value.absent(),
+                Value<String?> title = const Value.absent(),
+                Value<String?> crimeType = const Value.absent(),
+                Value<String?> crimeCategory = const Value.absent(),
+                Value<String?> firNo = const Value.absent(),
+                Value<int?> year = const Value.absent(),
+                Value<String?> district = const Value.absent(),
+                Value<String?> policeStation = const Value.absent(),
+                Value<String?> linkedCrimeUid = const Value.absent(),
+                Value<String?> ownerEmail = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> dataJson = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => IoCasesCompanion(
+                id: id,
+                remoteUid: remoteUid,
+                title: title,
+                crimeType: crimeType,
+                crimeCategory: crimeCategory,
+                firNo: firNo,
+                year: year,
+                district: district,
+                policeStation: policeStation,
+                linkedCrimeUid: linkedCrimeUid,
+                ownerEmail: ownerEmail,
+                status: status,
+                dataJson: dataJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String remoteUid,
+                Value<String?> title = const Value.absent(),
+                Value<String?> crimeType = const Value.absent(),
+                Value<String?> crimeCategory = const Value.absent(),
+                Value<String?> firNo = const Value.absent(),
+                Value<int?> year = const Value.absent(),
+                Value<String?> district = const Value.absent(),
+                Value<String?> policeStation = const Value.absent(),
+                Value<String?> linkedCrimeUid = const Value.absent(),
+                Value<String?> ownerEmail = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> dataJson = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => IoCasesCompanion.insert(
+                id: id,
+                remoteUid: remoteUid,
+                title: title,
+                crimeType: crimeType,
+                crimeCategory: crimeCategory,
+                firNo: firNo,
+                year: year,
+                district: district,
+                policeStation: policeStation,
+                linkedCrimeUid: linkedCrimeUid,
+                ownerEmail: ownerEmail,
+                status: status,
+                dataJson: dataJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$IoCasesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                ioPartiesRefs = false,
+                ioExhibitsRefs = false,
+                ioFormsRefs = false,
+                ioMediaRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (ioPartiesRefs) db.ioParties,
+                    if (ioExhibitsRefs) db.ioExhibits,
+                    if (ioFormsRefs) db.ioForms,
+                    if (ioMediaRefs) db.ioMedia,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (ioPartiesRefs)
+                        await $_getPrefetchedData<
+                          IoCase,
+                          $IoCasesTable,
+                          IoParty
+                        >(
+                          currentTable: table,
+                          referencedTable: $$IoCasesTableReferences
+                              ._ioPartiesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$IoCasesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).ioPartiesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.caseId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (ioExhibitsRefs)
+                        await $_getPrefetchedData<
+                          IoCase,
+                          $IoCasesTable,
+                          IoExhibit
+                        >(
+                          currentTable: table,
+                          referencedTable: $$IoCasesTableReferences
+                              ._ioExhibitsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$IoCasesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).ioExhibitsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.caseId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (ioFormsRefs)
+                        await $_getPrefetchedData<
+                          IoCase,
+                          $IoCasesTable,
+                          IoForm
+                        >(
+                          currentTable: table,
+                          referencedTable: $$IoCasesTableReferences
+                              ._ioFormsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$IoCasesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).ioFormsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.caseId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (ioMediaRefs)
+                        await $_getPrefetchedData<
+                          IoCase,
+                          $IoCasesTable,
+                          IoMediaData
+                        >(
+                          currentTable: table,
+                          referencedTable: $$IoCasesTableReferences
+                              ._ioMediaRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$IoCasesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).ioMediaRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.caseId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$IoCasesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $IoCasesTable,
+      IoCase,
+      $$IoCasesTableFilterComposer,
+      $$IoCasesTableOrderingComposer,
+      $$IoCasesTableAnnotationComposer,
+      $$IoCasesTableCreateCompanionBuilder,
+      $$IoCasesTableUpdateCompanionBuilder,
+      (IoCase, $$IoCasesTableReferences),
+      IoCase,
+      PrefetchHooks Function({
+        bool ioPartiesRefs,
+        bool ioExhibitsRefs,
+        bool ioFormsRefs,
+        bool ioMediaRefs,
+      })
+    >;
+typedef $$IoPartiesTableCreateCompanionBuilder =
+    IoPartiesCompanion Function({
+      Value<int> id,
+      required int caseId,
+      required String role,
+      required String name,
+      Value<String?> valuesJson,
+      Value<int> sortOrder,
+    });
+typedef $$IoPartiesTableUpdateCompanionBuilder =
+    IoPartiesCompanion Function({
+      Value<int> id,
+      Value<int> caseId,
+      Value<String> role,
+      Value<String> name,
+      Value<String?> valuesJson,
+      Value<int> sortOrder,
+    });
+
+final class $$IoPartiesTableReferences
+    extends BaseReferences<_$AppDatabase, $IoPartiesTable, IoParty> {
+  $$IoPartiesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $IoCasesTable _caseIdTable(_$AppDatabase db) =>
+      db.ioCases.createAlias('io_parties__case_id__io_cases__id');
+
+  $$IoCasesTableProcessedTableManager get caseId {
+    final $_column = $_itemColumn<int>('case_id')!;
+
+    final manager = $$IoCasesTableTableManager(
+      $_db,
+      $_db.ioCases,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_caseIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$IoPartiesTableFilterComposer
+    extends Composer<_$AppDatabase, $IoPartiesTable> {
+  $$IoPartiesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get role => $composableBuilder(
+    column: $table.role,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get valuesJson => $composableBuilder(
+    column: $table.valuesJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$IoCasesTableFilterComposer get caseId {
+    final $$IoCasesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.caseId,
+      referencedTable: $db.ioCases,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IoCasesTableFilterComposer(
+            $db: $db,
+            $table: $db.ioCases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$IoPartiesTableOrderingComposer
+    extends Composer<_$AppDatabase, $IoPartiesTable> {
+  $$IoPartiesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get role => $composableBuilder(
+    column: $table.role,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get valuesJson => $composableBuilder(
+    column: $table.valuesJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$IoCasesTableOrderingComposer get caseId {
+    final $$IoCasesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.caseId,
+      referencedTable: $db.ioCases,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IoCasesTableOrderingComposer(
+            $db: $db,
+            $table: $db.ioCases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$IoPartiesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $IoPartiesTable> {
+  $$IoPartiesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get role =>
+      $composableBuilder(column: $table.role, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get valuesJson => $composableBuilder(
+    column: $table.valuesJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
+
+  $$IoCasesTableAnnotationComposer get caseId {
+    final $$IoCasesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.caseId,
+      referencedTable: $db.ioCases,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IoCasesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.ioCases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$IoPartiesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $IoPartiesTable,
+          IoParty,
+          $$IoPartiesTableFilterComposer,
+          $$IoPartiesTableOrderingComposer,
+          $$IoPartiesTableAnnotationComposer,
+          $$IoPartiesTableCreateCompanionBuilder,
+          $$IoPartiesTableUpdateCompanionBuilder,
+          (IoParty, $$IoPartiesTableReferences),
+          IoParty,
+          PrefetchHooks Function({bool caseId})
+        > {
+  $$IoPartiesTableTableManager(_$AppDatabase db, $IoPartiesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$IoPartiesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$IoPartiesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$IoPartiesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> caseId = const Value.absent(),
+                Value<String> role = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String?> valuesJson = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
+              }) => IoPartiesCompanion(
+                id: id,
+                caseId: caseId,
+                role: role,
+                name: name,
+                valuesJson: valuesJson,
+                sortOrder: sortOrder,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int caseId,
+                required String role,
+                required String name,
+                Value<String?> valuesJson = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
+              }) => IoPartiesCompanion.insert(
+                id: id,
+                caseId: caseId,
+                role: role,
+                name: name,
+                valuesJson: valuesJson,
+                sortOrder: sortOrder,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$IoPartiesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({caseId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (caseId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.caseId,
+                                referencedTable: $$IoPartiesTableReferences
+                                    ._caseIdTable(db),
+                                referencedColumn: $$IoPartiesTableReferences
+                                    ._caseIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$IoPartiesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $IoPartiesTable,
+      IoParty,
+      $$IoPartiesTableFilterComposer,
+      $$IoPartiesTableOrderingComposer,
+      $$IoPartiesTableAnnotationComposer,
+      $$IoPartiesTableCreateCompanionBuilder,
+      $$IoPartiesTableUpdateCompanionBuilder,
+      (IoParty, $$IoPartiesTableReferences),
+      IoParty,
+      PrefetchHooks Function({bool caseId})
+    >;
+typedef $$IoExhibitsTableCreateCompanionBuilder =
+    IoExhibitsCompanion Function({
+      Value<int> id,
+      required int caseId,
+      required String description,
+      Value<String?> category,
+      Value<String?> seizedFrom,
+      Value<String?> exhibitNo,
+      Value<double?> value,
+      Value<String?> valuesJson,
+      Value<int> sortOrder,
+    });
+typedef $$IoExhibitsTableUpdateCompanionBuilder =
+    IoExhibitsCompanion Function({
+      Value<int> id,
+      Value<int> caseId,
+      Value<String> description,
+      Value<String?> category,
+      Value<String?> seizedFrom,
+      Value<String?> exhibitNo,
+      Value<double?> value,
+      Value<String?> valuesJson,
+      Value<int> sortOrder,
+    });
+
+final class $$IoExhibitsTableReferences
+    extends BaseReferences<_$AppDatabase, $IoExhibitsTable, IoExhibit> {
+  $$IoExhibitsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $IoCasesTable _caseIdTable(_$AppDatabase db) =>
+      db.ioCases.createAlias('io_exhibits__case_id__io_cases__id');
+
+  $$IoCasesTableProcessedTableManager get caseId {
+    final $_column = $_itemColumn<int>('case_id')!;
+
+    final manager = $$IoCasesTableTableManager(
+      $_db,
+      $_db.ioCases,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_caseIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$IoExhibitsTableFilterComposer
+    extends Composer<_$AppDatabase, $IoExhibitsTable> {
+  $$IoExhibitsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seizedFrom => $composableBuilder(
+    column: $table.seizedFrom,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get exhibitNo => $composableBuilder(
+    column: $table.exhibitNo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get valuesJson => $composableBuilder(
+    column: $table.valuesJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$IoCasesTableFilterComposer get caseId {
+    final $$IoCasesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.caseId,
+      referencedTable: $db.ioCases,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IoCasesTableFilterComposer(
+            $db: $db,
+            $table: $db.ioCases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$IoExhibitsTableOrderingComposer
+    extends Composer<_$AppDatabase, $IoExhibitsTable> {
+  $$IoExhibitsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seizedFrom => $composableBuilder(
+    column: $table.seizedFrom,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get exhibitNo => $composableBuilder(
+    column: $table.exhibitNo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get valuesJson => $composableBuilder(
+    column: $table.valuesJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$IoCasesTableOrderingComposer get caseId {
+    final $$IoCasesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.caseId,
+      referencedTable: $db.ioCases,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IoCasesTableOrderingComposer(
+            $db: $db,
+            $table: $db.ioCases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$IoExhibitsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $IoExhibitsTable> {
+  $$IoExhibitsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<String> get seizedFrom => $composableBuilder(
+    column: $table.seizedFrom,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get exhibitNo =>
+      $composableBuilder(column: $table.exhibitNo, builder: (column) => column);
+
+  GeneratedColumn<double> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+
+  GeneratedColumn<String> get valuesJson => $composableBuilder(
+    column: $table.valuesJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
+
+  $$IoCasesTableAnnotationComposer get caseId {
+    final $$IoCasesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.caseId,
+      referencedTable: $db.ioCases,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IoCasesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.ioCases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$IoExhibitsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $IoExhibitsTable,
+          IoExhibit,
+          $$IoExhibitsTableFilterComposer,
+          $$IoExhibitsTableOrderingComposer,
+          $$IoExhibitsTableAnnotationComposer,
+          $$IoExhibitsTableCreateCompanionBuilder,
+          $$IoExhibitsTableUpdateCompanionBuilder,
+          (IoExhibit, $$IoExhibitsTableReferences),
+          IoExhibit,
+          PrefetchHooks Function({bool caseId})
+        > {
+  $$IoExhibitsTableTableManager(_$AppDatabase db, $IoExhibitsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$IoExhibitsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$IoExhibitsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$IoExhibitsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> caseId = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<String?> category = const Value.absent(),
+                Value<String?> seizedFrom = const Value.absent(),
+                Value<String?> exhibitNo = const Value.absent(),
+                Value<double?> value = const Value.absent(),
+                Value<String?> valuesJson = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
+              }) => IoExhibitsCompanion(
+                id: id,
+                caseId: caseId,
+                description: description,
+                category: category,
+                seizedFrom: seizedFrom,
+                exhibitNo: exhibitNo,
+                value: value,
+                valuesJson: valuesJson,
+                sortOrder: sortOrder,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int caseId,
+                required String description,
+                Value<String?> category = const Value.absent(),
+                Value<String?> seizedFrom = const Value.absent(),
+                Value<String?> exhibitNo = const Value.absent(),
+                Value<double?> value = const Value.absent(),
+                Value<String?> valuesJson = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
+              }) => IoExhibitsCompanion.insert(
+                id: id,
+                caseId: caseId,
+                description: description,
+                category: category,
+                seizedFrom: seizedFrom,
+                exhibitNo: exhibitNo,
+                value: value,
+                valuesJson: valuesJson,
+                sortOrder: sortOrder,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$IoExhibitsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({caseId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (caseId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.caseId,
+                                referencedTable: $$IoExhibitsTableReferences
+                                    ._caseIdTable(db),
+                                referencedColumn: $$IoExhibitsTableReferences
+                                    ._caseIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$IoExhibitsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $IoExhibitsTable,
+      IoExhibit,
+      $$IoExhibitsTableFilterComposer,
+      $$IoExhibitsTableOrderingComposer,
+      $$IoExhibitsTableAnnotationComposer,
+      $$IoExhibitsTableCreateCompanionBuilder,
+      $$IoExhibitsTableUpdateCompanionBuilder,
+      (IoExhibit, $$IoExhibitsTableReferences),
+      IoExhibit,
+      PrefetchHooks Function({bool caseId})
+    >;
+typedef $$IoFormsTableCreateCompanionBuilder =
+    IoFormsCompanion Function({
+      Value<int> id,
+      required int caseId,
+      required String formId,
+      Value<String?> title,
+      Value<String?> valuesJson,
+      Value<String> status,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+typedef $$IoFormsTableUpdateCompanionBuilder =
+    IoFormsCompanion Function({
+      Value<int> id,
+      Value<int> caseId,
+      Value<String> formId,
+      Value<String?> title,
+      Value<String?> valuesJson,
+      Value<String> status,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+
+final class $$IoFormsTableReferences
+    extends BaseReferences<_$AppDatabase, $IoFormsTable, IoForm> {
+  $$IoFormsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $IoCasesTable _caseIdTable(_$AppDatabase db) =>
+      db.ioCases.createAlias('io_forms__case_id__io_cases__id');
+
+  $$IoCasesTableProcessedTableManager get caseId {
+    final $_column = $_itemColumn<int>('case_id')!;
+
+    final manager = $$IoCasesTableTableManager(
+      $_db,
+      $_db.ioCases,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_caseIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$IoFormsTableFilterComposer
+    extends Composer<_$AppDatabase, $IoFormsTable> {
+  $$IoFormsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get formId => $composableBuilder(
+    column: $table.formId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get valuesJson => $composableBuilder(
+    column: $table.valuesJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$IoCasesTableFilterComposer get caseId {
+    final $$IoCasesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.caseId,
+      referencedTable: $db.ioCases,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IoCasesTableFilterComposer(
+            $db: $db,
+            $table: $db.ioCases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$IoFormsTableOrderingComposer
+    extends Composer<_$AppDatabase, $IoFormsTable> {
+  $$IoFormsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get formId => $composableBuilder(
+    column: $table.formId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get valuesJson => $composableBuilder(
+    column: $table.valuesJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$IoCasesTableOrderingComposer get caseId {
+    final $$IoCasesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.caseId,
+      referencedTable: $db.ioCases,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IoCasesTableOrderingComposer(
+            $db: $db,
+            $table: $db.ioCases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$IoFormsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $IoFormsTable> {
+  $$IoFormsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get formId =>
+      $composableBuilder(column: $table.formId, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get valuesJson => $composableBuilder(
+    column: $table.valuesJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$IoCasesTableAnnotationComposer get caseId {
+    final $$IoCasesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.caseId,
+      referencedTable: $db.ioCases,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IoCasesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.ioCases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$IoFormsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $IoFormsTable,
+          IoForm,
+          $$IoFormsTableFilterComposer,
+          $$IoFormsTableOrderingComposer,
+          $$IoFormsTableAnnotationComposer,
+          $$IoFormsTableCreateCompanionBuilder,
+          $$IoFormsTableUpdateCompanionBuilder,
+          (IoForm, $$IoFormsTableReferences),
+          IoForm,
+          PrefetchHooks Function({bool caseId})
+        > {
+  $$IoFormsTableTableManager(_$AppDatabase db, $IoFormsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$IoFormsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$IoFormsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$IoFormsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> caseId = const Value.absent(),
+                Value<String> formId = const Value.absent(),
+                Value<String?> title = const Value.absent(),
+                Value<String?> valuesJson = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => IoFormsCompanion(
+                id: id,
+                caseId: caseId,
+                formId: formId,
+                title: title,
+                valuesJson: valuesJson,
+                status: status,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int caseId,
+                required String formId,
+                Value<String?> title = const Value.absent(),
+                Value<String?> valuesJson = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => IoFormsCompanion.insert(
+                id: id,
+                caseId: caseId,
+                formId: formId,
+                title: title,
+                valuesJson: valuesJson,
+                status: status,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$IoFormsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({caseId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (caseId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.caseId,
+                                referencedTable: $$IoFormsTableReferences
+                                    ._caseIdTable(db),
+                                referencedColumn: $$IoFormsTableReferences
+                                    ._caseIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$IoFormsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $IoFormsTable,
+      IoForm,
+      $$IoFormsTableFilterComposer,
+      $$IoFormsTableOrderingComposer,
+      $$IoFormsTableAnnotationComposer,
+      $$IoFormsTableCreateCompanionBuilder,
+      $$IoFormsTableUpdateCompanionBuilder,
+      (IoForm, $$IoFormsTableReferences),
+      IoForm,
+      PrefetchHooks Function({bool caseId})
+    >;
+typedef $$IoMediaTableCreateCompanionBuilder =
+    IoMediaCompanion Function({
+      Value<int> id,
+      required int caseId,
+      Value<String?> formId,
+      required String kind,
+      required String filePath,
+      Value<String?> caption,
+      Value<double?> lat,
+      Value<double?> lng,
+      Value<DateTime> capturedAt,
+    });
+typedef $$IoMediaTableUpdateCompanionBuilder =
+    IoMediaCompanion Function({
+      Value<int> id,
+      Value<int> caseId,
+      Value<String?> formId,
+      Value<String> kind,
+      Value<String> filePath,
+      Value<String?> caption,
+      Value<double?> lat,
+      Value<double?> lng,
+      Value<DateTime> capturedAt,
+    });
+
+final class $$IoMediaTableReferences
+    extends BaseReferences<_$AppDatabase, $IoMediaTable, IoMediaData> {
+  $$IoMediaTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $IoCasesTable _caseIdTable(_$AppDatabase db) =>
+      db.ioCases.createAlias('io_media__case_id__io_cases__id');
+
+  $$IoCasesTableProcessedTableManager get caseId {
+    final $_column = $_itemColumn<int>('case_id')!;
+
+    final manager = $$IoCasesTableTableManager(
+      $_db,
+      $_db.ioCases,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_caseIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$IoMediaTableFilterComposer
+    extends Composer<_$AppDatabase, $IoMediaTable> {
+  $$IoMediaTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get formId => $composableBuilder(
+    column: $table.formId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get filePath => $composableBuilder(
+    column: $table.filePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get caption => $composableBuilder(
+    column: $table.caption,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lat => $composableBuilder(
+    column: $table.lat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lng => $composableBuilder(
+    column: $table.lng,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get capturedAt => $composableBuilder(
+    column: $table.capturedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$IoCasesTableFilterComposer get caseId {
+    final $$IoCasesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.caseId,
+      referencedTable: $db.ioCases,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IoCasesTableFilterComposer(
+            $db: $db,
+            $table: $db.ioCases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$IoMediaTableOrderingComposer
+    extends Composer<_$AppDatabase, $IoMediaTable> {
+  $$IoMediaTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get formId => $composableBuilder(
+    column: $table.formId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get filePath => $composableBuilder(
+    column: $table.filePath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get caption => $composableBuilder(
+    column: $table.caption,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lat => $composableBuilder(
+    column: $table.lat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lng => $composableBuilder(
+    column: $table.lng,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get capturedAt => $composableBuilder(
+    column: $table.capturedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$IoCasesTableOrderingComposer get caseId {
+    final $$IoCasesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.caseId,
+      referencedTable: $db.ioCases,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IoCasesTableOrderingComposer(
+            $db: $db,
+            $table: $db.ioCases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$IoMediaTableAnnotationComposer
+    extends Composer<_$AppDatabase, $IoMediaTable> {
+  $$IoMediaTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get formId =>
+      $composableBuilder(column: $table.formId, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get filePath =>
+      $composableBuilder(column: $table.filePath, builder: (column) => column);
+
+  GeneratedColumn<String> get caption =>
+      $composableBuilder(column: $table.caption, builder: (column) => column);
+
+  GeneratedColumn<double> get lat =>
+      $composableBuilder(column: $table.lat, builder: (column) => column);
+
+  GeneratedColumn<double> get lng =>
+      $composableBuilder(column: $table.lng, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get capturedAt => $composableBuilder(
+    column: $table.capturedAt,
+    builder: (column) => column,
+  );
+
+  $$IoCasesTableAnnotationComposer get caseId {
+    final $$IoCasesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.caseId,
+      referencedTable: $db.ioCases,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IoCasesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.ioCases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$IoMediaTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $IoMediaTable,
+          IoMediaData,
+          $$IoMediaTableFilterComposer,
+          $$IoMediaTableOrderingComposer,
+          $$IoMediaTableAnnotationComposer,
+          $$IoMediaTableCreateCompanionBuilder,
+          $$IoMediaTableUpdateCompanionBuilder,
+          (IoMediaData, $$IoMediaTableReferences),
+          IoMediaData,
+          PrefetchHooks Function({bool caseId})
+        > {
+  $$IoMediaTableTableManager(_$AppDatabase db, $IoMediaTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$IoMediaTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$IoMediaTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$IoMediaTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> caseId = const Value.absent(),
+                Value<String?> formId = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String> filePath = const Value.absent(),
+                Value<String?> caption = const Value.absent(),
+                Value<double?> lat = const Value.absent(),
+                Value<double?> lng = const Value.absent(),
+                Value<DateTime> capturedAt = const Value.absent(),
+              }) => IoMediaCompanion(
+                id: id,
+                caseId: caseId,
+                formId: formId,
+                kind: kind,
+                filePath: filePath,
+                caption: caption,
+                lat: lat,
+                lng: lng,
+                capturedAt: capturedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int caseId,
+                Value<String?> formId = const Value.absent(),
+                required String kind,
+                required String filePath,
+                Value<String?> caption = const Value.absent(),
+                Value<double?> lat = const Value.absent(),
+                Value<double?> lng = const Value.absent(),
+                Value<DateTime> capturedAt = const Value.absent(),
+              }) => IoMediaCompanion.insert(
+                id: id,
+                caseId: caseId,
+                formId: formId,
+                kind: kind,
+                filePath: filePath,
+                caption: caption,
+                lat: lat,
+                lng: lng,
+                capturedAt: capturedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$IoMediaTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({caseId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (caseId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.caseId,
+                                referencedTable: $$IoMediaTableReferences
+                                    ._caseIdTable(db),
+                                referencedColumn: $$IoMediaTableReferences
+                                    ._caseIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$IoMediaTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $IoMediaTable,
+      IoMediaData,
+      $$IoMediaTableFilterComposer,
+      $$IoMediaTableOrderingComposer,
+      $$IoMediaTableAnnotationComposer,
+      $$IoMediaTableCreateCompanionBuilder,
+      $$IoMediaTableUpdateCompanionBuilder,
+      (IoMediaData, $$IoMediaTableReferences),
+      IoMediaData,
+      PrefetchHooks Function({bool caseId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -13439,4 +21600,14 @@ class $AppDatabaseManager {
       $$ReportTemplatesTableTableManager(_db, _db.reportTemplates);
   $$AuditLogTableTableManager get auditLog =>
       $$AuditLogTableTableManager(_db, _db.auditLog);
+  $$IoCasesTableTableManager get ioCases =>
+      $$IoCasesTableTableManager(_db, _db.ioCases);
+  $$IoPartiesTableTableManager get ioParties =>
+      $$IoPartiesTableTableManager(_db, _db.ioParties);
+  $$IoExhibitsTableTableManager get ioExhibits =>
+      $$IoExhibitsTableTableManager(_db, _db.ioExhibits);
+  $$IoFormsTableTableManager get ioForms =>
+      $$IoFormsTableTableManager(_db, _db.ioForms);
+  $$IoMediaTableTableManager get ioMedia =>
+      $$IoMediaTableTableManager(_db, _db.ioMedia);
 }

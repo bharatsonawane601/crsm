@@ -58,9 +58,14 @@ class UpdateService {
     return AppRelease.fromJson(decoded);
   }
 
-  /// True when [release] is newer than what's installed.
+  /// True when [release] is newer than what's installed. If we can't determine
+  /// our own build (PackageInfo failed → build 0), return false rather than
+  /// treating every release as newer — otherwise a mandatory release would
+  /// reinstall the same version in a loop.
   Future<bool> isNewer(AppRelease release) async {
-    return release.build > await currentBuild();
+    final current = await currentBuild();
+    if (current <= 0) return false;
+    return release.build > current;
   }
 
   /// Downloads the installer to a temp file (reporting 0..1 progress), verifies

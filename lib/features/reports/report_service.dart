@@ -109,6 +109,31 @@ class ReportService {
     return _writeFile(dir, bytes, report.name, ext);
   }
 
+  /// Writes the report to a user-chosen [path] (from the OS "Save As" dialog).
+  /// The correct extension is appended if the path is missing it. Returns the
+  /// final file path.
+  Future<String> saveReportToPath(
+      RenderedReport report, ReportFormat format, String path,
+      {ReportPdfOptions options = const ReportPdfOptions()}) async {
+    final (bytes, ext, _) = await _payload(report, format, options);
+    final target =
+        path.toLowerCase().endsWith('.$ext') ? path : '$path.$ext';
+    final file = File(target);
+    await file.writeAsBytes(bytes);
+    return file.path;
+  }
+
+  /// File extension ("pdf" / "docx" / "xlsx") for a report [format].
+  static String extensionFor(ReportFormat format) => switch (format) {
+        ReportFormat.pdf => 'pdf',
+        ReportFormat.docx => 'docx',
+        ReportFormat.xlsx => 'xlsx',
+      };
+
+  /// A filesystem-safe default file name (no extension) for [report].
+  static String safeFileName(RenderedReport report) =>
+      report.name.replaceAll(RegExp(r'[^\wऀ-ॿ-]+'), '_');
+
   /// Opens the OS share sheet (WhatsApp, email, etc.) for the report in the
   /// chosen [format]. The file is written to a temp folder first.
   Future<void> shareReport(RenderedReport report, ReportFormat format,

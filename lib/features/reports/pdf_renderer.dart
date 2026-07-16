@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:image/image.dart' as img;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:screenshot/screenshot.dart';
@@ -52,8 +53,20 @@ Future<Uint8List> renderReportPdf(
 }) async {
   // Narrower canvas for a larger on-page font, wider for a smaller one.
   final width = 820.0 / options._captureScale;
-  // Generous height so content never clips; extra space shows as white margin.
-  final height = 240.0 + report.rows.length * 64.0;
+  // Size the capture canvas to the actual content so a long row (e.g. a big
+  // stolen-property list) never overflows/clips. We over-estimate slightly;
+  // any spare space is just trimmed white that the slicer drops.
+  final contentColW = width - 48; // _ReportDocument padding all(24)
+  final flexAvail = contentColW - 44; // minus the fixed अ.क्र. column
+  final labelColW = flexAvail * 2 / 6;
+  final valueColW = flexAvail * 4 / 6;
+  var bodyHeight = 0.0;
+  for (final r in report.rows) {
+    bodyHeight += _estimateRowHeight(
+        r.label, r.value, labelColW, valueColW);
+  }
+  // title + spacing + header row + paddings + safety buffer.
+  final height = 60.0 + 18.0 + 42.0 + bodyHeight + 48.0 + 80.0;
 
   final png = await ScreenshotController().captureFromWidget(
     _ReportDocument(report: report),
@@ -65,18 +78,117 @@ Future<Uint8List> renderReportPdf(
   final pageFormat =
       _pageFormat(options.pageSize ?? report.pageSize, options.landscape);
   final doc = pw.Document();
-  final image = pw.MemoryImage(png);
-  doc.addPage(
-    pw.Page(
-      pageFormat: pageFormat,
-      margin: const pw.EdgeInsets.all(24),
-      build: (_) => pw.Align(
-        alignment: pw.Alignment.topCenter,
-        child: pw.Image(image, fit: pw.BoxFit.contain),
+
+  for (final strip in _sliceToPages(png, pageFormat)) {
+    final image = pw.MemoryImage(strip);
+    doc.addPage(
+      pw.Page(
+        pageFormat: pageFormat,
+        margin: const pw.EdgeInsets.all(24),
+        build: (_) => pw.Align(
+          alignment: pw.Alignment.topCenter,
+          child: pw.Image(image, fit: pw.BoxFit.fitWidth),
+        ),
       ),
-    ),
-  );
+    );
+  }
   return doc.save();
+}
+
+/// Estimates a row's rendered height (in logical px) from the longest of its
+/// label/value text, so the capture canvas is tall enough to hold everything.
+/// Deliberately over-estimates (wide char width) to guarantee no overflow.
+double _estimateRowHeight(
+    String label, String value, double labelW, double valueW) {
+  int lines(String text, double colW) {
+    final perLine = ((colW - 16) / 9).floor();
+    final cap = perLine < 1 ? 1 : perLine;
+    var total = 0;
+    for (final seg in text.split('\n')) {
+      total += seg.isEmpty ? 1 : (seg.length / cap).ceil();
+    }
+    return total < 1 ? 1 : total;
+  }
+
+  final l = lines(label, labelW);
+  final v = lines(value, valueW);
+  final maxLines = l > v ? l : v;
+  return maxLines * 22.0 + 14.0; // line height + cell padding
+}
+
+/// Slices a tall captured report image into page-sized PNG strips so the PDF
+/// paginates instead of cramming everything onto one page. Cuts are snapped to
+/// a whitespace gap so a line of text is never sliced through.
+/// Test hook for [_sliceToPages] (the PDF capture path can't run headless).
+@visibleForTesting
+List<Uint8List> sliceReportImageForTest(Uint8List png, PdfPageFormat fmt) =>
+    _sliceToPages(png, fmt);
+
+List<Uint8List> _sliceToPages(Uint8List png, PdfPageFormat fmt) {
+  final full = img.decodePng(png);
+  if (full == null) return [png];
+
+  // Pixels of image height that fit on one page once the image is fit to the
+  // page's printable width (page minus the 24pt margins on each side).
+  final availW = fmt.width - 48;
+  final availH = fmt.height - 48;
+  final pagePx = (full.width * (availH / availW)).floor();
+  if (pagePx <= 0 || full.height <= pagePx) return [png];
+
+  final strips = <Uint8List>[];
+  var y = 0;
+  while (y < full.height) {
+    var end = y + pagePx;
+    if (end >= full.height) {
+      end = full.height;
+    } else {
+      // Snap the cut up to the nearest whitespace gap (no glyphs sliced).
+      end = _snapToWhitespace(full, end, y + (pagePx * 0.55).floor());
+    }
+    final h = end - y;
+    final strip = img.copyCrop(full, x: 0, y: y, width: full.width, height: h);
+    if (!_isBlank(strip)) strips.add(img.encodePng(strip));
+    y = end;
+  }
+  return strips.isEmpty ? [png] : strips;
+}
+
+/// Finds a mostly-white horizontal line at or above [target] (down to [minY])
+/// to cut on, so text lines aren't split across pages. Vertical table borders
+/// are ignored (they're dark on every row). Falls back to [target].
+int _snapToWhitespace(img.Image im, int target, int minY) {
+  final floor = minY < 0 ? 0 : minY;
+  for (var y = target; y > floor; y--) {
+    if (_isLightRow(im, y)) return y;
+  }
+  return target;
+}
+
+bool _isLightRow(img.Image im, int y) {
+  var dark = 0;
+  var samples = 0;
+  for (var x = 0; x < im.width; x += 4) {
+    final px = im.getPixel(x, y);
+    final lum = (px.r + px.g + px.b) / 3;
+    if (lum < 170) dark++;
+    samples++;
+  }
+  // Allow a few dark hits for the thin vertical column borders.
+  return samples == 0 || dark / samples < 0.06;
+}
+
+bool _isBlank(img.Image im) {
+  var dark = 0;
+  var samples = 0;
+  for (var y = 0; y < im.height; y += 6) {
+    for (var x = 0; x < im.width; x += 6) {
+      final px = im.getPixel(x, y);
+      final lum = (px.r + px.g + px.b) / 3;
+      if (lum < 170) dark++;
+      samples++;
+    }
+  }
+  return samples == 0 || dark / samples < 0.004;
 }
 
 /// The on-page report, rendered by Flutter (so Marathi shapes correctly).

@@ -24,11 +24,16 @@ $scope = effectiveScope($pdo, $user, $body);
 $where = $scopeSql === '' ? '' : "WHERE $scopeSql";
 
 // Cap to keep the payload sane; dashboards summarise, so this is plenty.
+// The station name is the canonical org_stations one when the record is
+// linked, so "दौलताबाद" and "Daulatabad" chart as ONE station.
 $stmt = $pdo->prepare(
-    "SELECT id, station_name, fir_no, year, crime_type, section, status,
-            date_occurred, date_registered, data_json
-     FROM central_crimes $where
-     ORDER BY id DESC
+    "SELECT c.id, COALESCE(s.name, c.station_name) AS station_name, c.fir_no,
+            c.year, c.crime_type, c.section, c.status,
+            c.date_occurred, c.date_registered, c.data_json
+     FROM central_crimes c
+     LEFT JOIN org_stations s ON c.station_id = s.id
+     $where
+     ORDER BY c.id DESC
      LIMIT 20000"
 );
 $stmt->execute($params);

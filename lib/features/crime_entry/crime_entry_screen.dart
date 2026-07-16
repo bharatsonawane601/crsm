@@ -7,15 +7,18 @@ import '../../shared/widgets/language_toggle.dart';
 import '../portal/central_upload_controller.dart';
 import 'crime_form_controller.dart';
 import 'crime_repository.dart';
+import 'models/crime_draft.dart';
 import 'tabs.dart';
 
-/// The 7-tab crime entry form. Pass [crimeId] to edit an existing record, or
-/// leave it null for a new entry. Returns the saved crime id (or the string
-/// 'deleted') via [Navigator.pop].
+/// The 7-tab crime entry form. Pass [crimeId] to edit an existing record,
+/// [initialDraft] to open a pre-filled new entry (e.g. an imported FIR PDF for
+/// review), or leave both null for a blank new entry. Returns the saved crime
+/// id (or the string 'deleted') via [Navigator.pop].
 class CrimeEntryScreen extends ConsumerStatefulWidget {
-  const CrimeEntryScreen({super.key, this.crimeId});
+  const CrimeEntryScreen({super.key, this.crimeId, this.initialDraft});
 
   final int? crimeId;
+  final CrimeDraft? initialDraft;
 
   @override
   ConsumerState<CrimeEntryScreen> createState() => _CrimeEntryScreenState();
@@ -35,7 +38,8 @@ class _CrimeEntryScreenState extends ConsumerState<CrimeEntryScreen>
     super.initState();
     _tabController = TabController(length: _tabCount, vsync: this)
       ..addListener(() => setState(() {})); // rebuild IndexedStack on tab change
-    _model = CrimeFormModel(ref.read(crimeRepositoryProvider));
+    _model = CrimeFormModel(ref.read(crimeRepositoryProvider),
+        draft: widget.initialDraft);
 
     if (widget.crimeId != null) {
       _loading = true;

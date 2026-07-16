@@ -241,6 +241,87 @@ class AppDateField extends StatelessWidget {
   }
 }
 
+/// Time field rendered as a tappable box opening the native clock picker.
+/// Stores the chosen time as a display string (e.g. "1:30 PM").
+class AppTimeField extends StatelessWidget {
+  const AppTimeField({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+    this.helperText,
+  });
+
+  final String label;
+  final String? value;
+  final ValueChanged<String?> onChanged;
+  final String? helperText;
+
+  /// Best-effort parse of a stored time string back to a [TimeOfDay] so the
+  /// picker re-opens on the previously chosen time.
+  static TimeOfDay? _parse(String? s) {
+    if (s == null || s.trim().isEmpty) return null;
+    final m = RegExp(r'(\d{1,2}):(\d{2})\s*([AaPp][Mm])?').firstMatch(s);
+    if (m == null) return null;
+    var h = int.tryParse(m.group(1)!) ?? 0;
+    final min = int.tryParse(m.group(2)!) ?? 0;
+    final ap = m.group(3)?.toUpperCase();
+    if (ap == 'PM' && h < 12) h += 12;
+    if (ap == 'AM' && h == 12) h = 0;
+    return TimeOfDay(hour: h % 24, minute: min % 60);
+  }
+
+  Future<void> _pick(BuildContext context) async {
+    // Capture the formatter before the await so we don't touch context after.
+    final l10n = MaterialLocalizations.of(context);
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _parse(value) ?? TimeOfDay.now(),
+      // Police records use a 24-hour clock — force the dial into 24h mode and
+      // start on the dial (officers can still switch to keyboard entry).
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+        child: child!,
+      ),
+    );
+    if (picked != null) {
+      onChanged(l10n.formatTimeOfDay(picked, alwaysUse24HourFormat: true));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: InkWell(
+        onTap: () => _pick(context),
+        child: InputDecorator(
+          decoration: InputDecoration(
+            labelText: label,
+            helperText: helperText,
+            border: const OutlineInputBorder(),
+            isDense: true,
+            suffixIcon: (value == null || value!.isEmpty)
+                ? const Icon(Icons.access_time, size: 18)
+                : IconButton(
+                    icon: const Icon(Icons.clear, size: 18),
+                    onPressed: () => onChanged(null),
+                  ),
+          ),
+          child: Text(
+            (value == null || value!.isEmpty)
+                ? 'common.pickTime'.tr()
+                : value!,
+            style: (value == null || value!.isEmpty)
+                ? TextStyle(color: Theme.of(context).hintColor)
+                : null,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Generic dropdown field.
 class AppDropdownField<T> extends StatelessWidget {
   const AppDropdownField({

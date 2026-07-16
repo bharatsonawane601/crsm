@@ -5,12 +5,14 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/theme/text_scale.dart';
 import '../../shared/widgets/company_logo.dart';
 import '../../shared/widgets/language_toggle.dart';
 import '../access/access_service.dart';
 import '../audit/audit_log_screen.dart';
 import '../auth/auth_service.dart';
 import '../crime_entry/data/bns_data.dart';
+import '../crime_entry/widgets/form_fields.dart';
 import '../../core/branding.dart';
 import '../legal/legal_screen.dart';
 import '../reports/template_catalog.dart';
@@ -56,6 +58,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (dir == null) return;
     try {
       final path = await ref.read(backupServiceProvider).backup(dir);
+      // Reuse this folder for the daily automatic backup from now on.
+      await BackupService.rememberFolder(dir);
       messenger.showSnackBar(
         SnackBar(content: Text('settings.backupDone'.tr(namedArgs: {'path': path}))),
       );
@@ -74,41 +78,79 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (path == null) return;
     if (!mounted) return;
 
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('settings.restoreConfirmTitle'.tr()),
-        content: Text('settings.restoreConfirmBody'.tr()),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text('common.cancel'.tr()),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text('common.ok'.tr()),
-          ),
-        ],
-      ),
-    );
-    if (ok != true) return;
+    final service = ref.read(backupServiceProvider);
 
+    // 1) Read the backup (without changing anything yet).
+    final RestorePreview preview;
     try {
-      await ref.read(backupServiceProvider).stageRestore(path);
-      if (!mounted) return;
-      await showDialog<void>(
+      preview = await service.previewRestore(path);
+    } catch (_) {
+      messenger.showSnackBar(SnackBar(content: Text('settings.restoreFailed'.tr())));
+      return;
+    }
+    if (!mounted) return;
+    if (preview.total == 0) {
+      messenger.showSnackBar(SnackBar(content: Text('settings.restoreNothing'.tr())));
+      return;
+    }
+
+    // 2) Decide how to merge. Existing local data is always kept.
+    final RestoreConflictMode? mode;
+    if (preview.conflictCount > 0) {
+      mode = await showDialog<RestoreConflictMode>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: Text('settings.restoreStagedTitle'.tr()),
-          content: Text('settings.restoreStagedBody'.tr()),
+          title: Text('settings.restoreConflictTitle'.tr()),
+          content: Text('settings.restoreConflictBody'
+              .tr(namedArgs: {'n': '${preview.conflictCount}'})),
           actions: [
-            FilledButton(
+            TextButton(
               onPressed: () => Navigator.pop(ctx),
+              child: Text('common.cancel'.tr()),
+            ),
+            TextButton(
+              onPressed: () =>
+                  Navigator.pop(ctx, RestoreConflictMode.keepBoth),
+              child: Text('settings.restoreKeepBoth'.tr()),
+            ),
+            FilledButton(
+              onPressed: () =>
+                  Navigator.pop(ctx, RestoreConflictMode.replace),
+              child: Text('settings.restoreReplace'.tr()),
+            ),
+          ],
+        ),
+      );
+    } else {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text('settings.restoreConfirmTitle'.tr()),
+          content: Text('settings.restoreMergeBody'
+              .tr(namedArgs: {'n': '${preview.total}'})),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text('common.cancel'.tr()),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
               child: Text('common.ok'.tr()),
             ),
           ],
         ),
       );
+      mode = ok == true ? RestoreConflictMode.keepBoth : null;
+    }
+    if (mode == null) return; // cancelled
+
+    // 3) Merge it in (no restart needed — the crime list updates live).
+    try {
+      final added = await service.applyRestore(preview, mode);
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(
+          content:
+              Text('settings.restoreDone'.tr(namedArgs: {'n': '$added'}))));
     } catch (_) {
       messenger.showSnackBar(SnackBar(content: Text('settings.restoreFailed'.tr())));
     }
@@ -137,6 +179,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              _SectionCard(
+                title: 'settings.display'.tr(),
+                children: const [_TextScaleControls()],
+              ),
               _SectionCard(
                 title: 'settings.station'.tr(),
                 children: [
@@ -273,21 +319,47 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _field(String label, String value, ValueChanged<String> onChanged) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: TextFormField(
-        initialValue: value,
-        autocorrect: false,
-        enableSuggestions: false,
-        smartDashesType: SmartDashesType.disabled,
-        smartQuotesType: SmartQuotesType.disabled,
-        decoration: InputDecoration(
-          labelText: label,
-          border: const OutlineInputBorder(),
-          isDense: true,
+    // AppTextField carries its own vertical padding and, on Windows, the "अ"
+    // native box for reliable Marathi typing (typewriter/InScript/phonetic).
+    return AppTextField(
+      label: label,
+      initialValue: value,
+      onChanged: onChanged,
+    );
+  }
+}
+
+/// App-wide font-size selector (mini / medium / large / extra large). Applies
+/// instantly and is remembered across launches.
+class _TextScaleControls extends ConsumerWidget {
+  const _TextScaleControls();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final current = ref.watch(textScaleProvider);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('settings.textScaleHint'.tr(), style: theme.textTheme.bodySmall),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final s in AppTextScale.values)
+              ChoiceChip(
+                label: Text(s.labelKey.tr()),
+                selected: current == s,
+                onSelected: (_) =>
+                    ref.read(textScaleProvider.notifier).set(s),
+              ),
+          ],
         ),
-        onChanged: onChanged,
-      ),
+        const SizedBox(height: 12),
+        Text('settings.textScalePreview'.tr(),
+            style: theme.textTheme.titleMedium),
+      ],
     );
   }
 }

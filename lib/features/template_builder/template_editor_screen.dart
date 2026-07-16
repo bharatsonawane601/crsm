@@ -2,6 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../shared/widgets/native_edit_button.dart';
+import '../crime_entry/widgets/form_fields.dart';
 import '../reports/template_repository.dart';
 import 'field_catalog.dart';
 import 'template_draft.dart';
@@ -190,33 +192,16 @@ class _MetaFields extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       child: Column(
         children: [
-          TextFormField(
+          AppTextField(
+            label: 'templates.name'.tr(),
             initialValue: draft.name,
-            autocorrect: false,
-            enableSuggestions: false,
-            smartDashesType: SmartDashesType.disabled,
-            smartQuotesType: SmartQuotesType.disabled,
-            decoration: InputDecoration(
-              labelText: 'templates.name'.tr(),
-              border: const OutlineInputBorder(),
-              isDense: true,
-            ),
             validator: (v) =>
                 (v == null || v.trim().isEmpty) ? 'validation.required'.tr() : null,
             onChanged: (v) => draft.name = v,
           ),
-          const SizedBox(height: 8),
-          TextFormField(
+          AppTextField(
+            label: 'templates.header'.tr(),
             initialValue: draft.header,
-            autocorrect: false,
-            enableSuggestions: false,
-            smartDashesType: SmartDashesType.disabled,
-            smartQuotesType: SmartQuotesType.disabled,
-            decoration: InputDecoration(
-              labelText: 'templates.header'.tr(),
-              border: const OutlineInputBorder(),
-              isDense: true,
-            ),
             onChanged: (v) => draft.header = v,
           ),
           const SizedBox(height: 8),
@@ -315,20 +300,11 @@ class _RowCard extends StatelessWidget {
                 ),
               ],
             ),
-            TextFormField(
+            AppTextField(
+              label: 'templates.rowLabel'.tr(),
               initialValue: row.label,
-              autocorrect: false,
-              enableSuggestions: false,
-              smartDashesType: SmartDashesType.disabled,
-              smartQuotesType: SmartQuotesType.disabled,
-              decoration: InputDecoration(
-                labelText: 'templates.rowLabel'.tr(),
-                border: const OutlineInputBorder(),
-                isDense: true,
-              ),
               onChanged: (v) => row.label = v,
             ),
-            const SizedBox(height: 8),
             TextFormField(
               controller: valueController,
               maxLines: 2,
@@ -341,20 +317,14 @@ class _RowCard extends StatelessWidget {
                 helperText: 'templates.rowValueHint'.tr(),
                 border: const OutlineInputBorder(),
                 isDense: true,
+                suffixIcon: NativeEditButton.maybe(valueController,
+                    title: 'templates.rowValue'.tr()),
               ),
             ),
             const SizedBox(height: 8),
-            TextFormField(
+            AppTextField(
+              label: 'templates.rowFallback'.tr(),
               initialValue: row.fallback,
-              autocorrect: false,
-              enableSuggestions: false,
-              smartDashesType: SmartDashesType.disabled,
-              smartQuotesType: SmartQuotesType.disabled,
-              decoration: InputDecoration(
-                labelText: 'templates.rowFallback'.tr(),
-                border: const OutlineInputBorder(),
-                isDense: true,
-              ),
               onChanged: (v) => row.fallback = v,
             ),
           ],

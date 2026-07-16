@@ -22,6 +22,12 @@ class AnalyticsRepository {
       final officerByCrime = <int, String?>{
         for (final i in investigations) i.crimeId: i.officerName,
       };
+      final preventiveByCrime = <int, String?>{
+        for (final i in investigations) i.crimeId: i.preventiveAction,
+      };
+      final preventiveDateByCrime = <int, DateTime?>{
+        for (final i in investigations) i.crimeId: i.preventiveDate,
+      };
       final chargesheetByCrime = <int, DateTime?>{
         for (final v in verdicts) v.crimeId: v.chargesheetDate,
       };
@@ -54,6 +60,8 @@ class AnalyticsRepository {
           AnalyticsRow(
             id: c.id,
             status: c.status,
+            firNo: c.firNo,
+            year: c.year,
             // Effective date for trend/KPI bucketing: prefer the registration
             // date, fall back to the offence date, then Jan 1 of the record's
             // year (imported records often carry only a year), and finally the
@@ -65,11 +73,15 @@ class AnalyticsRepository {
             crimeType: c.crimeType,
             officerName: officerByCrime[c.id],
             station: c.policeStation,
+            courtType: c.courtType,
+            caseStage: c.caseStage,
             chargesheetDate: chargesheetByCrime[c.id],
             recoveredValue: recoveredByCrime[c.id] ?? 0,
             accusedCount: accusedCount[c.id] ?? 0,
             arrestedCount: arrestedCount[c.id] ?? 0,
             wantedCount: wantedCount[c.id] ?? 0,
+            preventiveAction: preventiveByCrime[c.id],
+            preventiveDate: preventiveDateByCrime[c.id],
           ),
       ];
     });

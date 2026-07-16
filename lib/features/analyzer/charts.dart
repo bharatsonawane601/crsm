@@ -63,7 +63,8 @@ class KpiCard extends StatelessWidget {
   }
 }
 
-/// Card wrapper giving every chart a title and consistent height.
+/// Card wrapper giving every chart a title and consistent height. Tapping the
+/// chart (or the expand icon) opens it enlarged in a full-screen dialog.
 class ChartCard extends StatelessWidget {
   const ChartCard({
     super.key,
@@ -79,8 +80,32 @@ class ChartCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CrmsCard(
-      title: title,
-      child: SizedBox(height: height, child: child),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(title,
+                    style: Theme.of(context).textTheme.titleMedium,
+                    overflow: TextOverflow.ellipsis),
+              ),
+              IconButton(
+                tooltip: 'analyzer.chart.enlarge'.tr(),
+                icon: const Icon(Icons.open_in_full, size: 18),
+                onPressed: () =>
+                    showEnlargedChart(context, title: title, chart: child),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.s2),
+          InkWell(
+            onTap: () =>
+                showEnlargedChart(context, title: title, chart: child),
+            child: SizedBox(height: height, child: child),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -97,6 +122,105 @@ extension _ChartTypeMeta on ChartType {
         ChartType.pie => Icons.pie_chart,
       };
   String get labelKey => 'analyzer.chartType.$name';
+}
+
+/// Draws [entries] in the requested [type]. Shared by the configurable and
+/// custom chart cards (and their enlarged full-screen views).
+Widget buildChartFor(
+  ChartType type,
+  List<MapEntry<String, int>> entries, {
+  String emptyLabel = '—',
+}) {
+  switch (type) {
+    case ChartType.bar:
+      return RankedBars(entries: entries, emptyLabel: emptyLabel);
+    case ChartType.columns:
+      return ColumnChart(entries: entries, emptyLabel: emptyLabel);
+    case ChartType.line:
+      return TrendLine(entries: entries, emptyLabel: emptyLabel);
+    case ChartType.area:
+      return AreaTrend(entries: entries, emptyLabel: emptyLabel);
+    case ChartType.pie:
+      return CountPie(
+        data: {for (final e in entries) e.key: e.value},
+        emptyLabel: emptyLabel,
+      );
+  }
+}
+
+/// A reusable chart-type chooser menu (the little icon in a card's corner).
+PopupMenuButton<ChartType> chartTypeMenu({
+  required ChartType current,
+  required List<ChartType> types,
+  required ValueChanged<ChartType> onSelected,
+}) {
+  return PopupMenuButton<ChartType>(
+    tooltip: 'analyzer.chartType.choose'.tr(),
+    initialValue: current,
+    icon: Icon(current.icon, size: 20),
+    onSelected: onSelected,
+    itemBuilder: (_) => [
+      for (final t in types)
+        PopupMenuItem(
+          value: t,
+          child: Row(
+            children: [
+              Icon(t.icon, size: 18),
+              const SizedBox(width: 8),
+              Text(t.labelKey.tr()),
+            ],
+          ),
+        ),
+    ],
+  );
+}
+
+/// Opens [chart] full-screen in a dialog so a small dashboard tile can be
+/// inspected enlarged. [actions] (e.g. a chart-type menu) sit in the header.
+Future<void> showEnlargedChart(
+  BuildContext context, {
+  required String title,
+  required Widget chart,
+  List<Widget> actions = const [],
+}) {
+  return showDialog<void>(
+    context: context,
+    builder: (ctx) {
+      final size = MediaQuery.of(ctx).size;
+      return Dialog(
+        insetPadding: const EdgeInsets.all(24),
+        child: SizedBox(
+          width: size.width * 0.9,
+          height: size.height * 0.85,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(title,
+                          style: Theme.of(ctx).textTheme.titleLarge,
+                          overflow: TextOverflow.ellipsis),
+                    ),
+                    ...actions,
+                    IconButton(
+                      tooltip: 'common.close'.tr(),
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Expanded(child: chart),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }
 
 /// A chart card whose chart **type is chosen by the user** (bar / columns /
@@ -134,23 +258,21 @@ class ConfigurableChartCard extends StatefulWidget {
 class _ConfigurableChartCardState extends State<ConfigurableChartCard> {
   late ChartType _type = widget.initialType;
 
-  Widget _chart() {
-    switch (_type) {
-      case ChartType.bar:
-        return RankedBars(entries: widget.entries, emptyLabel: widget.emptyLabel);
-      case ChartType.columns:
-        return ColumnChart(entries: widget.entries, emptyLabel: widget.emptyLabel);
-      case ChartType.line:
-        return TrendLine(entries: widget.entries, emptyLabel: widget.emptyLabel);
-      case ChartType.area:
-        return AreaTrend(entries: widget.entries, emptyLabel: widget.emptyLabel);
-      case ChartType.pie:
-        return CountPie(
-          data: {for (final e in widget.entries) e.key: e.value},
-          emptyLabel: widget.emptyLabel,
-        );
-    }
-  }
+  Widget _chart() =>
+      buildChartFor(_type, widget.entries, emptyLabel: widget.emptyLabel);
+
+  void _enlarge() => showEnlargedChart(
+        context,
+        title: widget.title,
+        chart: _chart(),
+        actions: [
+          chartTypeMenu(
+            current: _type,
+            types: widget.types,
+            onSelected: (t) => setState(() => _type = t),
+          ),
+        ],
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -165,29 +287,130 @@ class _ConfigurableChartCardState extends State<ConfigurableChartCard> {
                     style: Theme.of(context).textTheme.titleMedium,
                     overflow: TextOverflow.ellipsis),
               ),
-              PopupMenuButton<ChartType>(
-                tooltip: 'analyzer.chartType.choose'.tr(),
-                initialValue: _type,
-                icon: Icon(_type.icon, size: 20),
+              IconButton(
+                tooltip: 'analyzer.chart.enlarge'.tr(),
+                icon: const Icon(Icons.open_in_full, size: 18),
+                onPressed: _enlarge,
+              ),
+              chartTypeMenu(
+                current: _type,
+                types: widget.types,
                 onSelected: (t) => setState(() => _type = t),
-                itemBuilder: (_) => [
-                  for (final t in widget.types)
-                    PopupMenuItem(
-                      value: t,
-                      child: Row(
-                        children: [
-                          Icon(t.icon, size: 18),
-                          const SizedBox(width: 8),
-                          Text(t.labelKey.tr()),
-                        ],
-                      ),
-                    ),
-                ],
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.s2),
-          SizedBox(height: widget.height, child: _chart()),
+          InkWell(
+            onTap: _enlarge,
+            child: SizedBox(height: widget.height, child: _chart()),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A fully user-driven chart: the officer picks **which dataset** to analyze
+/// (from [datasets], e.g. crime type / status / section / stage) **and** the
+/// chart type, and can enlarge it. Several of these let an officer build their
+/// own comparison views side by side.
+class CustomChartCard extends StatefulWidget {
+  const CustomChartCard({
+    super.key,
+    required this.datasets,
+    this.initialType = ChartType.bar,
+    this.height = 260,
+    this.emptyLabel = '—',
+  });
+
+  /// Display name → labelled counts. The keys populate the metric dropdown.
+  final Map<String, List<MapEntry<String, int>>> datasets;
+  final ChartType initialType;
+  final double height;
+  final String emptyLabel;
+
+  @override
+  State<CustomChartCard> createState() => _CustomChartCardState();
+}
+
+class _CustomChartCardState extends State<CustomChartCard> {
+  late String _metric = widget.datasets.keys.first;
+  late ChartType _type = widget.initialType;
+
+  static const _types = [
+    ChartType.bar,
+    ChartType.columns,
+    ChartType.line,
+    ChartType.area,
+    ChartType.pie,
+  ];
+
+  List<MapEntry<String, int>> get _entries =>
+      widget.datasets[_metric] ?? const [];
+
+  Widget _chart() =>
+      buildChartFor(_type, _entries, emptyLabel: widget.emptyLabel);
+
+  void _enlarge() => showEnlargedChart(
+        context,
+        title: _metric,
+        chart: _chart(),
+        actions: [
+          chartTypeMenu(
+            current: _type,
+            types: _types,
+            onSelected: (t) => setState(() => _type = t),
+          ),
+        ],
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    return CrmsCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.tune, size: 18),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text('analyzer.chart.custom'.tr(),
+                    style: Theme.of(context).textTheme.titleMedium,
+                    overflow: TextOverflow.ellipsis),
+              ),
+              IconButton(
+                tooltip: 'analyzer.chart.enlarge'.tr(),
+                icon: const Icon(Icons.open_in_full, size: 18),
+                onPressed: _enlarge,
+              ),
+              chartTypeMenu(
+                current: _type,
+                types: _types,
+                onSelected: (t) => setState(() => _type = t),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.s2),
+          DropdownButtonFormField<String>(
+            initialValue: _metric,
+            isExpanded: true,
+            decoration: InputDecoration(
+              labelText: 'analyzer.chart.dataToCompare'.tr(),
+              border: const OutlineInputBorder(),
+              isDense: true,
+            ),
+            items: [
+              for (final k in widget.datasets.keys)
+                DropdownMenuItem(value: k, child: Text(k)),
+            ],
+            onChanged: (v) => setState(() => _metric = v ?? _metric),
+          ),
+          const SizedBox(height: AppSpacing.s2),
+          InkWell(
+            onTap: _enlarge,
+            child: SizedBox(height: widget.height, child: _chart()),
+          ),
         ],
       ),
     );
@@ -851,6 +1074,119 @@ class ComparisonColumns extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         _IndexLegend(labels: shown),
+      ],
+    );
+  }
+}
+
+/// Chargesheet-deadline comparison between the 60-day (JMFC) and 90-day
+/// (Sessions) court windows. Each window shows three grouped bars: pending
+/// cases still within the deadline (green), pending cases overdue (red), and
+/// cases whose chargesheet is already filed (blue).
+class ChargesheetWindowChart extends StatelessWidget {
+  const ChargesheetWindowChart({
+    super.key,
+    required this.within,
+    required this.overdue,
+    required this.filed,
+    required this.withinLabel,
+    required this.overdueLabel,
+    required this.filedLabel,
+    this.emptyLabel = '—',
+  });
+
+  final Map<String, int> within; // keyed '60' / '90'
+  final Map<String, int> overdue;
+  final Map<String, int> filed;
+  final String withinLabel;
+  final String overdueLabel;
+  final String filedLabel;
+  final String emptyLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    const windows = ['60', '90'];
+    final total = [
+      for (final w in windows)
+        (within[w] ?? 0) + (overdue[w] ?? 0) + (filed[w] ?? 0),
+    ];
+    if (total.every((t) => t == 0)) return EmptyChart(label: emptyLabel);
+    final maxY = total.reduce(math.max).clamp(1, 1 << 30);
+
+    return Column(
+      children: [
+        Expanded(
+          child: BarChart(
+            BarChartData(
+              alignment: BarChartAlignment.spaceAround,
+              maxY: (maxY + 1).toDouble(),
+              gridData: const FlGridData(show: true),
+              borderData: FlBorderData(show: false),
+              titlesData: FlTitlesData(
+                topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false)),
+                rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false)),
+                leftTitles: _intLeftTitles(maxY),
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 28,
+                    getTitlesWidget: (value, meta) {
+                      final i = value.round();
+                      if (i < 0 || i >= windows.length) return const SizedBox();
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Text('${windows[i]} ${'analyzer.chargesheet.days'.tr()}',
+                            style: const TextStyle(fontSize: 10)),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              barGroups: [
+                for (var i = 0; i < windows.length; i++)
+                  BarChartGroupData(
+                    x: i,
+                    barsSpace: 4,
+                    barRods: [
+                      BarChartRodData(
+                        toY: (within[windows[i]] ?? 0).toDouble(),
+                        color: AppColors.successGreen,
+                        width: 12,
+                        borderRadius:
+                            const BorderRadius.vertical(top: Radius.circular(3)),
+                      ),
+                      BarChartRodData(
+                        toY: (overdue[windows[i]] ?? 0).toDouble(),
+                        color: AppColors.dangerRed,
+                        width: 12,
+                        borderRadius:
+                            const BorderRadius.vertical(top: Radius.circular(3)),
+                      ),
+                      BarChartRodData(
+                        toY: (filed[windows[i]] ?? 0).toDouble(),
+                        color: AppColors.infoBlue,
+                        width: 12,
+                        borderRadius:
+                            const BorderRadius.vertical(top: Radius.circular(3)),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 12,
+          runSpacing: 4,
+          children: [
+            _LegendChip(color: AppColors.successGreen, text: withinLabel),
+            _LegendChip(color: AppColors.dangerRed, text: overdueLabel),
+            _LegendChip(color: AppColors.infoBlue, text: filedLabel),
+          ],
+        ),
       ],
     );
   }

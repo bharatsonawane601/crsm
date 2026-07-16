@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/demo_mode.dart';
 import '../auth/auth_service.dart';
 import 'access_client.dart';
 import 'access_config.dart';
@@ -50,6 +51,10 @@ class AccessController extends Notifier<AccessState> {
     if (user == null) {
       return const AccessState(gate: AccessGate.checking);
     }
+    // Demo build (Linux .deb): no server approval — open the gate immediately.
+    if (kCrmsDemoMode) {
+      return const AccessState(gate: AccessGate.approved);
+    }
     // Until the server is configured, keep the gate open so the app stays
     // usable for development/demos.
     if (!AccessConfig.isConfigured) {
@@ -99,7 +104,7 @@ class AccessController extends Notifier<AccessState> {
   Future<void> recheck() async {
     final user = ref.read(authControllerProvider).value;
     if (user == null) return;
-    if (!AccessConfig.isConfigured) {
+    if (kCrmsDemoMode || !AccessConfig.isConfigured) {
       state = const AccessState(gate: AccessGate.approved);
       return;
     }

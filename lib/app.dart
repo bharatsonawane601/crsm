@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/theme/crms_theme.dart';
+import 'core/theme/text_scale.dart';
+import 'features/access/access_client.dart';
 import 'features/access/access_screen.dart';
 import 'features/access/access_service.dart';
 import 'features/app_shell.dart';
 import 'features/auth/auth_service.dart';
 import 'features/auth/login_screen.dart';
 import 'features/auth/pin_gate_screen.dart';
+import 'features/io/io_portal_shell.dart';
 import 'features/portal/portal_shell.dart';
 import 'features/splash_screen.dart';
 import 'features/update/update_controller.dart';
@@ -23,6 +26,7 @@ class CrmsApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
+    final textScale = ref.watch(textScaleProvider);
 
     return MaterialApp(
       title: 'CRMS',
@@ -34,6 +38,17 @@ class CrmsApp extends ConsumerWidget {
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
+      // App-wide font size (Settings → Display). Clamp so OS-level scaling can't
+      // stack on top to an unusable size.
+      builder: (context, child) {
+        final mq = MediaQuery.of(context);
+        return MediaQuery(
+          data: mq.copyWith(
+            textScaler: TextScaler.linear(textScale.factor),
+          ),
+          child: child!,
+        );
+      },
       home: const _RootGate(),
     );
   }
@@ -135,7 +150,8 @@ class _AccessGate extends ConsumerWidget {
 
     final Widget child = switch (access.gate) {
       AccessGate.checking => const SplashScreen(),
-      AccessGate.approved => _PinGate(portal: access.portal),
+      AccessGate.approved =>
+        _PinGate(role: access.role, portal: access.portal),
       AccessGate.pending || AccessGate.blocked => const AccessScreen(),
     };
 
@@ -150,7 +166,10 @@ class _AccessGate extends ConsumerWidget {
 /// required on every later launch. Stays mounted while approved so unlocking
 /// survives the access screen's background re-checks.
 class _PinGate extends StatefulWidget {
-  const _PinGate({this.portal = false});
+  const _PinGate({this.role = OfficerRole.station, this.portal = false});
+
+  /// The approved user's rank. `io` opens the Investigating-Officer portal.
+  final OfficerRole role;
 
   /// When true, the user is a senior officer (CP/DCP/ACP) → open the read-only
   /// Officer Portal instead of the full data-entry app.
@@ -166,6 +185,7 @@ class _PinGateState extends State<_PinGate> {
   @override
   Widget build(BuildContext context) {
     if (_unlocked) {
+      if (widget.role == OfficerRole.io) return const IoPortalShell();
       return widget.portal ? const PortalShell() : const AppShell();
     }
     return PinGateScreen(onUnlocked: () => setState(() => _unlocked = true));

@@ -37,6 +37,7 @@ jobs:
           CRMS_API_BASE_URL: ${{ secrets.CRMS_API_BASE_URL }}
           CRMS_GOOGLE_CLIENT_ID: ${{ secrets.CRMS_GOOGLE_CLIENT_ID }}
           CRMS_GOOGLE_CLIENT_SECRET: ${{ secrets.CRMS_GOOGLE_CLIENT_SECRET }}
+          CRMS_FIELD_KEY: ${{ secrets.CRMS_FIELD_KEY }}
         run: bash installer/linux/build_appimage.sh
 
       - name: Assemble USB installer folder

@@ -43,4 +43,35 @@ void main() {
       expect(() => other.decryptField(enc), throwsA(isA<Object>()));
     });
   });
+
+  group('FieldCipher legacy-key fallback (key rotation)', () {
+    final oldKey = List<int>.generate(32, (i) => i);
+    final newKey = List<int>.generate(32, (i) => 255 - i);
+    final oldCipher = FieldCipher.fromBytes(oldKey);
+    final rotated = FieldCipher.fromBytes(newKey, legacyKeyBytes: [oldKey]);
+
+    test('decrypts data written with the legacy key', () {
+      final enc = oldCipher.encryptField('1234 5678 9012');
+      expect(rotated.decryptField(enc), equals('1234 5678 9012'));
+    });
+
+    test('encrypts NEW data with the primary key only', () {
+      final enc = rotated.encryptField('ABCDE1234F');
+      // The primary-only cipher must read it; the legacy-only one must not.
+      expect(FieldCipher.fromBytes(newKey).decryptField(enc),
+          equals('ABCDE1234F'));
+      expect(() => oldCipher.decryptField(enc), throwsA(isA<Object>()));
+    });
+
+    test('legacy fallback also covers byte blobs (backups / sync files)', () {
+      final blob = List<int>.generate(64, (i) => i * 3 % 256);
+      final enc = oldCipher.encryptBytes(blob);
+      expect(rotated.decryptBytes(enc), equals(blob));
+    });
+
+    test('still throws when no key matches', () {
+      final enc = FieldCipher(Key.fromLength(32)).encryptField('x')!;
+      expect(() => rotated.decryptField(enc), throwsA(isA<Object>()));
+    });
+  });
 }

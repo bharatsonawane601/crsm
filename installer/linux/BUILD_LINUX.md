@@ -78,6 +78,35 @@ chmod +x crms-setup-<version>.AppImage
 
 ---
 
+## Alternative: build a `.deb` (Debian/Ubuntu installer) — demo build
+
+For a classic installable package (adds CRMS to the app menu, installs under
+`/opt/crms`), build a `.deb` instead of / in addition to the AppImage:
+
+```bash
+cd <project root>
+bash installer/linux/build_deb.sh
+```
+
+Output: **`installer/output/crms_<version>_amd64.deb`** (version read from
+`pubspec.yaml`). Install / run / remove:
+
+```bash
+sudo apt install ./installer/output/crms_<version>_amd64.deb   # or: sudo dpkg -i ...
+crms            # launch from terminal, or pick "CRMS" from the app menu
+sudo apt remove crms
+```
+
+> **This `.deb` is a DEMO build.** It is compiled with
+> `--dart-define=CRMS_DEMO_MODE=true`, so it **auto-signs-in a demo officer**
+> (`demo.officer@crms.local`) and needs **no Google sign-in and no email
+> verification** — the access/approval gate is open. The local launch PIN still
+> applies (it is created on first run; it is not email verification). Requires
+> the `dpkg` package (`sudo apt install -y dpkg`) in addition to the toolchain
+> in step 1.
+
+---
+
 ## Notes
 
 - **Same database & sync everywhere.** The Linux app uses the identical local

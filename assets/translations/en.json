@@ -42,6 +42,7 @@
     "enterBody": "Enter your 6-digit PIN to unlock the software.",
     "mismatch": "The PINs do not match. Try again.",
     "wrong": "Incorrect PIN. Try again.",
+    "lockedOut": "Too many wrong attempts. Try again in {seconds} seconds.",
     "tooShort": "Enter all 6 digits.",
     "set": "Set PIN",
     "unlock": "Unlock",
@@ -81,6 +82,7 @@
     "english": "English",
     "save": "Save",
     "cancel": "Cancel",
+    "close": "Close",
     "delete": "Delete",
     "edit": "Edit",
     "add": "Add",
@@ -92,6 +94,7 @@
     "ok": "OK",
     "select": "Select",
     "pickDate": "Pick date",
+    "pickTime": "Pick time",
     "search": "Search",
     "searchHint": "Search… (Ctrl+K)",
     "lightMode": "Light mode",
@@ -101,12 +104,22 @@
     "refresh": "Refresh",
     "syncData": "Sync data",
     "more": "More",
-    "typeMarathi": "Type Marathi (opens a Windows text box)"
+    "typeMarathi": "Type Marathi (opens a Windows text box)",
+    "create": "Create"
   },
   "settings": {
     "title": "Settings",
     "about": "About",
     "saved": "Settings saved",
+    "display": "Display & font size",
+    "textScaleHint": "Choose the app font size. Applies everywhere and is remembered.",
+    "textScalePreview": "Preview — सूचना नमुना",
+    "textScale": {
+      "mini": "Mini",
+      "medium": "Medium",
+      "large": "Large",
+      "extraLarge": "Extra large"
+    },
     "station": "Station details",
     "stationNameMr": "Station name (Marathi)",
     "stationNameEn": "Station name (English)",
@@ -121,9 +134,13 @@
     "backupDone": "Backup saved to: {path}",
     "backupFailed": "Backup failed.",
     "restoreConfirmTitle": "Restore from backup?",
-    "restoreConfirmBody": "This will replace ALL current data with the backup when you restart the app. This cannot be undone.",
-    "restoreStagedTitle": "Restart required",
-    "restoreStagedBody": "The backup is ready. Close and reopen the app to finish restoring.",
+    "restoreMergeBody": "Add {n} record(s) from this backup to your current data? Your existing FIRs are kept.",
+    "restoreConflictTitle": "Some FIRs already exist",
+    "restoreConflictBody": "{n} FIR(s) in this backup already exist on this device. Replace the existing ones, or keep both copies? Either way, the rest of your data stays.",
+    "restoreReplace": "Replace existing",
+    "restoreKeepBoth": "Keep both",
+    "restoreNothing": "This backup has no records to restore.",
+    "restoreDone": "Restored {n} record(s). Your existing data was kept.",
     "restoreFailed": "Restore failed. Wrong file or it could not be decrypted.",
     "driveSync": "Google Drive sync",
     "driveSyncHint": "Pick your Google Drive for Desktop folder. The app saves an encrypted copy there; Google uploads it when online. Works offline — changes sync once a connection returns.",
@@ -175,10 +192,29 @@
       "arrested": "Accused arrested",
       "wanted": "Accused wanted",
       "recovered": "Property recovered",
-      "avgChargesheet": "Avg days to chargesheet"
+      "avgChargesheet": "Avg days to chargesheet",
+      "chargesheetOverdue": "Chargesheet overdue"
     },
     "other": "Other",
+    "chargesheet": {
+      "days": "days",
+      "within": "Within deadline",
+      "overdue": "Overdue",
+      "filed": "Chargesheet filed"
+    },
+    "due": {
+      "title": "Chargesheet deadlines need attention ({count})",
+      "overdueBy": "overdue by {days} days",
+      "dueIn": "due in {days} days",
+      "today": "due TODAY",
+      "more": "+{count} more"
+    },
     "chart": {
+      "enlarge": "Enlarge",
+      "custom": "Custom chart",
+      "dataToCompare": "Data to compare",
+      "stage": "Case stage breakdown",
+      "chargesheetWindow": "Chargesheet: 60-day vs 90-day",
       "trend": "Crime trend (monthly)",
       "status": "Status breakdown",
       "topSections": "Top sections",
@@ -208,8 +244,13 @@
       "pie": "Pie"
     },
     "dow": {
-      "mon": "Mon", "tue": "Tue", "wed": "Wed", "thu": "Thu",
-      "fri": "Fri", "sat": "Sat", "sun": "Sun"
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
     }
   },
   "stats": {
@@ -224,9 +265,18 @@
     "exported": "Saved to: {path}",
     "exportFailed": "Export failed.",
     "month": {
-      "m1": "Jan", "m2": "Feb", "m3": "Mar", "m4": "Apr", "m5": "May",
-      "m6": "Jun", "m7": "Jul", "m8": "Aug", "m9": "Sep", "m10": "Oct",
-      "m11": "Nov", "m12": "Dec"
+      "m1": "Jan",
+      "m2": "Feb",
+      "m3": "Mar",
+      "m4": "Apr",
+      "m5": "May",
+      "m6": "Jun",
+      "m7": "Jul",
+      "m8": "Aug",
+      "m9": "Sep",
+      "m10": "Oct",
+      "m11": "Nov",
+      "m12": "Dec"
     }
   },
   "cf": {
@@ -268,7 +318,7 @@
     "imported": "{n} record(s) imported",
     "skipped": "{n} row(s) skipped (no FIR no / complainant)",
     "failedRows": "{n} row(s) failed",
-    "hint": "First row must be the Marathi column headers."
+    "hint": "First row must be the Marathi column headers. The station crime register format (गु.रं | पोलीस स्टेशन | वर्ष | कायदा | कलम | उघड/न उघड | दाखल तारीख) is also detected automatically."
   },
   "login": {
     "heading": "Sign in to continue",
@@ -297,7 +347,9 @@
     "audit": "Audit Log",
     "settings": "Settings",
     "collapse": "Collapse",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "stationFirs": "Station FIRs",
+    "officerPortal": "Officer Portal"
   },
   "list": {
     "title": "Crime Records",
@@ -329,7 +381,22 @@
       "complainant": "Complainant",
       "place": "Place",
       "status": "Status",
+      "chargesheet": "Chargesheet",
+      "stage": "Stage",
       "accused": "Accused"
+    }
+  },
+  "chargesheet": {
+    "daysLeft": "{n} days left",
+    "overdue": "Overdue {n}d"
+  },
+  "firImport": {
+    "button": "Import FIR PDF",
+    "imported": "{n} fields imported from the FIR — please review and save.",
+    "error": {
+      "notFound": "Could not find the selected PDF.",
+      "unreadable": "Could not read this PDF.",
+      "noText": "This PDF has no readable text (it looks scanned). Type the FIR manually."
     }
   },
   "detail": {
@@ -346,14 +413,89 @@
     "searchHint": "Search by FIR no., section, crime type or station",
     "noResults": "No crimes found in your jurisdiction.",
     "error": "Could not load data. Check your connection and try again.",
-    "byStation": "By police station",
+    "byStation": "Police stations",
+    "byAcp": "ACPs",
+    "byZone": "Zones",
     "resultCount": "{} results",
     "complainant": "Complainant",
     "accused": "Accused",
     "mobile": "Complainant mobile",
     "io": "Investigating officer",
     "finalOrder": "Final order",
-    "punishment": "Punishment"
+    "punishment": "Punishment",
+    "allZones": "All zones",
+    "allAcps": "All ACPs",
+    "allStations": "All stations",
+    "compare": "Compare",
+    "comparePick": "Pick two or more to compare them side by side.",
+    "compareEmpty": "Select police stations or ACPs above to compare them side by side.",
+    "clear": "Clear selection",
+    "metric": {
+      "metric": "Metric",
+      "total": "Total FIRs",
+      "detected": "Detected",
+      "undetected": "Undetected",
+      "detectedPct": "Detected %",
+      "arrested": "Arrested",
+      "wanted": "Wanted",
+      "chargesheeted": "Chargesheeted",
+      "recovered": "Recovered value"
+    }
+  },
+  "bhag": {
+    "title": "Bhag 1–5",
+    "month": "Month",
+    "yearA": "Year A",
+    "yearB": "Year B",
+    "addRow": "Add crime type",
+    "addCombined": "Add combined row (e.g. इतर)",
+    "combinedName": "Row name (e.g. इतर भाग ६)",
+    "combinedCount": "{n} crime type(s) selected",
+    "resetRows": "Reset rows",
+    "exportPdf": "Export PDF",
+    "deleteRow": "Remove \"{name}\" from the report?",
+    "resetAuto": "Reset to auto",
+    "pickType": "Choose crime type",
+    "wholeGroup": "Whole group",
+    "alreadyAdded": "\"{name}\" is already added",
+    "title6": "भाग ६"
+  },
+  "bhag6": {
+    "title": "भाग ६"
+  },
+  "reports": {
+    "title": "Reports",
+    "bhagSubtitle": "Crime comparison statement — भाग १ ते ५",
+    "bhag6Subtitle": "Local & Special Acts — भाग ६",
+    "stationSubtitle": "Division station-wise दाखल/उघड (property & body)",
+    "recoveredSubtitle": "Station-wise recovered property मुद्देमाल (count & value)",
+    "preventiveSubtitle": "Preventive action प्रतिबंधक कार्यवाही by provision",
+    "undetectedSubtitle": "Undetected भाग १-५ crimes by station (उघडकीस न आलेले)"
+  },
+  "stationReport": {
+    "title": "परिमंडळ – दाखल/उघड गुन्हे",
+    "property": "Property (मालमत्तेविरुध्द)",
+    "body": "Body (शरीराविरुध्द)",
+    "cumulative": "Up to month-end",
+    "monthOnly": "This month only",
+    "editCategories": "Choose crime types"
+  },
+  "recovered": {
+    "title": "परत केलेला मुद्देमाल (station-wise)",
+    "editColumns": "Choose theft types per column"
+  },
+  "preventive": {
+    "title": "प्रतिबंधक कार्यवाही",
+    "addRow": "Add provision",
+    "rowLabel": "Provision name (e.g. १२६ भा.ना.सु.सं.)",
+    "rowPatterns": "Match keywords (comma-separated)",
+    "rowPatternsHint": "Matched against the preventive-action text, e.g. 126, MPDA"
+  },
+  "undetected": {
+    "title": "उघडकीस न आलेल्या भाग १ ते ५",
+    "from": "From",
+    "to": "To",
+    "addHead": "Add head"
   },
   "report": {
     "generate": "Generate Report",
@@ -411,7 +553,8 @@
     "number": "Enter a valid number",
     "mobile": "Enter a valid 10-digit mobile number",
     "aadhaar": "Aadhaar must be 12 digits",
-    "email": "Enter a valid email"
+    "email": "Enter a valid email",
+    "age": "Enter age like 19 or 19.4"
   },
   "crime": {
     "newTitle": "New Crime Entry",
@@ -437,6 +580,9 @@
       "section": "Section",
       "sections": "Sections",
       "act": "Act",
+      "selectAct": "Select Act",
+      "searchAct": "Search Acts by name or code…",
+      "noActMatch": "No matching Act",
       "addSection": "Add section",
       "sectionPickHint": "Pick from the list or type a section, then tap +",
       "noSections": "No sections added yet",
@@ -444,36 +590,98 @@
       "district": "District",
       "policeStation": "Police station",
       "dateOccurred": "Date of offence",
+      "dateOccurredFrom": "Date of offence (from)",
+      "dateOccurredTo": "Date of offence (to)",
       "timeOccurred": "Time of offence",
+      "timeOccurredFrom": "Time of offence (from)",
+      "timeOccurredTo": "Time of offence (to)",
+      "timeOccurredHint": "e.g. 1:00 PM",
       "placeOccurred": "Place of offence",
       "dateRegistered": "Date registered",
       "timeRegistered": "Time registered",
       "crimeType": "Crime type",
+      "crimeTypePick": "Tap to select crime type",
+      "crimeTypeSelect": "Select crime type",
+      "crimeTypeSearch": "Search crime type (English / मराठी)…",
+      "crimeTypeNoMatch": "No matching crime type",
+      "crimeTypeUseCustom": "Use \"{text}\"",
       "status": "Status",
-      "detailedDescription": "Detailed description"
+      "courtType": "Court (chargesheet deadline)",
+      "caseStage": "Case stage",
+      "detailedDescription": "Detailed description",
+      "stationLocked": "Fixed to your assigned police station"
     },
     "status": {
+      "detected": "Detected",
+      "undetected": "Undetected",
       "open": "Open",
       "pending": "Pending",
       "solved": "Solved",
       "chargesheeted": "Chargesheeted"
     },
+    "stage": {
+      "investigation": "Under Investigation",
+      "chargesheet": "Chargesheet Filed",
+      "both": "Chargesheet + Investigation",
+      "court": "In Court (Trial)",
+      "disposed": "Disposed / Closed"
+    },
+    "court": {
+      "none": "Not selected",
+      "sessions": "Sessions / Court (90 days)",
+      "jmfc": "JMFC Court (60 days)"
+    },
+    "timeline": {
+      "ageOfCase": "Offence to registration: {n} days",
+      "sinceRegistered": "Registered {n} days ago",
+      "deadline": "Chargesheet deadline ({days} days): {date}",
+      "remaining": "{n} days remaining",
+      "overdue": "Overdue by {n} days"
+    },
     "person": {
       "name": "Name",
       "gender": "Gender",
       "age": "Age",
+      "ageHint": "e.g. 19 or 19.4 (19 yr 4 mo)",
       "address": "Address",
       "mobile": "Mobile",
+      "mobileN": "Mobile {n}",
+      "addMobile": "Add another number",
       "email": "Email",
       "aadhaar": "Aadhaar",
       "pan": "PAN",
       "passport": "Passport",
-      "encryptedHint": "Encrypted before saving"
+      "encryptedHint": "Encrypted before saving",
+      "fatherHusbandName": "Father's / Husband's name",
+      "birthYear": "Year of birth",
+      "nationality": "Nationality",
+      "occupation": "Occupation",
+      "permanentAddress": "Permanent address",
+      "idType": "ID type",
+      "idNumber": "ID number"
     },
     "gender": {
       "male": "Male",
       "female": "Female",
       "other": "Other"
+    },
+    "firDetails": {
+      "title": "FIR details (NCRB)",
+      "firDate": "FIR date",
+      "firTime": "FIR time",
+      "infoReceivedDate": "Information received date",
+      "infoReceivedTime": "Information received time",
+      "gdDate": "General Diary date",
+      "gdTime": "General Diary time",
+      "gdEntryNo": "GD entry no.",
+      "occurrenceDay": "Day (occurrence)",
+      "typeOfInformation": "Type of information (written/oral)",
+      "beatNo": "Beat no.",
+      "directionDistance": "Direction & distance from P.S.",
+      "outsidePsName": "Outside P.S. name",
+      "outsidePsDistrict": "Outside P.S. district",
+      "delayReason": "Reason for delay in reporting",
+      "inquestUdNo": "Inquest / UD case no."
     },
     "accused": {
       "title": "Accused #{n}",
@@ -482,7 +690,16 @@
       "arrestStatus": "Arrest status",
       "arrestDate": "Arrest date",
       "arrestTime": "Arrest time",
-      "photoPath": "Photo (file path)"
+      "photoPath": "Photo (file path)",
+      "alias": "Alias",
+      "relativeName": "Relative's name",
+      "physicalTitle": "Physical description",
+      "build": "Build",
+      "height": "Height (cm)",
+      "complexion": "Complexion",
+      "language": "Language / dialect",
+      "marks": "Identification marks",
+      "otherFeatures": "Other features"
     },
     "arrest": {
       "arrested": "Arrested",
@@ -495,6 +712,7 @@
       "recoveredTitle": "Recovered property",
       "addStolen": "Add stolen item",
       "addRecovered": "Add recovered item",
+      "category": "Category",
       "type": "Type",
       "description": "Description",
       "value": "Value (₹)",
@@ -506,13 +724,21 @@
     },
     "investigation": {
       "officerName": "Investigating officer",
-      "officerId": "Officer ID / Buckle no.",
+      "officerId": "IO ID / Buckle no.",
+      "officerDesignation": "IO designation",
       "officerMobile": "Officer mobile",
       "filedBy": "Filed by",
       "preventiveAction": "Preventive action",
       "preventiveNo": "Preventive no.",
       "preventiveDate": "Preventive date",
-      "wantedAccused": "Wanted accused"
+      "wantedAccused": "Wanted accused",
+      "registeringTitle": "Registering officer & dispatch",
+      "registeringOfficerName": "Registering officer",
+      "registeringOfficerRank": "Rank",
+      "registeringOfficerNo": "Officer no.",
+      "actionTaken": "Action taken",
+      "courtDispatchDate": "Court dispatch date",
+      "courtDispatchTime": "Court dispatch time"
     },
     "verdict": {
       "chargesheetNo": "Chargesheet no.",
@@ -529,7 +755,123 @@
       "filePath": "File path",
       "fileType": "File type",
       "description": "Description",
-      "note": "Pick a file or photo — its path is stored (not the file itself)."
+      "note": "Pick a file or photo — its path is stored (not the file itself).",
+      "scanButton": "Scan",
+      "scanning": "Opening scanner…",
+      "scanFailed": "Scan failed. Check that a scanner is connected.",
+      "scannedDoc": "Scanned document",
+      "cropTitle": "Crop scan",
+      "cropUse": "Crop & use",
+      "useFull": "Use full page"
+    }
+  },
+  "io": {
+    "title": "Investigating Officer Portal",
+    "subtitle": "Field case-file & auto-generated forms",
+    "newCase": "New case",
+    "empty": {
+      "title": "No cases yet",
+      "message": "Create a case to start building the scene file and its forms."
+    },
+    "untitled": "Untitled case",
+    "freshCase": "Fresh case",
+    "closed": "Closed",
+    "pickCrime": "Select crime type",
+    "district": "District",
+    "policeStation": "Police station",
+    "caseTitle": "Case title (optional)",
+    "caseMissing": "Case not found",
+    "reopen": "Reopen case",
+    "closeCase": "Close case",
+    "deleteCaseConfirm": "Delete this case and all its forms?",
+    "tab": {
+      "forms": "Forms",
+      "people": "People",
+      "property": "Property",
+      "scene": "Scene"
+    },
+    "addAnotherForm": "Add another form",
+    "group": {
+      "scene": "Scene",
+      "seizure": "Seizure",
+      "arrest": "Arrest",
+      "death": "Death / Inquest",
+      "medical": "Medical",
+      "notice": "Notices",
+      "closure": "Closure",
+      "other": "Other"
+    },
+    "noPeople": "No people added yet",
+    "addPerson": "Add person",
+    "roleLabel": "Role",
+    "role": {
+      "complainant": "Complainant",
+      "accused": "Accused",
+      "panch": "Panch",
+      "deceased": "Deceased",
+      "witness": "Witness",
+      "io": "Investigating Officer"
+    },
+    "name": "Name",
+    "noProperty": "No property added yet",
+    "addProperty": "Add property",
+    "description": "Description",
+    "seizedFrom": "Seized from",
+    "value": "Value (₹)",
+    "saved": "Saved",
+    "generatePdf": "Generate PDF",
+    "markComplete": "Mark form complete",
+    "signature": "Signature",
+    "clear": "Clear",
+    "sync": "Sync",
+    "syncing": "Syncing…",
+    "syncDone": "Synced",
+    "syncFailed": "Sync failed",
+    "syncOffline": "Sync unavailable (server not configured)",
+    "scene": {
+      "empty": "No scene captures yet. Add photos, a signature or a voice note.",
+      "photos": "Photos & signatures",
+      "notes": "Voice notes",
+      "takePhoto": "Take photo",
+      "addPhoto": "Add photo",
+      "gallery": "Gallery",
+      "voiceNote": "Voice note",
+      "savedGps": "Saved with GPS location",
+      "savedNoGps": "Saved (no GPS available)",
+      "micUnavailable": "Microphone / speech not available on this device.",
+      "transcript": "Transcript appears here…"
+    },
+    "resetAuto": "Reset to FIR value",
+    "saveWord": "Save Word file",
+    "savedTo": "Saved to {path}",
+    "formE": {
+      "linked": "Auto-filled from the linked FIR. Tap any row to edit; blank rows are for you to fill.",
+      "noFir": "No linked FIR found — fill the rows manually. (Link an FIR by setting the case FIR no. + year.)"
+    },
+    "seizure": {
+      "propertyNote": "Seized property (item 13) comes from this case’s Property tab:",
+      "noProperty": "No property added yet — add items in the Property tab."
+    },
+    "crimeDetails": {
+      "victimNote": "Victim row 1 auto-filled from the complainant ({name}). Add more on the printed sheet.",
+      "mapTitle": "Scene map (item 9)",
+      "mapReady": "Auto-generated from scene GPS ({gps})",
+      "mapLoading": "Generating map from scene GPS…",
+      "mapFailed": "Map unavailable (offline?) — coordinates will still print",
+      "mapNoGps": "Capture a scene photo in the Scene tab to auto-add a map here"
+    },
+    "data": {
+      "title": "Case data",
+      "import": "Import",
+      "importTitle": "Import from FIR",
+      "importSub": "Auto-fill people, property and details from the linked FIR",
+      "imported": "Imported from FIR",
+      "noFir": "No matching FIR found in the station database",
+      "people": "People (complainant / accused / deceased / witnesses / panch)",
+      "property": "Property / seized items",
+      "addPerson": "Add person",
+      "addProperty": "Add property",
+      "category": "Category"
     }
   }
 }

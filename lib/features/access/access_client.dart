@@ -10,13 +10,17 @@ import 'access_config.dart';
 /// Approval status the server can return for an email + device.
 enum AccessStatus { approved, pending, denied, deviceMismatch, expired, error }
 
-/// What experience an approved user gets.
-enum OfficerRole { station, acp, dcp, cp }
+/// What experience an approved user gets. `io` opens the Investigating-Officer
+/// portal (field-first case building + auto-generated forms), separate from the
+/// read-only senior-officer portal (acp/dcp/cp) and the full station app.
+enum OfficerRole { station, acp, dcp, cp, io, hq }
 
 OfficerRole _roleFrom(String? s) => switch (s) {
       'acp' => OfficerRole.acp,
       'dcp' => OfficerRole.dcp,
       'cp' => OfficerRole.cp,
+      'io' => OfficerRole.io,
+      'hq' => OfficerRole.hq,
       _ => OfficerRole.station,
     };
 

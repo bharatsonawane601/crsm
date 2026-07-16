@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/demo_mode.dart';
 import 'google_auth_config.dart';
 import 'google_auth_service.dart';
 import 'pin_service.dart';
@@ -59,10 +60,30 @@ class StubAuthService implements AuthService {
   }
 }
 
-/// Uses real Google sign-in once [GoogleAuthConfig] is filled in; otherwise
-/// falls back to the demo stub so the app still runs during development.
-final authServiceProvider = Provider<AuthService>((ref) =>
-    GoogleAuthConfig.isConfigured ? GoogleAuthService() : StubAuthService());
+/// Demo build (Linux .deb): auto-signs-in a demo officer with no Google flow.
+/// [restore] returns the demo user so the app boots straight past the login
+/// screen, and [signOut] re-creates it on the next launch.
+class DemoAuthService implements AuthService {
+  static const _user =
+      AuthUser(email: kCrmsDemoEmail, displayName: kCrmsDemoName);
+
+  @override
+  Future<AuthUser?> signIn() async => _user;
+
+  @override
+  Future<AuthUser?> restore() async => _user;
+
+  @override
+  Future<void> signOut() async {}
+}
+
+/// In demo mode use [DemoAuthService] (auto-login, no email verification).
+/// Otherwise use real Google sign-in once [GoogleAuthConfig] is filled in,
+/// falling back to the demo stub so the app still runs during development.
+final authServiceProvider = Provider<AuthService>((ref) {
+  if (kCrmsDemoMode) return DemoAuthService();
+  return GoogleAuthConfig.isConfigured ? GoogleAuthService() : StubAuthService();
+});
 
 /// Whether the app is running with stubbed auth (used to show a banner).
 final isStubAuthProvider = Provider<bool>(

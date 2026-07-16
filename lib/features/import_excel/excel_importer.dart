@@ -4,6 +4,7 @@ import 'package:excel/excel.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../crime_entry/crime_repository.dart';
+import '../crime_entry/data/bns_data.dart';
 import '../crime_entry/models/crime_draft.dart';
 
 /// Outcome of an Excel import run.
@@ -35,48 +36,71 @@ class ExcelImporter {
     if (excel.tables.isEmpty) {
       return ImportResult(imported: 0, skipped: 0, failed: 0, errors: const []);
     }
-    final sheet = excel.tables[excel.tables.keys.first]!;
-    final rows = sheet.rows;
-    if (rows.length < 2) {
-      return ImportResult(imported: 0, skipped: 0, failed: 0, errors: const []);
-    }
-
-    // Map each column index to a setter by matching its header.
-    final header = rows.first;
-    final setters = <int, _Setter>{};
-    for (var c = 0; c < header.length; c++) {
-      final name = _norm(_string(header[c]?.value));
-      final setter = _columnSetters[name];
-      if (setter != null) setters[c] = setter;
-    }
 
     var imported = 0;
     var skipped = 0;
     var failed = 0;
     final errors = <String>[];
 
-    for (var r = 1; r < rows.length; r++) {
-      final row = rows[r];
-      if (_isBlankRow(row)) continue;
+    // Identity keys of the crimes already in the database — a row whose
+    // FIR no + year + station is already stored is skipped, so re-importing
+    // the same file (or the same FIR on two sheets) can't create duplicates.
+    final seen = await _repo.existingFirKeys();
 
-      try {
-        final ctx = _RowCtx();
-        for (final entry in setters.entries) {
-          if (entry.key >= row.length) continue;
-          entry.value(ctx, row[entry.key]?.value);
+    // The whole import commits as ONE transaction: thousands of rows become a
+    // single disk sync instead of one per row, which is what made big imports
+    // take minutes. A failed row only rolls back itself (nested savepoint).
+    await _repo.runInTransaction(() async {
+      // Import from EVERY sheet in the workbook (each police station is often a
+      // separate sheet). Each sheet has its own header row.
+      for (final sheetName in excel.tables.keys) {
+        final rows = excel.tables[sheetName]!.rows;
+        if (rows.length < 2) continue; // header only / empty sheet
+
+        // Map each column index to a setter by matching its header text.
+        final header = rows.first;
+        final setters = <int, _Setter>{};
+        for (var c = 0; c < header.length; c++) {
+          final setter = _matchHeader(_norm(_string(header[c]?.value)));
+          if (setter != null) setters[c] = setter;
         }
-        final draft = ctx.finalize();
-        if (draft == null) {
-          skipped++;
-          continue;
+        if (setters.isEmpty) continue; // no recognizable columns on this sheet
+
+        for (var r = 1; r < rows.length; r++) {
+          final row = rows[r];
+          if (_isBlankRow(row)) continue;
+
+          try {
+            final ctx = _RowCtx();
+            for (final entry in setters.entries) {
+              if (entry.key >= row.length) continue;
+              entry.value(ctx, row[entry.key]?.value);
+            }
+            final draft = ctx.finalize();
+            if (draft == null) {
+              skipped++;
+              continue;
+            }
+            final key = CrimeRepository.firIdentityKey(
+              draft.firNo,
+              draft.year,
+              draft.policeStation,
+            );
+            if (key != null && !seen.add(key)) {
+              skipped++; // duplicate of a stored record or an earlier row
+              continue;
+            }
+            await _repo.saveDraft(draft);
+            imported++;
+          } catch (e) {
+            failed++;
+            if (errors.length < 20) {
+              errors.add('$sheetName row ${r + 1}: $e');
+            }
+          }
         }
-        await _repo.saveDraft(draft);
-        imported++;
-      } catch (e) {
-        failed++;
-        if (errors.length < 20) errors.add('Row ${r + 1}: $e');
       }
-    }
+    });
 
     return ImportResult(
       imported: imported,
@@ -84,6 +108,76 @@ class ExcelImporter {
       failed: failed,
       errors: errors,
     );
+  }
+
+  /// Resolves a normalized header to a setter: exact table first, then a
+  /// keyword fallback so spelling/spacing/abbreviation variants of the compact
+  /// station-register columns (गु.रं, पोलीस स्टेशन, कायदा, कलम, उघड/न उघड,
+  /// दाखल तारीख) still map. Fallback runs ONLY when the exact table misses, so
+  /// the precise 51-column headers are never mis-hijacked.
+  static _Setter? _matchHeader(String norm) {
+    final exact = _columnSetters[norm];
+    if (exact != null) return exact;
+    if (norm.isEmpty) return null;
+    return _fuzzyRegisterSetter(norm);
+  }
+
+  /// Keyword-based fallback for the compact register format, used only when a
+  /// header didn't match the exact table. Order matters: the more specific
+  /// tests (sub-section, dates) come before the broad ones (कलम, तारीख).
+  static _Setter? _fuzzyRegisterSetter(String h) {
+    final t = h.toLowerCase();
+    bool has(String s) => h.contains(s);
+
+    // Sub-section first, so it isn't swallowed by the कलम test below.
+    if (has('सहकलम') || has('उपकलम') || has('उप कलम')) {
+      return (c, v) => c.draft.subSection = _string(v);
+    }
+    // Act / कायदा (BNS, मपोका, मजुका, IPC…). Before कलम because some sheets
+    // label the act column "कायदा व कलम".
+    if ((has('कायदा') || t.contains('act')) && !has('कलम')) {
+      return (c, v) => c.law = _string(v);
+    }
+    // Sections — कलम / कलमे / सेक्शन / "section".
+    if (has('कलम') || has('कलमे') || t.contains('section')) {
+      return (c, v) => c.sectionText = _string(v);
+    }
+    // Detected / undetected — उघड / न उघड.
+    if (has('उघड') || t.contains('detect')) {
+      return (c, v) => c.draft.status = _status(v) ?? c.draft.status;
+    }
+    // Year — वर्ष / साल / year.
+    if (has('वर्ष') || has('साल') || t.contains('year')) {
+      return (c, v) => c.draft.year = _int(v);
+    }
+    // Occurrence date — घडत / घडल्याची तारीख (before the generic तारीख rule
+    // below, which is the दाखल / registration date).
+    if ((has('तारीख') || has('तारिख') || t.contains('date')) && has('घड')) {
+      return (c, v) => c.draft.dateOccurred = _date(v);
+    }
+    // Registration/filing date — दाखल … तारीख.
+    if ((has('तारीख') || has('तारिख') || t.contains('date')) &&
+        !has('अटक') &&
+        !has('जन्म')) {
+      return (c, v) => c.draft.dateRegistered = _date(v);
+    }
+    // Police station — स्टेशन / ठाणे / पो.ठा. (never the जिल्हा/district col).
+    if ((has('स्टेशन') ||
+            has('ठाणे') ||
+            has('ठाण') ||
+            t.contains('station') ||
+            has('पो.ठा')) &&
+        !has('जिल्हा')) {
+      return (c, v) => c.draft.policeStation = canonicalStationName(_string(v));
+    }
+    // FIR / crime-register number — गु.रं, गुरं, गु.र.नं, गुन्हा क्रमांक, अ.क्र.
+    if ((has('गु') && (has('रं') || has('र.नं') || has('रजि') || has('क्र'))) ||
+        has('अ.क्र') ||
+        h == 'क्र' ||
+        h == 'क्रमांक') {
+      return (c, v) => c.draft.firNo = _string(v) ?? '';
+    }
+    return null;
   }
 
   static bool _isBlankRow(List<Data?> row) =>
@@ -95,13 +189,26 @@ typedef _Setter = void Function(_RowCtx ctx, CellValue? value);
 /// Accumulates one spreadsheet row into a [CrimeDraft] plus its single
 /// accused / stolen / recovered children.
 class _RowCtx {
-  final CrimeDraft draft = CrimeDraft(status: 'open');
+  final CrimeDraft draft = CrimeDraft(status: 'undetected');
   final AccusedDraft acc = AccusedDraft();
   final StolenItemDraft stolen = StolenItemDraft();
   final RecoveredItemDraft recovered = RecoveredItemDraft();
 
+  /// The register format keeps कायदा (act: BNS/मपोका/मजुका…) and कलम
+  /// (sections, comma-separated) in separate columns. They are collected here
+  /// and combined into `draft.section` as `<act> <sections>` at finalize, so
+  /// the result reads the way officers write it ("BNS 309(4),3(5)"). Files
+  /// without a कायदा column keep their कलम text unchanged.
+  String? law;
+  String? sectionText;
+
   CrimeDraft? finalize() {
-    final hasCore = draft.firNo.trim().isNotEmpty ||
+    if (law != null || sectionText != null) {
+      draft.section = [law, sectionText].whereType<String>().join(' ').trim();
+    }
+
+    final hasCore =
+        draft.firNo.trim().isNotEmpty ||
         draft.complainant.name.trim().isNotEmpty;
     if (!hasCore) return null;
 
@@ -110,7 +217,8 @@ class _RowCtx {
         (acc.photoPath ?? '').isNotEmpty) {
       draft.accused.add(acc);
     }
-    if ((stolen.type ?? '').isNotEmpty || (stolen.description ?? '').isNotEmpty) {
+    if ((stolen.type ?? '').isNotEmpty ||
+        (stolen.description ?? '').isNotEmpty) {
       draft.stolen.add(stolen);
     }
     if ((recovered.description ?? '').isNotEmpty) {
@@ -124,12 +232,37 @@ class _RowCtx {
 
 final Map<String, _Setter> _columnSetters = {
   'जिल्हा/शहर': (c, v) => c.draft.district = _string(v),
-  'पोलीस स्टेशन नाव': (c, v) => c.draft.policeStation = _string(v),
+  // Station names are canonicalized (Marathi -> the app's canonical spelling)
+  // so one station never appears as two entries in the dashboard/portal.
+  'पोलीस स्टेशन नाव': (c, v) =>
+      c.draft.policeStation = canonicalStationName(_string(v)),
   'गुन्हयाचा प्रकार': (c, v) => c.draft.crimeType = _string(v),
   'गुन्हा नोंद क्रमांक': (c, v) => c.draft.firNo = _string(v) ?? '',
   'वर्ष': (c, v) => c.draft.year = _int(v),
-  'कलम': (c, v) => c.draft.section = _string(v),
+  // कलम goes through the ctx so a कायदा column (register format below) can be
+  // prefixed at finalize; multi-section text ("74,333,324(4),…") is kept as-is.
+  'कलम': (c, v) => c.sectionText = _string(v),
   'सहकलम': (c, v) => c.draft.subSection = _string(v),
+
+  // --- Station crime-register format (7 columns) ---------------------------
+  // गु.रं | पोलीस स्टेशन | वर्ष | कायदा | कलम | उघड/न उघड | दाखल तारीख
+  // Detected by these headers; वर्ष/कलम above are shared with the old format.
+  'गु.रं': (c, v) => c.draft.firNo = _string(v) ?? '',
+  'गु.रं.': (c, v) => c.draft.firNo = _string(v) ?? '',
+  'गुरं': (c, v) => c.draft.firNo = _string(v) ?? '',
+  'गुरंन': (c, v) => c.draft.firNo = _string(v) ?? '',
+  'गु.रं.न': (c, v) => c.draft.firNo = _string(v) ?? '',
+  'गु.र.नं.': (c, v) => c.draft.firNo = _string(v) ?? '',
+  'गु.र.नं': (c, v) => c.draft.firNo = _string(v) ?? '',
+  'पोलीस स्टेशन': (c, v) =>
+      c.draft.policeStation = canonicalStationName(_string(v)),
+  'कायदा': (c, v) => c.law = _string(v),
+  'उघड/न उघड': (c, v) => c.draft.status = _status(v) ?? c.draft.status,
+  'उघड / न उघड': (c, v) => c.draft.status = _status(v) ?? c.draft.status,
+  'उघड/न-उघड': (c, v) => c.draft.status = _status(v) ?? c.draft.status,
+  'उघड-न उघड': (c, v) => c.draft.status = _status(v) ?? c.draft.status,
+  'दाखल तारीख': (c, v) => c.draft.dateRegistered = _date(v),
+  'दाखल तारिख': (c, v) => c.draft.dateRegistered = _date(v),
 
   'फिर्यादी नाव': (c, v) => c.draft.complainant.name = _string(v) ?? '',
   'फिर्यादी लिंग': (c, v) => c.draft.complainant.gender = _gender(v),
@@ -175,8 +308,7 @@ final Map<String, _Setter> _columnSetters = {
       c.draft.investigation.preventiveAction = _string(v),
   'प्रतिबंधक क्रमांक': (c, v) =>
       c.draft.investigation.preventiveNo = _string(v),
-  'प्रतिबंधक तारीख': (c, v) =>
-      c.draft.investigation.preventiveDate = _date(v),
+  'प्रतिबंधक तारीख': (c, v) => c.draft.investigation.preventiveDate = _date(v),
   'पाहिजे आरोपी': (c, v) => c.draft.investigation.wantedAccused = _string(v),
 
   'चार्जशीट क्रमांक': (c, v) => c.draft.verdict.chargesheetNo = _string(v),
@@ -194,8 +326,16 @@ final Map<String, _Setter> _columnSetters = {
 String _norm(String? s) => (s ?? '').trim().replaceAll(RegExp(r'\s+'), ' ');
 
 const _devToAsciiDigits = {
-  '०': '0', '१': '1', '२': '2', '३': '3', '४': '4',
-  '५': '5', '६': '6', '७': '7', '८': '8', '९': '9',
+  '०': '0',
+  '१': '1',
+  '२': '2',
+  '३': '3',
+  '४': '4',
+  '५': '5',
+  '६': '6',
+  '७': '7',
+  '८': '8',
+  '९': '9',
 };
 
 String? _digits(String? s) {
@@ -257,7 +397,10 @@ DateTime _excelSerialDate(double serial) =>
 
 DateTime? _parseDateString(String? s) {
   if (s == null) return null;
-  final parts = s.split(RegExp(r'[-/.\s]+')).where((p) => p.isNotEmpty).toList();
+  final parts = s
+      .split(RegExp(r'[-/.\s]+'))
+      .where((p) => p.isNotEmpty)
+      .toList();
   if (parts.length < 3) return null;
   try {
     int y, m, d;
@@ -286,11 +429,32 @@ String? _gender(CellValue? v) {
   if (s.contains('पुरुष') || s.contains('male') || s == 'पु' || s == 'm') {
     return 'male';
   }
-  if (s.contains('स्त्री') || s.contains('महिला') || s.contains('female') ||
+  if (s.contains('स्त्री') ||
+      s.contains('महिला') ||
+      s.contains('female') ||
       s == 'f') {
     return 'female';
   }
   return 'other';
+}
+
+/// Maps the register's उघड/न उघड column to the app's status codes.
+/// "न उघड"/"अनउघड" must be checked BEFORE "उघड" (the former contains the
+/// latter). Unknown text -> null so the row keeps the default status.
+String? _status(CellValue? v) {
+  final s = _string(v);
+  if (s == null) return null;
+  final t = s.replaceAll(RegExp(r'\s+'), ' ').trim();
+  if (t.contains('न उघड') ||
+      t.contains('नउघड') ||
+      t.contains('अनउघड') ||
+      t.toLowerCase().contains('undetected')) {
+    return 'undetected';
+  }
+  if (t.contains('उघड') || t.toLowerCase().contains('detected')) {
+    return 'detected';
+  }
+  return null;
 }
 
 /// Maps free-text arrest status to the app's codes; unknown -> null.
@@ -315,8 +479,11 @@ bool? _bool(CellValue? v) {
       (s.contains('दोषी') && !s.contains('निर्दोष'))) {
     return true;
   }
-  if (s.contains('नाही') || s.contains('निर्दोष') || s == 'no' ||
-      s == 'false' || s == '0') {
+  if (s.contains('नाही') ||
+      s.contains('निर्दोष') ||
+      s == 'no' ||
+      s == 'false' ||
+      s == '0') {
     return false;
   }
   return null;

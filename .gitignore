@@ -68,3 +68,4 @@ windows/build/
 
 # Local build secrets for install.sh (real keys live here, never committed).
 crms.env
+HANDOFF-server.md
