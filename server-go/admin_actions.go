@@ -80,21 +80,31 @@ func (a *App) actUserRole(w http.ResponseWriter, r *http.Request) {
 		back(w, r, "/admin/users", "Invalid request")
 		return
 	}
-	optID := func(name string) any {
-		if n, err := strconv.ParseInt(r.PostFormValue(name), 10, 64); err == nil && n > 0 {
-			return n
-		}
-		return nil
-	}
-	// Only the scope matching the role is kept; the rest reset to NULL.
+	// One dropdown carries the whole scope as "z:1" / "d:2" / "s:3" ("" = none),
+	// so a user can never end up with a zone AND a station at once.
 	var zone, division, station any
+	kind, idStr, ok := strings.Cut(r.PostFormValue("scope"), ":")
+	if id, err := strconv.ParseInt(idStr, 10, 64); ok && err == nil && id > 0 {
+		switch kind {
+		case "z":
+			zone = id
+		case "d":
+			division = id
+		case "s":
+			station = id
+		}
+	}
+	// Keep only the scope the role can actually use; CP/HQ are force-cleared
+	// because they already see everything.
 	switch role {
 	case "dcp":
-		zone = optID("scope_zone_id")
+		division, station = nil, nil
 	case "acp":
-		division = optID("scope_division_id")
+		zone, station = nil, nil
 	case "station":
-		station = optID("scope_station_id")
+		zone, division = nil, nil
+	default: // cp, hq
+		zone, division, station = nil, nil, nil
 	}
 	_, err := a.db.Exec(r.Context(), `
 		UPDATE access_users

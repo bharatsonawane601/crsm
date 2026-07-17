@@ -415,9 +415,13 @@ func (a *App) adminFirDetail(w http.ResponseWriter, r *http.Request) {
 func (a *App) adminUsers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	type userRow struct {
-		Email, Name, Status, Role, Scope       string
-		Device, OS, Platform, AppVer, IP       string
-		LastSeen                               string
+		Email, Name, Status, Role, Scope string
+		// ScopeKey is the single scope dropdown's value: "z:1" / "d:2" / "s:3"
+		// ("" = no scope). One control instead of three, so a DCP's zone and a
+		// station's station can never be set at the same time.
+		ScopeKey                         string
+		Device, OS, Platform, AppVer, IP string
+		LastSeen                         string
 	}
 	type orgOpt struct {
 		ID   int64
@@ -441,6 +445,7 @@ func (a *App) adminUsers(w http.ResponseWriter, r *http.Request) {
 	rows, err := a.db.Query(r.Context(), `
 		SELECT u.email, COALESCE(u.name, ''), u.status, u.role,
 		       COALESCE(s.name, COALESCE(d.name, COALESCE(z.name, ''))),
+		       u.scope_zone_id, u.scope_division_id, u.scope_station_id,
 		       COALESCE(u.client_device, ''), COALESCE(u.client_os, ''),
 		       COALESCE(u.client_platform, ''), COALESCE(u.app_version, ''),
 		       COALESCE(u.last_ip, ''), u.last_seen_at
@@ -454,8 +459,18 @@ func (a *App) adminUsers(w http.ResponseWriter, r *http.Request) {
 		for rows.Next() {
 			var x userRow
 			var seen *time.Time
+			var zoneID, divID, stID *int64
 			if rows.Scan(&x.Email, &x.Name, &x.Status, &x.Role, &x.Scope,
+				&zoneID, &divID, &stID,
 				&x.Device, &x.OS, &x.Platform, &x.AppVer, &x.IP, &seen) == nil {
+				switch {
+				case stID != nil:
+					x.ScopeKey = fmt.Sprintf("s:%d", *stID)
+				case divID != nil:
+					x.ScopeKey = fmt.Sprintf("d:%d", *divID)
+				case zoneID != nil:
+					x.ScopeKey = fmt.Sprintf("z:%d", *zoneID)
+				}
 				if seen != nil {
 					x.LastSeen = istStamp(*seen)
 				}
@@ -1053,9 +1068,19 @@ pre{background:rgba(11,17,32,.7);border:1px solid var(--line);border-radius:12px
 <option value="cp" {{if eq .Role "cp"}}selected{{end}}>CP</option>
 <option value="hq" {{if eq .Role "hq"}}selected{{end}}>HQ — all stations (entry + view)</option>
 </select>
-<select name="scope_zone_id" class="sm"><option value="">zone (DCP)…</option>{{range $zones}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select>
-<select name="scope_division_id" class="sm"><option value="">division (ACP)…</option>{{range $divs}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select>
-<select name="scope_station_id" class="sm"><option value="">station…</option>{{range $sts}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select>
+{{$sk := .ScopeKey}}
+<select name="scope" class="sm" style="max-width:210px">
+<option value="">— no scope (CP / HQ) —</option>
+<optgroup label="Zone — for DCP">
+{{range $zones}}<option value="z:{{.ID}}"{{if eq (printf "z:%d" .ID) $sk}} selected{{end}}>{{.Name}}</option>{{end}}
+</optgroup>
+<optgroup label="Division — for ACP">
+{{range $divs}}<option value="d:{{.ID}}"{{if eq (printf "d:%d" .ID) $sk}} selected{{end}}>{{.Name}}</option>{{end}}
+</optgroup>
+<optgroup label="Police station — for station">
+{{range $sts}}<option value="s:{{.ID}}"{{if eq (printf "s:%d" .ID) $sk}} selected{{end}}>{{.Name}}</option>{{end}}
+</optgroup>
+</select>
 <button class="sm">Save</button></form></td>
 <td>{{.Device}}{{if .OS}}<br><small>{{.OS}}{{if .Platform}} · {{.Platform}}{{end}}</small>{{end}}</td>
 <td>{{.AppVer}}</td>

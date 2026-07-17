@@ -1,11 +1,16 @@
-/// Configuration for the self-hosted access-approval backend (the PHP API you
-/// upload to Hostinger).
+/// Configuration for the self-hosted access-approval backend.
 class AccessConfig {
-  /// Base URL of your API folder on Hostinger. No trailing slash. Overridable
-  /// at build time with --dart-define=CRMS_API_BASE_URL=... (not secret).
+  /// Base URL of the CRMS API. No trailing slash. Overridable at build time
+  /// with --dart-define=CRMS_API_BASE_URL=... (not secret).
+  ///
+  /// This defaults to the office's own server (the primary since the 2026-07
+  /// cutover). It is deliberately NOT the old Hostinger URL: a build that
+  /// forgets the dart-define must fail safe by talking to the real server,
+  /// not silently check approvals against the retired one — that looks
+  /// exactly like "the admin approved me but the app still says pending".
   static const String apiBaseUrl = String.fromEnvironment(
     'CRMS_API_BASE_URL',
-    defaultValue: 'https://lightskyblue-sandpiper-705674.hostingersite.com/api',
+    defaultValue: 'https://crms-server.tailcbd550.ts.net:8443/api',
   );
 
   /// Shared secret sent in the `X-App-Key` header so random callers can't hit
