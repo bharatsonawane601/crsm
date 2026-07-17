@@ -1,3 +1,4 @@
+import '../crime_entry/data/crime_types_data.dart';
 import 'analytics_model.dart';
 
 /// One solved/unsolved cell.
@@ -42,6 +43,15 @@ bool _isSolved(String status) =>
 /// solved/unsolved counts, with current-year (per-month + total) and
 /// previous-year totals. Crimes without a crime type or registration date are
 /// grouped under [unknownLabel].
+///
+/// Crimes count under their CATEGORY, not the leaf sub-type the officer picked:
+/// a "Revenge Murder / सूड हत्या" FIR belongs on the Murder / खून row. Counting
+/// the raw sub-type instead split every murder into its own one-case row and
+/// left the real Murder row reading 1 (or 0).
+///
+/// Every catalogue category is listed even when it has no crimes this year, so
+/// the report opens as the full crime-head sheet (zeros included) the way the
+/// paper statement does, instead of only whatever happens to exist.
 StatsReport computeStatsReport(
   List<AnalyticsRow> rows,
   int year, {
@@ -52,6 +62,11 @@ StatsReport computeStatsReport(
 
   CrimeTypeStat statFor(String type) =>
       byType.putIfAbsent(type, () => CrimeTypeStat(type));
+
+  // Seed the standard crime heads so they always have a row.
+  for (final label in kCrimeCategoryLabels) {
+    statFor(label);
+  }
 
   void add(StatCell cell, bool solved) {
     if (solved) {
@@ -66,9 +81,9 @@ StatsReport computeStatsReport(
     if (d == null) continue;
     if (d.year != year && d.year != year - 1) continue;
 
-    final type = (r.crimeType ?? '').trim().isEmpty
-        ? unknownLabel
-        : r.crimeType!.trim();
+    final raw = (r.crimeType ?? '').trim();
+    // Sub-type -> its category; custom free text keeps its own row.
+    final type = raw.isEmpty ? unknownLabel : (crimeCategoryOf(raw) ?? raw);
     final solved = _isSolved(r.status);
     final stat = statFor(type);
 
@@ -84,8 +99,25 @@ StatsReport computeStatsReport(
     }
   }
 
+  // Busiest heads first; heads with nothing this year keep the catalogue's
+  // order so the zero rows read as a stable, familiar list rather than
+  // shuffling around. The "no crime type" row always sits last.
+  final catOrder = {
+    for (var i = 0; i < kCrimeCategoryLabels.length; i++)
+      kCrimeCategoryLabels[i]: i,
+  };
+  int rank(CrimeTypeStat s) => catOrder[s.type] ?? kCrimeCategoryLabels.length;
   final sorted = byType.values.toList()
-    ..sort((a, b) => b.yearTotal.total.compareTo(a.yearTotal.total));
+    ..sort((a, b) {
+      if (a.type == unknownLabel) return 1;
+      if (b.type == unknownLabel) return -1;
+      final byTotal = b.yearTotal.total.compareTo(a.yearTotal.total);
+      if (byTotal != 0) return byTotal;
+      final byPrev = b.prevYearTotal.total.compareTo(a.prevYearTotal.total);
+      if (byPrev != 0) return byPrev;
+      final byCat = rank(a).compareTo(rank(b));
+      return byCat != 0 ? byCat : a.type.compareTo(b.type);
+    });
 
   return StatsReport(year: year, rows: sorted, totalRow: total);
 }
