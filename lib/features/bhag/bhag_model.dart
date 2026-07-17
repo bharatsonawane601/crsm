@@ -284,6 +284,19 @@ List<BhagRow> defaultBhagRows() {
   ];
 }
 
-/// Default rows for भाग ६: empty — the officer adds जुगार, दारुबंदी and a
-/// combined इतर भाग ६ row themselves.
-List<BhagRow> emptyBhagRows() => [];
+/// Default rows for भाग ६ — the local & special-Act heads (जुगार, दारूबंदी,
+/// अंमली पदार्थ, शस्त्र). These used to be empty, which made the report open
+/// as a blank table and look broken; the officer can still add, remove or
+/// combine rows and their setup is what gets saved.
+List<BhagRow> defaultBhag6Rows() {
+  const labels = [
+    'Gambling / जुगार',
+    'Excise / Prohibition / दारूबंदी / उत्पादन शुल्क',
+    'Narcotics (NDPS) / अंमली पदार्थ (एनडीपीएस)',
+    'Arms & Explosives / शस्त्र व स्फोटके',
+  ];
+  return [
+    for (var i = 0; i < labels.length; i++)
+      BhagRow(id: 'b6_$i', crimeTypes: [labels[i]]),
+  ];
+}

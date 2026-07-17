@@ -154,7 +154,7 @@ class _PortalShellState extends ConsumerState<PortalShell> {
     final scopeLabel = access.scope.labelOr('portal.allCity'.tr());
 
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: AppColors.policeNavy,
@@ -229,6 +229,9 @@ class _PortalShellState extends ConsumerState<PortalShell> {
                         icon: const Icon(PhosphorIconsRegular.chartBar),
                         text: 'nav.dashboard'.tr()),
                     Tab(
+                        icon: const Icon(PhosphorIconsRegular.chartLineUp),
+                        text: 'nav.analytics'.tr()),
+                    Tab(
                         icon: const Icon(PhosphorIconsRegular.magnifyingGlass),
                         text: 'portal.search'.tr()),
                     Tab(
@@ -246,6 +249,7 @@ class _PortalShellState extends ConsumerState<PortalShell> {
         body: const TabBarView(
           children: [
             _PortalDashboard(),
+            _PortalAnalytics(),
             PortalSearchView(),
             _PortalCompare(),
             _PortalBhag(),
@@ -470,11 +474,17 @@ class _PortalAccountCard extends ConsumerWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Dashboard — reuses the full analytics dashboard body (KPIs + every chart),
-// fed by the central, scope-filtered data instead of the local database.
+// Dashboard / Analytics — the same two views the station app has, but fed by
+// the central, scope-filtered data instead of the local database. Dashboard is
+// the at-a-glance overview; Analytics carries the filters, the 🧠 insights and
+// every table+chart pattern panel.
 // ---------------------------------------------------------------------------
-class _PortalDashboard extends ConsumerWidget {
-  const _PortalDashboard();
+
+/// Shared plumbing: pull the scope-filtered rows, then render [mode].
+class _PortalAnalyticsBody extends ConsumerWidget {
+  const _PortalAnalyticsBody({required this.mode});
+
+  final DashboardMode mode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -486,10 +496,30 @@ class _PortalDashboard extends ConsumerWidget {
           onRetry: () => ref.invalidate(portalAnalyticsRowsProvider)),
       data: (list) => RefreshIndicator(
         onRefresh: () async => ref.invalidate(portalAnalyticsRowsProvider),
-        child: AnalyticsDashboardBody(allRows: list, showStatsButton: false),
+        child: AnalyticsDashboardBody(
+          allRows: list,
+          showStatsButton: false,
+          mode: mode,
+        ),
       ),
     );
   }
+}
+
+class _PortalDashboard extends StatelessWidget {
+  const _PortalDashboard();
+
+  @override
+  Widget build(BuildContext context) =>
+      const _PortalAnalyticsBody(mode: DashboardMode.overview);
+}
+
+class _PortalAnalytics extends StatelessWidget {
+  const _PortalAnalytics();
+
+  @override
+  Widget build(BuildContext context) =>
+      const _PortalAnalyticsBody(mode: DashboardMode.analytics);
 }
 
 // ---------------------------------------------------------------------------

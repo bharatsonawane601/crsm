@@ -112,7 +112,7 @@ final BhagReportSpec bhag15Spec = BhagReportSpec(
 final BhagReportSpec bhag6Spec = BhagReportSpec(
   id: 'bhag6',
   titleKey: 'bhag6.title',
-  defaults: emptyBhagRows,
+  defaults: defaultBhag6Rows,
   columns: bhag6Columns,
 );
 

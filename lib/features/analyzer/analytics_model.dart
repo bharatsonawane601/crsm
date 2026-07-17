@@ -1,3 +1,5 @@
+import '../crime_entry/data/crime_types_data.dart';
+
 /// One crime flattened with the fields the analyzer needs. Assembled by the
 /// analytics repository from several tables.
 class AnalyticsRow {
@@ -137,8 +139,12 @@ class AnalyticsFilter {
       if (d == null || !d.isBefore(end)) return false;
     }
     if (status != null && r.status != status) return false;
-    if (crimeTypes.isNotEmpty && !crimeTypes.contains(r.crimeType ?? '')) {
-      return false;
+    if (crimeTypes.isNotEmpty) {
+      // The picker lists categories (Murder / खून), so match on the crime's
+      // category — selecting Murder must catch every murder sub-type. Custom
+      // free-text types fall back to their own label.
+      final raw = (r.crimeType ?? '').trim();
+      if (!crimeTypes.contains(crimeCategoryOf(raw) ?? raw)) return false;
     }
     return true;
   }
@@ -393,7 +399,12 @@ AnalyticsSummary computeAnalytics(List<AnalyticsRow> rows, {DateTime? now}) {
         r.status == 'solved' ||
         r.status == 'chargesheeted';
 
-    final type = (r.crimeType ?? '').trim();
+    // Count under the crime's CATEGORY, not its leaf sub-type: picking
+    // "Love Affair Murder / प्रेमप्रकरणातून खून" must add to Murder / खून,
+    // otherwise every sub-type becomes its own one-case bucket and the real
+    // Murder total reads as zero. Custom free text keeps its own label.
+    final rawType = (r.crimeType ?? '').trim();
+    final type = crimeCategoryOf(rawType) ?? rawType;
     if (type.isNotEmpty) {
       crimeTypeCounts.update(type, (v) => v + 1, ifAbsent: () => 1);
       if (solved) {

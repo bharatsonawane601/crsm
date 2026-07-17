@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../shared/widgets/crms.dart';
+import '../crime_entry/data/crime_types_data.dart';
 import 'analytics_model.dart';
 import 'analytics_repository.dart';
 import 'charts.dart';
@@ -112,8 +113,13 @@ class _AnalyticsDashboardBodyState extends State<AnalyticsDashboardBody> {
         title: 'analyzer.empty'.tr(),
       );
     }
+    // Offer categories (Murder / खून), not every leaf sub-type — matches how
+    // the charts below now count, and keeps the list short.
     final crimeTypes = (allRows
-            .map((r) => (r.crimeType ?? '').trim())
+            .map((r) {
+              final raw = (r.crimeType ?? '').trim();
+              return crimeCategoryOf(raw) ?? raw;
+            })
             .where((t) => t.isNotEmpty)
             .toSet()
             .toList())
