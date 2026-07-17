@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/text/native_text_editor.dart';
+import '../../brain/fuzzy.dart';
 
 final _dateFmt = DateFormat('dd-MM-yyyy');
 
@@ -130,9 +131,28 @@ class AppAutocompleteField extends StatelessWidget {
       child: Autocomplete<String>(
         initialValue: TextEditingValue(text: initialValue ?? ''),
         optionsBuilder: (value) {
-          final q = value.text.trim().toLowerCase();
-          if (q.isEmpty) return options;
-          return options.where((o) => o.toLowerCase().contains(q));
+          final raw = value.text.trim();
+          if (raw.isEmpty) return options;
+          final q = raw.toLowerCase();
+          // 1) Plain substring matches first (exactly what was typed).
+          final out = options
+              .where((o) => o.toLowerCase().contains(q))
+              .toList();
+          // 2) Brain matches: transliteration ("cidco"→"सिडको") and prefixes.
+          final qk = brainKey(raw);
+          if (qk.length >= 2) {
+            for (final o in options) {
+              if (!out.contains(o) && brainKey(o).contains(qk)) out.add(o);
+            }
+          }
+          // 3) Typo tolerance: nothing matched — closest suggestions instead
+          //    of an empty dropdown ("Dolatabad" → "Daulatabad").
+          if (out.isEmpty) {
+            for (final m in brainMatches(raw, options, limit: 5)) {
+              out.add(m.value);
+            }
+          }
+          return out;
         },
         onSelected: onChanged,
         fieldViewBuilder: (context, controller, focusNode, onSubmit) {

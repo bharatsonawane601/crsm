@@ -39,6 +39,10 @@ func main() {
 	mux.HandleFunc("POST /portal_rows.php", app.gated(app.handlePortalRows))
 	mux.HandleFunc("POST /portal_compare.php", app.gated(app.handlePortalCompare))
 	mux.HandleFunc("POST /io_sync.php", app.gated(app.handleIoSync))
+	// Command messaging (CP/DCP/ACP/HQ → units or individuals; apps poll inbox).
+	mux.HandleFunc("POST /messages.php", app.gated(app.handleMessages))
+	mux.HandleFunc("POST /messages_send.php", app.gated(app.handleMessageSend))
+	mux.HandleFunc("POST /messages_users.php", app.gated(app.handleMessageUsers))
 	// The self-hosted admin panel (see admin.go).
 	app.registerAdmin(mux)
 	// Friendly index so opening /api/ in a browser shows the server is alive

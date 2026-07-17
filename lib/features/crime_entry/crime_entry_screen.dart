@@ -64,6 +64,37 @@ class _CrimeEntryScreenState extends ConsumerState<CrimeEntryScreen>
       );
       return;
     }
+    // Brain: duplicate check — this FIR no + year already exists locally.
+    // Warn (don't block): re-registering may be intentional (edits, re-import).
+    final d = _model.draft;
+    final firNo = d.firNo.trim();
+    if (d.id == null && firNo.isNotEmpty && d.year != null) {
+      final existing = await ref
+          .read(crimeRepositoryProvider)
+          .findCrimeIdByFir(firNo, d.year!);
+      if (existing != null) {
+        if (!mounted) return;
+        final proceed = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text('brain.duplicateFirTitle'.tr()),
+            content: Text('brain.duplicateFirBody'
+                .tr(namedArgs: {'fir': firNo, 'year': '${d.year}'})),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text('common.cancel'.tr()),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text('brain.saveAnyway'.tr()),
+              ),
+            ],
+          ),
+        );
+        if (proceed != true) return;
+      }
+    }
     try {
       final id = await _model.save();
       if (!mounted) return;

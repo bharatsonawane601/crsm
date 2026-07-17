@@ -8,6 +8,7 @@ import '../../core/crypto/cipher_provider.dart';
 import '../../core/crypto/field_cipher.dart';
 import '../../data/db/database.dart';
 import '../../data/db/database_provider.dart';
+import '../brain/fuzzy.dart';
 import '../crime_list/models/crime_list_item.dart';
 import 'data/bns_data.dart';
 import 'models/crime_draft.dart';
@@ -682,6 +683,65 @@ class CrimeRepository {
     };
   }
 
+  /// Brain intel on a typed accused name: how many OTHER crimes name (nearly)
+  /// this person — matching their name OR alias, fuzzy so spelling drift
+  /// between FIRs ("Ramesh Pawar" / "रमेश पवार" / "Ramesh Pavar") still counts
+  /// — and, critically, the FIRs where they are marked WANTED or absconding.
+  Future<BrainPersonIntel> accusedIntel(
+    String name, {
+    int? excludeCrimeId,
+  }) async {
+    final t = name.trim();
+    if (t.length < 3) return const BrainPersonIntel(0, []);
+    final rows = await _db.select(_db.accused).get();
+    final ids = <int>{};
+    final wantedIds = <int>{};
+    for (final a in rows) {
+      if (excludeCrimeId != null && a.crimeId == excludeCrimeId) continue;
+      final alias = (a.alias ?? '').trim();
+      final hit = brainSimilarity(t, a.name) >= 0.85 ||
+          (alias.length >= 3 && brainSimilarity(t, alias) >= 0.85);
+      if (!hit) continue;
+      ids.add(a.crimeId);
+      final st = (a.arrestStatus ?? '').toLowerCase();
+      if (st == 'wanted' || st == 'absconding') wantedIds.add(a.crimeId);
+    }
+    var wantedIn = <String>[];
+    if (wantedIds.isNotEmpty) {
+      final crimes = await (_db.select(_db.crimes)
+            ..where((c) => c.id.isIn(wantedIds.toList())))
+          .get();
+      wantedIn = [
+        for (final c in crimes)
+          '${c.firNo}/${c.year}'
+              '${(c.policeStation ?? '').isEmpty ? '' : ' — ${c.policeStation}'}',
+      ];
+    }
+    return BrainPersonIntel(ids.length, wantedIn);
+  }
+
+  /// How many OTHER crimes mention this mobile number (accused or
+  /// complainant). Phones catch aliases that names can't.
+  Future<int> crimesWithMobile(String mobile, {int? excludeCrimeId}) async {
+    final digits = mobile.replaceAll(RegExp(r'\D'), '');
+    if (digits.length < 10) return 0;
+    final ids = <int>{};
+    void scan(int crimeId, String? m) {
+      if (excludeCrimeId != null && crimeId == excludeCrimeId) return;
+      if ((m ?? '').replaceAll(RegExp(r'\D'), '').contains(digits)) {
+        ids.add(crimeId);
+      }
+    }
+
+    for (final a in await _db.select(_db.accused).get()) {
+      scan(a.crimeId, a.mobile);
+    }
+    for (final c in await _db.select(_db.complainants).get()) {
+      scan(c.crimeId, c.mobile);
+    }
+    return ids.length;
+  }
+
   /// The local crime id matching an FIR number + year, or null if none. Used by
   /// the IO portal to auto-fill forms (e.g. Form "E") from an existing FIR.
   Future<int?> findCrimeIdByFir(String firNo, int year) async {
@@ -743,6 +803,17 @@ class CrimeRepository {
         ifAbsent: () => r.value ?? 0,
       );
     }
+    // Lost/involved property value (गेला माल) — powers the admin panel's
+    // muddemal lost/recovered/remaining money trail.
+    final stolenRows = await _db.select(_db.stolenProperty).get();
+    final stolenByCrime = <int, double>{};
+    for (final s in stolenRows) {
+      stolenByCrime.update(
+        s.crimeId,
+        (v) => v + (s.value ?? 0),
+        ifAbsent: () => s.value ?? 0,
+      );
+    }
 
     String? d(DateTime? dt) => dt?.toIso8601String();
 
@@ -791,6 +862,7 @@ class CrimeRepository {
               'officer_name': inv?.officerName,
               'chargesheet_date': d(v?.chargesheetDate),
               'recovered_value': recoveredByCrime[c.id] ?? 0,
+              'stolen_value': stolenByCrime[c.id] ?? 0,
               'accused_count': accusedCount[c.id] ?? 0,
               'arrested_count': arrestedCount[c.id] ?? 0,
               'wanted_count': wantedCount[c.id] ?? 0,
@@ -866,6 +938,17 @@ class DeletedCrime {
   final String? firNo;
   final int? year;
   final String? policeStation;
+}
+
+/// What the brain knows about a typed person name (see [CrimeRepository.accusedIntel]).
+class BrainPersonIntel {
+  const BrainPersonIntel(this.otherFirs, this.wantedIn);
+
+  /// Distinct OTHER crimes naming this person (by name or alias).
+  final int otherFirs;
+
+  /// "FIR/year — station" labels where this person is wanted/absconding.
+  final List<String> wantedIn;
 }
 
 final crimeRepositoryProvider = Provider<CrimeRepository>((ref) {

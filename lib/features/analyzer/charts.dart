@@ -578,10 +578,19 @@ class CountPie extends StatelessWidget {
 
 /// Line chart of a monthly trend ("yyyy-MM" -> count).
 class TrendLine extends StatelessWidget {
-  const TrendLine({super.key, required this.entries, required this.emptyLabel});
+  const TrendLine({
+    super.key,
+    required this.entries,
+    required this.emptyLabel,
+    this.rawLabels = false,
+  });
 
   final List<MapEntry<String, int>> entries;
   final String emptyLabel;
+
+  /// Show axis labels exactly as given. Default trims the "yyyy" prefix off
+  /// "yyyy-MM" month keys.
+  final bool rawLabels;
 
   @override
   Widget build(BuildContext context) {
@@ -615,9 +624,10 @@ class TrendLine extends StatelessWidget {
               getTitlesWidget: (value, meta) {
                 final i = value.round();
                 if (i < 0 || i >= entries.length) return const SizedBox();
+                final k = entries[i].key;
                 return Padding(
                   padding: const EdgeInsets.only(top: 6),
-                  child: Text(entries[i].key.substring(2),
+                  child: Text(rawLabels || k.length <= 2 ? k : k.substring(2),
                       style: const TextStyle(fontSize: 10)),
                 );
               },

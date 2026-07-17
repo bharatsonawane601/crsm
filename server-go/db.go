@@ -185,6 +185,21 @@ var schema = []string{
 		last_sync  TIMESTAMPTZ,
 		last_id    BIGINT NOT NULL DEFAULT 0
 	)`,
+	// Command messages: CP/DCP/ACP/HQ → zone / division / station / user / all.
+	// target_label is rendered at send time so fetch and audit stay one query.
+	`CREATE TABLE IF NOT EXISTS messages (
+		id           BIGSERIAL PRIMARY KEY,
+		sender_email TEXT NOT NULL,
+		sender_name  TEXT,
+		sender_role  TEXT NOT NULL,
+		target_type  TEXT NOT NULL,
+		target_id    BIGINT,
+		target_email TEXT,
+		target_label TEXT NOT NULL,
+		body         TEXT NOT NULL,
+		created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_messages_id ON messages (id)`,
 }
 
 // --- Request helpers -------------------------------------------------------

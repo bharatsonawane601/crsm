@@ -20,6 +20,9 @@ class AnalyticsRow {
     this.wantedCount = 0,
     this.preventiveAction,
     this.preventiveDate,
+    this.dateOccurred,
+    this.timeOccurred,
+    this.stolenValue = 0,
   });
 
   final int id;
@@ -55,6 +58,50 @@ class AnalyticsRow {
   /// When the preventive action was taken (falls back to registration date for
   /// period bucketing when null).
   final DateTime? preventiveDate;
+
+  /// When the offence actually happened (registration date is the fallback for
+  /// day-of-week / hot-date bucketing).
+  final DateTime? dateOccurred;
+
+  /// Free-text occurrence time ("18:30", "6:30 PM", "रात्री ९ वा.").
+  final String? timeOccurred;
+
+  /// Total value of stolen property (गेला माल) attached to the crime.
+  final double stolenValue;
+}
+
+/// A label + total + detected triple for the table-and-chart panels
+/// (years, months, weekdays, crime types, station league …).
+class RateRow {
+  const RateRow(this.label, this.total, this.detected, {this.sub});
+
+  final String label;
+
+  /// Optional second line under the label (e.g. Marathi day name).
+  final String? sub;
+  final int total;
+  final int detected;
+
+  int get pct => total == 0 ? 0 : (detected * 100 / total).round();
+}
+
+/// One automatic finding from the dashboard's brain. [key] picks the
+/// translated body `analyzer.ins.[key]`; [args] fill its placeholders.
+/// [dow] (0..6, Mon..Sun) is translated by the UI when present.
+class BrainInsight {
+  const BrainInsight({
+    required this.icon,
+    required this.tone, // ok | warn | bad | info
+    required this.key,
+    this.args = const {},
+    this.dow,
+  });
+
+  final String icon;
+  final String tone;
+  final String key;
+  final Map<String, String> args;
+  final int? dow;
 }
 
 /// Shared filter applied across every KPI and chart.
@@ -166,6 +213,22 @@ class AnalyticsSummary {
     required this.chargesheetOverdue,
     required this.chargesheetFiled,
     required this.chargesheetDue,
+    required this.lostValue,
+    required this.yearRows,
+    required this.monthRows,
+    required this.weekdayRows,
+    required this.hourBandCounts,
+    required this.timedTotal,
+    required this.weekOfMonthRows,
+    required this.hotDates,
+    required this.typeRows,
+    required this.stationRows,
+    required this.leagueRows,
+    required this.insights,
+    required this.last14Days,
+    required this.missingFirNo,
+    required this.missingType,
+    required this.missingTime,
   });
 
   final int total;
@@ -215,6 +278,54 @@ class AnalyticsSummary {
   /// Actionable deadline alerts: every pending-chargesheet case that is
   /// overdue or due within [kChargesheetDueSoonDays], most urgent first.
   final List<ChargesheetDueCase> chargesheetDue;
+
+  /// Total value of stolen property (गेला माल); pairs with [recoveredValue]
+  /// for the muddemal money-trail panel.
+  final double lostValue;
+
+  /// Year-wise volume + detection, newest first.
+  final List<RateRow> yearRows;
+
+  /// Month-wise volume + detection, oldest→newest, last 24 months.
+  final List<RateRow> monthRows;
+
+  /// Mon..Sun buckets by occurrence date (label = dow key 'mon'..'sun').
+  final List<RateRow> weekdayRows;
+
+  /// Eight 3-hour occurrence-time buckets (12–3 AM … 9 PM–12 AM).
+  final List<int> hourBandCounts;
+
+  /// How many cases had a parseable occurrence time.
+  final int timedTotal;
+
+  /// Week-of-month buckets 1..5 (salary-day / market-day clustering).
+  final List<RateRow> weekOfMonthRows;
+
+  /// Specific dates with the most crimes, "dd-MM-yyyy" → count, top 10.
+  final List<MapEntry<String, int>> hotDates;
+
+  /// Crime types with detection rate, biggest first.
+  final List<RateRow> typeRows;
+
+  /// Stations by caseload, biggest first (empty on single-station installs).
+  final List<RateRow> stationRows;
+
+  /// Stations ranked by detection rate — best solvers first.
+  final List<RateRow> leagueRows;
+
+  /// Automatic findings ("Saturday is the hot day", "वाहन चोरी loops on
+  /// Sunday", …) — the dashboard's brain.
+  final List<BrainInsight> insights;
+
+  /// Registrations per day for the last 14 days ("dd-MM" → count, zero-filled,
+  /// oldest→newest) — the dashboard's live pulse.
+  final List<MapEntry<String, int>> last14Days;
+
+  /// Data-quality counters: records missing an FIR number / crime type /
+  /// occurrence time. Fixing these makes every report above accurate.
+  final int missingFirNo;
+  final int missingType;
+  final int missingTime;
 }
 
 /// A pending chargesheet whose deadline is within this many days (or already
@@ -252,19 +363,39 @@ AnalyticsSummary computeAnalytics(List<AnalyticsRow> rows, {DateTime? now}) {
   var chargesheetDaysSum = 0;
   var chargesheetCount = 0;
 
+  // Occurrence-pattern accumulators (day of week / time / week of month /
+  // hot dates) + money trail + detection splits for the duo panels.
+  var lost = 0.0;
+  var timedTotal = 0;
+  final weekdayTotals = List<int>.filled(7, 0);
+  final weekdayDetected = List<int>.filled(7, 0);
+  final hourBands = List<int>.filled(8, 0);
+  final womTotals = List<int>.filled(5, 0);
+  final womDetected = List<int>.filled(5, 0);
+  final dateCounts = <String, int>{};
+  final yearTotals = <int, int>{};
+  final yearDetected = <int, int>{};
+  final monthlyDetected = <String, int>{};
+  final stationDetected = <String, int>{};
+  final typeWeekday = <String, List<int>>{};
+  final start14 = startOfToday.subtract(const Duration(days: 13));
+  final dailyCounts = <String, int>{};
+  var missingFirNo = 0, missingType = 0, missingTime = 0;
+
   for (final r in rows) {
     statusCounts.update(r.status, (v) => v + 1, ifAbsent: () => 1);
     arrested += r.arrestedCount;
     wanted += r.wantedCount;
     recovered += r.recoveredValue;
+    lost += r.stolenValue;
+
+    final solved = r.status == 'detected' ||
+        r.status == 'solved' ||
+        r.status == 'chargesheeted';
 
     final type = (r.crimeType ?? '').trim();
     if (type.isNotEmpty) {
       crimeTypeCounts.update(type, (v) => v + 1, ifAbsent: () => 1);
-      final solved =
-          r.status == 'detected' ||
-          r.status == 'solved' ||
-          r.status == 'chargesheeted';
       if (solved) {
         solvedByType.update(type, (v) => v + 1, ifAbsent: () => 1);
       } else {
@@ -282,6 +413,43 @@ AnalyticsSummary computeAnalytics(List<AnalyticsRow> rows, {DateTime? now}) {
     final station = (r.station ?? '').trim();
     if (station.isNotEmpty) {
       stationCounts.update(station, (v) => v + 1, ifAbsent: () => 1);
+      if (solved) {
+        stationDetected.update(station, (v) => v + 1, ifAbsent: () => 1);
+      }
+    }
+
+    // When did it actually happen? Prefer the offence date over registration.
+    final occ = r.dateOccurred ?? r.dateRegistered;
+    if (occ != null) {
+      final wd = occ.weekday - 1;
+      weekdayTotals[wd]++;
+      if (solved) weekdayDetected[wd]++;
+      final wom = ((occ.day - 1) ~/ 7).clamp(0, 4);
+      womTotals[wom]++;
+      if (solved) womDetected[wom]++;
+      final key = '${occ.day.toString().padLeft(2, '0')}-'
+          '${occ.month.toString().padLeft(2, '0')}-${occ.year}';
+      dateCounts.update(key, (v) => v + 1, ifAbsent: () => 1);
+      if (type.isNotEmpty) {
+        typeWeekday.putIfAbsent(type, () => List<int>.filled(7, 0))[wd]++;
+      }
+    }
+    final hour = parseOccurrenceHour(r.timeOccurred);
+    if (hour != null) {
+      hourBands[hour ~/ 3]++;
+      timedTotal++;
+    } else {
+      missingTime++;
+    }
+    if ((r.firNo ?? '').trim().isEmpty) missingFirNo++;
+    if (type.isEmpty) missingType++;
+    final reg = r.dateRegistered;
+    if (reg != null &&
+        !reg.isBefore(start14) &&
+        reg.isBefore(startOfTomorrow)) {
+      final key = '${reg.day.toString().padLeft(2, '0')}-'
+          '${reg.month.toString().padLeft(2, '0')}';
+      dailyCounts.update(key, (v) => v + 1, ifAbsent: () => 1);
     }
 
     final d = r.dateRegistered;
@@ -298,6 +466,11 @@ AnalyticsSummary computeAnalytics(List<AnalyticsRow> rows, {DateTime? now}) {
           '${d.year.toString().padLeft(4, '0')}-'
           '${d.month.toString().padLeft(2, '0')}';
       monthly.update(ym, (v) => v + 1, ifAbsent: () => 1);
+      yearTotals.update(d.year, (v) => v + 1, ifAbsent: () => 1);
+      if (solved) {
+        yearDetected.update(d.year, (v) => v + 1, ifAbsent: () => 1);
+        monthlyDetected.update(ym, (v) => v + 1, ifAbsent: () => 1);
+      }
 
       if (r.chargesheetDate != null) {
         chargesheetDaysSum += r.chargesheetDate!.difference(d).inDays;
@@ -366,6 +539,65 @@ AnalyticsSummary computeAnalytics(List<AnalyticsRow> rows, {DateTime? now}) {
     ..sort((a, b) => a.key.compareTo(b.key));
   chargesheetDue.sort((a, b) => a.daysLeft.compareTo(b.daysLeft));
 
+  // --- Duo-panel rows -------------------------------------------------------
+  const dowKeys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+  final yearRows = [
+    for (final y in yearTotals.keys.toList()..sort((a, b) => b.compareTo(a)))
+      RateRow('$y', yearTotals[y]!, yearDetected[y] ?? 0),
+  ];
+  final monthKeysAsc = monthly.keys.toList()..sort();
+  final monthRows = [
+    for (final ym in monthKeysAsc.length > 24
+        ? monthKeysAsc.sublist(monthKeysAsc.length - 24)
+        : monthKeysAsc)
+      RateRow(ym, monthly[ym]!, monthlyDetected[ym] ?? 0),
+  ];
+  final weekdayRows = [
+    for (var i = 0; i < 7; i++)
+      RateRow(dowKeys[i], weekdayTotals[i], weekdayDetected[i]),
+  ];
+  final weekOfMonthRows = [
+    for (var i = 0; i < 5; i++)
+      RateRow('${i + 1}', womTotals[i], womDetected[i]),
+  ];
+  final hotDates = dateCounts.entries.toList()
+    ..sort((a, b) => b.value.compareTo(a.value));
+  final typeRows = [
+    for (final e in crimeTypeCounts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value)))
+      RateRow(e.key, e.value, solvedByType[e.key] ?? 0),
+  ];
+  final stationRows = [
+    for (final e in stationCounts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value)))
+      RateRow(e.key, e.value, stationDetected[e.key] ?? 0),
+  ];
+  // League: rank by detection rate; stations with a real caseload (10+) first
+  // so a 2-case station can't top the table.
+  final leagueRows = stationRows.toList()
+    ..sort((a, b) {
+      final aBig = a.total >= 10, bBig = b.total >= 10;
+      if (aBig != bBig) return aBig ? -1 : 1;
+      final byPct = b.pct.compareTo(a.pct);
+      return byPct != 0 ? byPct : b.total.compareTo(a.total);
+    });
+
+  final insights = _buildInsights(
+    datedTotal: weekdayTotals.reduce((a, b) => a + b),
+    weekdayTotals: weekdayTotals,
+    hourBands: hourBands,
+    timedTotal: timedTotal,
+    typeWeekday: typeWeekday,
+    crimeTypeCounts: crimeTypeCounts,
+    monthRows: monthRows,
+    lost: lost,
+    recovered: recovered,
+    leagueRows: leagueRows,
+    hotDates: hotDates,
+    yearRows: yearRows,
+    now: n,
+  );
+
   return AnalyticsSummary(
     total: rows.length,
     today: today,
@@ -392,5 +624,260 @@ AnalyticsSummary computeAnalytics(List<AnalyticsRow> rows, {DateTime? now}) {
     chargesheetOverdue: chargesheetOverdue,
     chargesheetFiled: chargesheetFiled,
     chargesheetDue: chargesheetDue,
+    lostValue: lost,
+    yearRows: yearRows,
+    monthRows: monthRows,
+    weekdayRows: weekdayRows,
+    hourBandCounts: hourBands,
+    timedTotal: timedTotal,
+    weekOfMonthRows: weekOfMonthRows,
+    hotDates: hotDates.take(10).toList(),
+    typeRows: typeRows,
+    stationRows: stationRows,
+    leagueRows: leagueRows,
+    insights: insights,
+    last14Days: [
+      for (var i = 0; i < 14; i++)
+        () {
+          final day = start14.add(Duration(days: i));
+          final key = '${day.day.toString().padLeft(2, '0')}-'
+              '${day.month.toString().padLeft(2, '0')}';
+          return MapEntry(key, dailyCounts[key] ?? 0);
+        }(),
+    ],
+    missingFirNo: missingFirNo,
+    missingType: missingType,
+    missingTime: missingTime,
   );
 }
+
+/// Parses a free-text occurrence time to an hour 0..23. Understands "18:30",
+/// "6.30 PM", Devanagari digits and Marathi day-part words (रात्री/सायं = PM,
+/// सकाळी/पहाटे = AM). Returns null when no hour can be read.
+int? parseOccurrenceHour(String? s) {
+  if (s == null) return null;
+  var t = s.trim().toLowerCase();
+  if (t.isEmpty) return null;
+  const dev = {
+    '०': '0', '१': '1', '२': '2', '३': '3', '४': '4',
+    '५': '5', '६': '6', '७': '7', '८': '8', '९': '9',
+  };
+  t = t.split('').map((c) => dev[c] ?? c).join();
+  final m = RegExp(r'(\d{1,2})').firstMatch(t);
+  if (m == null) return null;
+  var h = int.parse(m.group(1)!);
+  final pm = t.contains('pm') ||
+      t.contains('सायं') ||
+      t.contains('रात्र') ||
+      t.contains('दुपार') ||
+      t.contains('संध्या');
+  final am = t.contains('am') ||
+      t.contains('सकाळ') ||
+      t.contains('पहाट');
+  if (pm && h < 12) h += 12;
+  if (am && h == 12) h = 0;
+  return (h >= 0 && h <= 23) ? h : null;
+}
+
+/// The dashboard brain: turns the aggregates into human findings. Pure and
+/// deterministic — every detector has a minimum-data guard so small stations
+/// don't get noise.
+List<BrainInsight> _buildInsights({
+  required int datedTotal,
+  required List<int> weekdayTotals,
+  required List<int> hourBands,
+  required int timedTotal,
+  required Map<String, List<int>> typeWeekday,
+  required Map<String, int> crimeTypeCounts,
+  required List<RateRow> monthRows,
+  required double lost,
+  required double recovered,
+  required List<RateRow> leagueRows,
+  required List<MapEntry<String, int>> hotDates,
+  required List<RateRow> yearRows,
+  required DateTime now,
+}) {
+  final out = <BrainInsight>[];
+  String pctOf(int part, int whole) =>
+      whole == 0 ? '0' : (part * 100 / whole).round().toString();
+
+  // 1. Peak weekday (expected share for an even week is ~14%).
+  if (datedTotal >= 50) {
+    var peak = 0;
+    for (var i = 1; i < 7; i++) {
+      if (weekdayTotals[i] > weekdayTotals[peak]) peak = i;
+    }
+    final share = weekdayTotals[peak] * 100 / datedTotal;
+    if (share >= 16) {
+      out.add(BrainInsight(
+        icon: '📅',
+        tone: 'warn',
+        key: 'peakDay',
+        dow: peak,
+        args: {
+          'count': '${weekdayTotals[peak]}',
+          'total': '$datedTotal',
+          'pct': share.round().toString(),
+        },
+      ));
+    }
+  }
+
+  // 2. Dominant 3-hour time band.
+  if (timedTotal >= 30) {
+    var peak = 0;
+    for (var i = 1; i < 8; i++) {
+      if (hourBands[i] > hourBands[peak]) peak = i;
+    }
+    final share = hourBands[peak] * 100 / timedTotal;
+    if (share >= 25) {
+      out.add(BrainInsight(
+        icon: '🌙',
+        tone: 'warn',
+        key: 'timeBand',
+        args: {
+          'band': kHourBandLabels[peak],
+          'pct': share.round().toString(),
+          'total': '$timedTotal',
+        },
+      ));
+    }
+  }
+
+  // 3. Crime-type × weekday loop (a repeating gang route smells like this).
+  String? loopType;
+  int loopDow = 0, loopPct = 0;
+  typeWeekday.forEach((type, wd) {
+    final total = wd.reduce((a, b) => a + b);
+    if (total < 20) return;
+    var peak = 0;
+    for (var i = 1; i < 7; i++) {
+      if (wd[i] > wd[peak]) peak = i;
+    }
+    final pct = wd[peak] * 100 ~/ total;
+    if (pct >= 30 && pct > loopPct) {
+      loopType = type;
+      loopDow = peak;
+      loopPct = pct;
+    }
+  });
+  if (loopType != null) {
+    out.add(BrainInsight(
+      icon: '🔁',
+      tone: 'bad',
+      key: 'typeLoop',
+      dow: loopDow,
+      args: {'type': loopType!, 'pct': '$loopPct'},
+    ));
+  }
+
+  // 4. Three-month trend (last 3 full months vs the 3 before them).
+  if (monthRows.length >= 7) {
+    // Drop the current (incomplete) month if it is the last row.
+    final nowYm = '${now.year.toString().padLeft(4, '0')}-'
+        '${now.month.toString().padLeft(2, '0')}';
+    final closed = monthRows.last.label == nowYm
+        ? monthRows.sublist(0, monthRows.length - 1)
+        : monthRows;
+    if (closed.length >= 6) {
+      final recent = closed
+          .sublist(closed.length - 3)
+          .fold(0, (a, r) => a + r.total);
+      final before = closed
+          .sublist(closed.length - 6, closed.length - 3)
+          .fold(0, (a, r) => a + r.total);
+      if (before >= 30) {
+        final change = (recent - before) * 100 ~/ before;
+        if (change <= -8) {
+          out.add(BrainInsight(
+            icon: '📉',
+            tone: 'ok',
+            key: 'downTrend',
+            args: {'pct': '${-change}', 'a': '$recent', 'b': '$before'},
+          ));
+        } else if (change >= 8) {
+          out.add(BrainInsight(
+            icon: '📈',
+            tone: 'warn',
+            key: 'upTrend',
+            args: {'pct': '$change', 'a': '$recent', 'b': '$before'},
+          ));
+        }
+      }
+    }
+  }
+
+  // 5. Muddemal recovery rate.
+  if (lost > 0) {
+    final rate = (recovered * 100 / lost).round();
+    out.add(BrainInsight(
+      icon: '💰',
+      tone: rate < 50 ? 'warn' : 'ok',
+      key: rate < 50 ? 'lowRecovery' : 'goodRecovery',
+      args: {'pct': '$rate'},
+    ));
+  }
+
+  // 6. Detection leader (only meaningful across stations).
+  if (leagueRows.length >= 2 && leagueRows.first.total >= 10) {
+    final best = leagueRows.first;
+    final totalAll = leagueRows.fold(0, (a, r) => a + r.total);
+    final detAll = leagueRows.fold(0, (a, r) => a + r.detected);
+    out.add(BrainInsight(
+      icon: '🏆',
+      tone: 'ok',
+      key: 'bestStation',
+      args: {
+        'station': best.label,
+        'pct': '${best.pct}',
+        'avg': pctOf(detAll, totalAll),
+      },
+    ));
+  }
+
+  // 7. Hottest single date.
+  if (hotDates.isNotEmpty && hotDates.first.value >= 5) {
+    out.add(BrainInsight(
+      icon: '📌',
+      tone: 'info',
+      key: 'hotDate',
+      args: {'date': hotDates.first.key, 'n': '${hotDates.first.value}'},
+    ));
+  }
+
+  // 8. Year-on-year detection movement.
+  if (yearRows.length >= 2 &&
+      yearRows[0].total >= 50 &&
+      yearRows[1].total >= 50) {
+    final cur = yearRows[0], prev = yearRows[1];
+    if (cur.pct >= prev.pct + 3) {
+      out.add(BrainInsight(
+        icon: '🎯',
+        tone: 'ok',
+        key: 'yoyUp',
+        args: {
+          'y1': cur.label, 'p1': '${cur.pct}',
+          'y0': prev.label, 'p0': '${prev.pct}',
+        },
+      ));
+    } else if (cur.pct + 3 <= prev.pct) {
+      out.add(BrainInsight(
+        icon: '🎯',
+        tone: 'warn',
+        key: 'yoyDown',
+        args: {
+          'y1': cur.label, 'p1': '${cur.pct}',
+          'y0': prev.label, 'p0': '${prev.pct}',
+        },
+      ));
+    }
+  }
+
+  return out;
+}
+
+/// Fixed labels for the eight 3-hour occurrence bands (index = hour ~/ 3).
+const List<String> kHourBandLabels = [
+  '12–3 AM', '3–6 AM', '6–9 AM', '9 AM–12 PM',
+  '12–3 PM', '3–6 PM', '6–9 PM', '9 PM–12 AM',
+];

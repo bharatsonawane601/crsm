@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../../brain/fuzzy.dart';
 import '../data/crime_types_data.dart';
 
 /// Crime-type field rendered as a tappable box that opens a hierarchical,
@@ -78,7 +79,16 @@ class _CrimeTypePickerDialog extends StatefulWidget {
 class _CrimeTypePickerDialogState extends State<_CrimeTypePickerDialog> {
   String _query = '';
 
-  bool _matches(String s) => s.toLowerCase().contains(_query.trim().toLowerCase());
+  /// Brain matching: plain substring in either language, PLUS transliterated
+  /// containment so "chori" finds "चोरी", "khun" finds "खून", and small typos
+  /// still land ("murdar" → Murder handled by the did-you-mean fallback).
+  bool _matches(String s) {
+    final q = _query.trim();
+    if (q.isEmpty) return true;
+    if (s.toLowerCase().contains(q.toLowerCase())) return true;
+    final qk = brainKey(q);
+    return qk.length >= 2 && brainKey(s).contains(qk);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -143,22 +153,54 @@ class _CrimeTypePickerDialogState extends State<_CrimeTypePickerDialog> {
     String q,
   ) {
     if (flat.isEmpty) {
-      // Nothing matched — let the officer keep their typed value as custom.
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('crime.info.crimeTypeNoMatch'.tr(),
-                style: theme.textTheme.bodySmall),
-            const SizedBox(height: 12),
-            FilledButton.icon(
-              icon: const Icon(Icons.add),
-              label: Text('crime.info.crimeTypeUseCustom'
-                  .tr(namedArgs: {'text': q})),
-              onPressed: () => Navigator.pop(context, q),
+      // Nothing matched exactly — the brain suggests the closest types
+      // ("murdar" → Murder) before offering to keep the custom text.
+      final all = <String>[
+        for (final c in kCrimeCategories)
+          for (final s in c.subtypes) s.label,
+      ];
+      final didYouMean =
+          brainMatches(q, all, limit: 6, threshold: 0.55);
+      return Column(
+        children: [
+          if (didYouMean.isNotEmpty) ...[
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Text('brain.didYouMean'.tr(),
+                    style: theme.textTheme.labelMedium
+                        ?.copyWith(color: theme.colorScheme.primary)),
+              ),
             ),
-          ],
-        ),
+            Expanded(
+              child: ListView(
+                children: [
+                  for (final m in didYouMean)
+                    ListTile(
+                      dense: true,
+                      leading: const Text('🧠'),
+                      title: Text(m.value),
+                      onTap: () => Navigator.pop(context, m.value),
+                    ),
+                ],
+              ),
+            ),
+          ] else
+            Expanded(
+              child: Center(
+                child: Text('crime.info.crimeTypeNoMatch'.tr(),
+                    style: theme.textTheme.bodySmall),
+              ),
+            ),
+          const SizedBox(height: 8),
+          FilledButton.icon(
+            icon: const Icon(Icons.add),
+            label: Text(
+                'crime.info.crimeTypeUseCustom'.tr(namedArgs: {'text': q})),
+            onPressed: () => Navigator.pop(context, q),
+          ),
+        ],
       );
     }
     return ListView.builder(

@@ -18,6 +18,7 @@ class AnalyticsRepository {
       final verdicts = await _db.select(_db.verdict).get();
       final accused = await _db.select(_db.accused).get();
       final recovered = await _db.select(_db.recoveredProperty).get();
+      final stolen = await _db.select(_db.stolenProperty).get();
 
       final officerByCrime = <int, String?>{
         for (final i in investigations) i.crimeId: i.officerName,
@@ -38,6 +39,14 @@ class AnalyticsRepository {
           r.crimeId,
           (v) => v + (r.value ?? 0),
           ifAbsent: () => r.value ?? 0,
+        );
+      }
+      final stolenByCrime = <int, double>{};
+      for (final s in stolen) {
+        stolenByCrime.update(
+          s.crimeId,
+          (v) => v + (s.value ?? 0),
+          ifAbsent: () => s.value ?? 0,
         );
       }
 
@@ -82,6 +91,9 @@ class AnalyticsRepository {
             wantedCount: wantedCount[c.id] ?? 0,
             preventiveAction: preventiveByCrime[c.id],
             preventiveDate: preventiveDateByCrime[c.id],
+            dateOccurred: c.dateOccurred,
+            timeOccurred: c.timeOccurred,
+            stolenValue: stolenByCrime[c.id] ?? 0,
           ),
       ];
     });

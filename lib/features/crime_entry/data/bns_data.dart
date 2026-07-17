@@ -440,6 +440,13 @@ const Map<String, String> kPoliceStationsMr = {
   'Cyber Police Station': 'सायबर पोलीस स्टेशन',
 };
 
+/// English + Marathi spellings for the station autocomplete, so officers can
+/// pick सिडको as easily as CIDCO (both link to the same station everywhere).
+final List<String> kPoliceStationsAll = [
+  ...kPoliceStations,
+  ...kPoliceStationsMr.values,
+];
+
 final Map<String, String> _canonicalStationByNorm = () {
   final m = <String, String>{};
   for (final s in kPoliceStations) {

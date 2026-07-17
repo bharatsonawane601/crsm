@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
+import '../../brain/fuzzy.dart';
+
 /// Localized field validators (PROJECT.md rule 6 — every form is validated).
 /// Messages come from the i18n files so they switch with the language.
 class V {
@@ -32,6 +34,15 @@ class V {
     if (value == null || value.trim().isEmpty) return null;
     return FormBuilderValidators.numeric(errorText: 'validation.number'.tr())(
         value);
+  }
+
+  /// Optional money amount — plain numbers or Indian units the brain
+  /// understands ("1.5 लाख", "2L", "80 हजार", "1,20,000").
+  static String? optAmount(String? value) {
+    if (value == null || value.trim().isEmpty) return null;
+    return parseIndianAmount(value) == null
+        ? 'validation.number'.tr()
+        : null;
   }
 
   /// Optional 10-digit mobile.

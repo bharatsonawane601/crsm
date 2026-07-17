@@ -194,5 +194,8 @@ AnalyticsRow _toAnalyticsRow(Map<String, dynamic> r) {
     wantedCount: asNum(data['wanted_count']).toInt(),
     preventiveAction: data['preventive_action'] as String?,
     preventiveDate: _parseDate(data['preventive_date']),
+    dateOccurred: _parseDate(r['date_occurred']),
+    timeOccurred: data['time_occurred'] as String?,
+    stolenValue: asNum(data['stolen_value']).toDouble(),
   );
 }

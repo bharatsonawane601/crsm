@@ -19,6 +19,8 @@ import 'import_excel/import_screen.dart';
 import 'access/access_client.dart';
 import 'access/access_service.dart';
 import 'io/io_portal_shell.dart';
+import 'notifications/notification_center.dart';
+import 'notifications/notifications_controller.dart';
 import 'portal/central_upload_controller.dart';
 import 'portal/portal_shell.dart';
 import 'portal/station_firs_screen.dart';
@@ -57,6 +59,8 @@ class _AppShellState extends ConsumerState<AppShell> {
     // real-time) without waiting for a restart.
     _syncTimer = Timer.periodic(const Duration(seconds: 90), (_) {
       ref.read(centralUploadControllerProvider.notifier).pullServerDeletions();
+      // Refresh the bell: new command messages + pending-case alerts.
+      ref.read(notificationsControllerProvider.notifier).refresh();
     });
   }
 
@@ -73,6 +77,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     'reports.title',
     'audit.title',
     'settings.title',
+    'nav.analytics',
   ];
 
   // Sections are built lazily — only when first opened — so heavy streams
@@ -115,6 +120,11 @@ class _AppShellState extends ConsumerState<AppShell> {
           label: 'nav.dashboard'.tr(),
           selected: _section == 0,
           onTap: () => _go(0)),
+      CrmsNavItem(
+          icon: PhosphorIconsRegular.chartLineUp,
+          label: 'nav.analytics'.tr(),
+          selected: _section == 6,
+          onTap: () => _go(6)),
       CrmsNavItem(
           icon: PhosphorIconsRegular.fileText,
           label: 'nav.crimeRecords'.tr(),
@@ -198,12 +208,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                     const SizedBox(width: 4),
                     const Center(child: LanguageToggle()),
                     const SizedBox(width: 8),
-                    IconButton(
-                      tooltip: 'nav.notifications'.tr(),
-                      color: Colors.white,
-                      icon: const Icon(PhosphorIconsRegular.bell, size: 20),
-                      onPressed: () {},
-                    ),
+                    const _NotificationBell(),
                     const _ShellAvatar(),
                     const SizedBox(width: 4),
                   ],
@@ -218,6 +223,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                       _lazy(3, const ReportsHubScreen()),
                       _lazy(4, const AuditLogScreen(embedded: true)),
                       _lazy(5, const SettingsScreen(embedded: true)),
+                      _lazy(6, const AnalyticsScreen()),
                     ],
                   ),
                 ),
@@ -286,6 +292,53 @@ class _TopSearchState extends ConsumerState<_TopSearch> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Top-bar bell: opens the Notification Center; badge = unread command
+/// messages + urgent case alerts (overdue / due-soon chargesheets).
+class _NotificationBell extends ConsumerWidget {
+  const _NotificationBell();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final badge = ref.watch(
+        notificationsControllerProvider.select((s) => s.badge));
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        IconButton(
+          tooltip: 'nav.notifications'.tr(),
+          color: Colors.white,
+          icon: const Icon(PhosphorIconsRegular.bell, size: 20),
+          onPressed: () => showNotificationCenter(context),
+        ),
+        if (badge > 0)
+          Positioned(
+            right: 4,
+            top: 4,
+            child: IgnorePointer(
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                decoration: BoxDecoration(
+                  color: AppColors.dangerRed,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                constraints: const BoxConstraints(minWidth: 16),
+                child: Text(
+                  badge > 99 ? '99+' : '$badge',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

@@ -7,13 +7,19 @@ import '../../shared/widgets/crms.dart';
 import 'analytics_model.dart';
 import 'analytics_repository.dart';
 import 'charts.dart';
+import 'duo_panels.dart';
 import 'stats_screen.dart';
 
 final _moneyFmt = NumberFormat('#,##0');
 final _dateFmt = DateFormat('dd-MM-yyyy');
 
-/// Live analytics dashboard: KPI cards + charts, all reacting to a shared
-/// filter (date range / status / section).
+/// Which slice of the dashboard a screen shows: [overview] is the Dashboard
+/// tab (KPIs + live pulse + status + caseload), [analytics] is the Analytics
+/// tab (filters + brain insights + every pattern panel), [full] is both —
+/// used by the officer portal, which has a single combined view.
+enum DashboardMode { overview, analytics, full }
+
+/// The Dashboard tab: at-a-glance overview of the station's data.
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key, this.showStatsButton = true});
 
@@ -31,6 +37,29 @@ class DashboardScreen extends ConsumerWidget {
         data: (allRows) => AnalyticsDashboardBody(
           allRows: allRows,
           showStatsButton: showStatsButton,
+          mode: DashboardMode.overview,
+        ),
+      ),
+    );
+  }
+}
+
+/// The Analytics tab: shared filter + 🧠 insights + the table-and-chart
+/// pattern panels (muddemal, trends, weekday/time loops, hot dates, league).
+class AnalyticsScreen extends ConsumerWidget {
+  const AnalyticsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final rowsAsync = ref.watch(analyticsRowsProvider);
+    return Scaffold(
+      body: rowsAsync.when(
+        loading: () => const CrmsListSkeleton(rows: 4),
+        error: (_, _) => Center(child: Text('list.loadError'.tr())),
+        data: (allRows) => AnalyticsDashboardBody(
+          allRows: allRows,
+          showStatsButton: false,
+          mode: DashboardMode.analytics,
         ),
       ),
     );
@@ -45,10 +74,12 @@ class AnalyticsDashboardBody extends StatefulWidget {
     super.key,
     required this.allRows,
     this.showStatsButton = true,
+    this.mode = DashboardMode.full,
   });
 
   final List<AnalyticsRow> allRows;
   final bool showStatsButton;
+  final DashboardMode mode;
 
   @override
   State<AnalyticsDashboardBody> createState() => _AnalyticsDashboardBodyState();
@@ -87,7 +118,12 @@ class _AnalyticsDashboardBodyState extends State<AnalyticsDashboardBody> {
             .toSet()
             .toList())
       ..sort();
-    final rows = allRows.where(_filter.matches).toList();
+    final mode = widget.mode;
+    final overview = mode != DashboardMode.analytics;
+    final analytics = mode != DashboardMode.overview;
+    // The overview is the station's true totals; filters live on Analytics.
+    final rows =
+        analytics ? allRows.where(_filter.matches).toList() : allRows;
     final s = computeAnalytics(rows);
 
     return ListView(
@@ -107,25 +143,46 @@ class _AnalyticsDashboardBodyState extends State<AnalyticsDashboardBody> {
             ),
           ),
         if (widget.showStatsButton) const SizedBox(height: 8),
-        _FilterBar(
-          filter: _filter,
-          crimeTypes: crimeTypes,
-          onStatus: (v) => setState(
-              () => _filter = _filter.copyWith(status: v, clearStatus: v == null)),
-          onTypes: (set) =>
-              setState(() => _filter = _filter.copyWith(crimeTypes: set)),
-          onFrom: () => _pickDate(isFrom: true),
-          onTo: () => _pickDate(isFrom: false),
-          onClear: () => setState(() => _filter = const AnalyticsFilter()),
-        ),
-        const SizedBox(height: 8),
-        if (s.chargesheetDue.isNotEmpty) ...[
+        if (analytics) ...[
+          _FilterBar(
+            filter: _filter,
+            crimeTypes: crimeTypes,
+            onStatus: (v) => setState(() =>
+                _filter = _filter.copyWith(status: v, clearStatus: v == null)),
+            onTypes: (set) =>
+                setState(() => _filter = _filter.copyWith(crimeTypes: set)),
+            onFrom: () => _pickDate(isFrom: true),
+            onTo: () => _pickDate(isFrom: false),
+            onClear: () => setState(() => _filter = const AnalyticsFilter()),
+          ),
+          const SizedBox(height: 8),
+        ],
+        if (overview && s.chargesheetDue.isNotEmpty) ...[
           _DueAlertsCard(cases: s.chargesheetDue),
           const SizedBox(height: 8),
         ],
         _kpis(context, s),
         const SizedBox(height: 8),
-        _ChartGrid(summary: s),
+        if (overview) _OverviewDuos(summary: s),
+        if (analytics) ...[
+          if (s.insights.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Text(
+                '🧠 ${'analyzer.ins.title'.tr()}',
+                style: Theme.of(context)
+                    .textTheme
+                    .titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w700),
+              ),
+            ),
+            InsightsGrid(insights: s.insights),
+            const SizedBox(height: 8),
+          ],
+          _DuoSuite(summary: s),
+          _ChartGrid(summary: s),
+          _DataQuality(summary: s),
+        ],
       ],
     );
   }
@@ -276,6 +333,420 @@ class _DueAlertsCard extends StatelessWidget {
   }
 }
 
+/// The Dashboard tab's three overview panels, each a table + its chart:
+/// activity in the last 14 days, the detected/undetected split, and (for
+/// multi-station data) stations by caseload.
+class _OverviewDuos extends StatelessWidget {
+  const _OverviewDuos({required this.summary});
+  final AnalyticsSummary summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = summary;
+    final empty = 'analyzer.noData'.tr();
+    final panels = <Widget>[];
+    void add(Widget w) => panels
+      ..add(w)
+      ..add(const SizedBox(height: 8));
+
+    // Live pulse: last 14 days of registrations.
+    add(DuoPanel(
+      title: 'analyzer.duo.activityTitle'.tr(),
+      subtitle: 'analyzer.duo.activitySub'.tr(),
+      chartHeight: 260,
+      table: MiniTable(
+        headers: ['analyzer.duo.date'.tr(), 'analyzer.duo.cases'.tr()],
+        rows: [
+          for (final e in s.last14Days) [e.key, '${e.value}'],
+        ],
+      ),
+      chart: s.last14Days.every((e) => e.value == 0)
+          ? Center(
+              child: Text(empty,
+                  style: Theme.of(context).textTheme.bodySmall))
+          : TrendLine(
+              entries: s.last14Days, emptyLabel: empty, rawLabels: true),
+    ));
+
+    // Status split — the app's version of the panel's zone donut.
+    if (s.total > 0) {
+      final statusDisplay = {
+        for (final e in s.statusCounts.entries)
+          'crime.status.${e.key}'.tr(): e.value,
+      };
+      add(DuoPanel(
+        title: 'analyzer.duo.statusTitle'.tr(),
+        subtitle: 'analyzer.duo.statusSub'.tr(),
+        chartHeight: 240,
+        table: MiniTable(
+          headers: [
+            'analyzer.duo.status'.tr(),
+            'analyzer.duo.cases'.tr(),
+            'analyzer.duo.share'.tr(),
+          ],
+          rows: [
+            for (final e in statusDisplay.entries)
+              [
+                e.key,
+                '${e.value}',
+                '${(e.value * 100 / s.total).round()}%',
+              ],
+          ],
+        ),
+        chart: CountPie(data: statusDisplay, emptyLabel: empty),
+      ));
+    }
+
+    // Multi-station only (officer portal / HQ): caseload comparison.
+    if (s.stationRows.length >= 2) {
+      add(DuoPanel(
+        title: 'analyzer.duo.caseload'.tr(),
+        subtitle: 'analyzer.duo.caseloadSub'.tr(),
+        table: MiniTable(
+          headers: [
+            'analyzer.duo.station'.tr(),
+            'analyzer.kpi.total'.tr(),
+            'crime.status.detected'.tr(),
+            'analyzer.duo.rate'.tr(),
+          ],
+          rows: [
+            for (final r in s.stationRows.take(25))
+              [r.label, '${r.total}', '${r.detected}', '${r.pct}%'],
+          ],
+        ),
+        chart: RankedBars(
+          entries: [
+            for (final r in s.stationRows) MapEntry(r.label, r.total),
+          ],
+          maxRows: 10,
+          emptyLabel: empty,
+        ),
+      ));
+    }
+
+    return Column(children: panels);
+  }
+}
+
+/// Data-quality counters at the foot of Analytics: fix these and every
+/// report above becomes accurate.
+class _DataQuality extends StatelessWidget {
+  const _DataQuality({required this.summary});
+  final AnalyticsSummary summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = summary;
+    if (s.missingFirNo == 0 && s.missingType == 0 && s.missingTime == 0) {
+      return const SizedBox.shrink();
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Text(
+            'analyzer.dq.title'.tr(),
+            style: Theme.of(context)
+                .textTheme
+                .titleSmall
+                ?.copyWith(fontWeight: FontWeight.w700),
+          ),
+        ),
+        Wrap(
+          spacing: 16,
+          runSpacing: 16,
+          children: [
+            if (s.missingFirNo > 0)
+              KpiCard(
+                label: 'analyzer.dq.noFirNo'.tr(),
+                value: '${s.missingFirNo}',
+                color: Colors.orange,
+              ),
+            if (s.missingType > 0)
+              KpiCard(
+                label: 'analyzer.dq.noType'.tr(),
+                value: '${s.missingType}',
+                color: Colors.orange,
+              ),
+            if (s.missingTime > 0)
+              KpiCard(
+                label: 'analyzer.dq.noTime'.tr(),
+                value: '${s.missingTime}',
+                color: Colors.orange,
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// The "table + its chart, side by side" suite: muddemal money trail, year /
+/// month trends, day-of-week, time-of-day, week-of-month, hottest dates, top
+/// crime types and the station league — same layout as the admin panel.
+class _DuoSuite extends StatelessWidget {
+  const _DuoSuite({required this.summary});
+  final AnalyticsSummary summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = summary;
+    final empty = 'analyzer.noData'.tr();
+    final panels = <Widget>[];
+    void add(Widget w) => panels
+      ..add(w)
+      ..add(const SizedBox(height: 8));
+
+    String rate(RateRow r) => '${r.pct}%';
+    final dowShort = [
+      for (final k in ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])
+        'analyzer.dow.$k'.tr(),
+    ];
+
+    // 💰 Muddemal money trail.
+    if (s.lostValue > 0 || s.recoveredValue > 0) {
+      final remaining =
+          (s.lostValue - s.recoveredValue).clamp(0, double.infinity).toDouble();
+      add(DuoPanel(
+        title: '💰 ${'analyzer.duo.muddemal'.tr()}',
+        subtitle: 'analyzer.duo.muddemalSub'.tr(),
+        chartHeight: 240,
+        table: MiniTable(
+          headers: ['analyzer.duo.measure'.tr(), 'analyzer.duo.amount'.tr()],
+          rows: [
+            ['analyzer.duo.lost'.tr(), inrFull(s.lostValue)],
+            ['analyzer.duo.recovered'.tr(), inrFull(s.recoveredValue)],
+            ['analyzer.duo.remaining'.tr(), inrFull(remaining)],
+          ],
+        ),
+        chart: s.lostValue > 0
+            ? MoneyDonut(lost: s.lostValue, recovered: s.recoveredValue)
+            : Center(
+                child: Text('analyzer.duo.needLost'.tr(),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall),
+              ),
+      ));
+    }
+
+    // Year-wise trend.
+    if (s.yearRows.length >= 2) {
+      add(DuoPanel(
+        title: 'analyzer.duo.yearTitle'.tr(),
+        subtitle: 'analyzer.duo.yearSub'.tr(),
+        table: MiniTable(
+          headers: [
+            'analyzer.duo.year'.tr(),
+            'analyzer.kpi.total'.tr(),
+            'crime.status.detected'.tr(),
+            'analyzer.duo.rate'.tr(),
+          ],
+          rows: [
+            for (final r in s.yearRows)
+              [r.label, '${r.total}', '${r.detected}', rate(r)],
+          ],
+        ),
+        chart: TrendLine(
+          entries: [
+            for (final r in s.yearRows.reversed) MapEntry(r.label, r.total),
+          ],
+          emptyLabel: empty,
+        ),
+      ));
+    }
+
+    // Month-wise trend (last 24 months).
+    if (s.monthRows.length >= 2) {
+      add(DuoPanel(
+        title: 'analyzer.duo.monthTitle'.tr(),
+        subtitle: 'analyzer.duo.monthSub'.tr(),
+        table: MiniTable(
+          headers: [
+            'analyzer.duo.month'.tr(),
+            'analyzer.kpi.total'.tr(),
+            'crime.status.detected'.tr(),
+            'analyzer.duo.rate'.tr(),
+          ],
+          rows: [
+            for (final r in s.monthRows.reversed)
+              [r.label, '${r.total}', '${r.detected}', rate(r)],
+          ],
+        ),
+        chart: AreaTrend(
+          entries: [for (final r in s.monthRows) MapEntry(r.label, r.total)],
+          emptyLabel: empty,
+        ),
+      ));
+    }
+
+    // 📅 Day of the week (by occurrence date).
+    final datedTotal =
+        s.weekdayRows.fold(0, (a, r) => a + r.total);
+    if (datedTotal > 0) {
+      add(DuoPanel(
+        title: '📅 ${'analyzer.duo.dayTitle'.tr()}',
+        subtitle: 'analyzer.duo.daySub'.tr(),
+        table: MiniTable(
+          headers: [
+            'analyzer.duo.day'.tr(),
+            'analyzer.kpi.total'.tr(),
+            'crime.status.detected'.tr(),
+            'analyzer.duo.rate'.tr(),
+          ],
+          rows: [
+            for (final r in s.weekdayRows)
+              [
+                'analyzer.dowFull.${r.label}'.tr(),
+                '${r.total}',
+                '${r.detected}',
+                rate(r),
+              ],
+          ],
+        ),
+        chart: DayOfWeekBars(
+          counts: [for (final r in s.weekdayRows) r.total],
+          labels: dowShort,
+        ),
+      ));
+    }
+
+    // 🕘 Time of day (parsed occurrence times).
+    if (s.timedTotal > 0) {
+      add(DuoPanel(
+        title: '🕘 ${'analyzer.duo.timeTitle'.tr()}',
+        subtitle: 'analyzer.duo.timeSub'
+            .tr(namedArgs: {'n': '${s.timedTotal}'}),
+        table: MiniTable(
+          headers: [
+            'analyzer.duo.timeWindow'.tr(),
+            'analyzer.duo.cases'.tr(),
+            'analyzer.duo.share'.tr(),
+          ],
+          rows: [
+            for (var i = 0; i < 8; i++)
+              [
+                kHourBandLabels[i],
+                '${s.hourBandCounts[i]}',
+                '${(s.hourBandCounts[i] * 100 / s.timedTotal).round()}%',
+              ],
+          ],
+        ),
+        chart: ColumnChart(
+          entries: [
+            for (var i = 0; i < 8; i++)
+              MapEntry(kHourBandLabels[i], s.hourBandCounts[i]),
+          ],
+          emptyLabel: empty,
+        ),
+      ));
+    }
+
+    // 📆 Week of the month.
+    if (datedTotal > 0) {
+      add(DuoPanel(
+        title: '📆 ${'analyzer.duo.weekTitle'.tr()}',
+        subtitle: 'analyzer.duo.weekSub'.tr(),
+        table: MiniTable(
+          headers: [
+            'analyzer.duo.week'.tr(),
+            'analyzer.kpi.total'.tr(),
+            'crime.status.detected'.tr(),
+            'analyzer.duo.rate'.tr(),
+          ],
+          rows: [
+            for (final r in s.weekOfMonthRows)
+              [
+                'analyzer.duo.weekN'.tr(namedArgs: {'n': r.label}),
+                '${r.total}',
+                '${r.detected}',
+                rate(r),
+              ],
+          ],
+        ),
+        chart: ColumnChart(
+          entries: [
+            for (final r in s.weekOfMonthRows)
+              MapEntry('W${r.label}', r.total),
+          ],
+          emptyLabel: empty,
+        ),
+      ));
+    }
+
+    // 📌 Hottest single dates.
+    if (s.hotDates.isNotEmpty && s.hotDates.first.value >= 2) {
+      add(DuoPanel(
+        title: '📌 ${'analyzer.duo.hotDates'.tr()}',
+        subtitle: 'analyzer.duo.hotDatesSub'.tr(),
+        table: MiniTable(
+          headers: ['analyzer.duo.date'.tr(), 'analyzer.duo.cases'.tr()],
+          rows: [
+            for (final e in s.hotDates) [e.key, '${e.value}'],
+          ],
+        ),
+        chart: RankedBars(entries: s.hotDates, maxRows: 10, emptyLabel: empty),
+      ));
+    }
+
+    // Top crime types with detection rate.
+    if (s.typeRows.isNotEmpty) {
+      add(DuoPanel(
+        title: 'analyzer.duo.topTypes'.tr(),
+        subtitle: 'analyzer.duo.topTypesSub'.tr(),
+        table: MiniTable(
+          headers: [
+            'analyzer.duo.type'.tr(),
+            'analyzer.kpi.total'.tr(),
+            'crime.status.detected'.tr(),
+            'analyzer.duo.rate'.tr(),
+          ],
+          rows: [
+            for (final r in s.typeRows.take(15))
+              [r.label, '${r.total}', '${r.detected}', rate(r)],
+          ],
+        ),
+        chart: RankedBars(
+          entries: [
+            for (final r in s.typeRows) MapEntry(r.label, r.total),
+          ],
+          maxRows: 10,
+          emptyLabel: empty,
+        ),
+      ));
+    }
+
+    // Multi-station only (officer portal): the detection league.
+    if (s.stationRows.length >= 2) {
+      add(DuoPanel(
+        title: '🏆 ${'analyzer.duo.league'.tr()}',
+        subtitle: 'analyzer.duo.leagueSub'.tr(),
+        table: MiniTable(
+          headers: [
+            'analyzer.duo.station'.tr(),
+            'analyzer.kpi.total'.tr(),
+            'crime.status.detected'.tr(),
+            'analyzer.duo.rate'.tr(),
+          ],
+          rows: [
+            for (final r in s.leagueRows.take(25))
+              [r.label, '${r.total}', '${r.detected}', rate(r)],
+          ],
+        ),
+        chart: RankedBars(
+          entries: [
+            for (final r in s.leagueRows) MapEntry(r.label, r.pct),
+          ],
+          maxRows: 10,
+          emptyLabel: empty,
+        ),
+      ));
+    }
+
+    return Column(children: panels);
+  }
+}
+
 class _ChartGrid extends StatelessWidget {
   const _ChartGrid({required this.summary});
   final AnalyticsSummary summary;
@@ -287,11 +758,6 @@ class _ChartGrid extends StatelessWidget {
       for (final e in summary.statusCounts.entries)
         'crime.status.${e.key}'.tr(): e.value,
     };
-    final dow = [
-      for (final k in ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])
-        'analyzer.dow.$k'.tr(),
-    ];
-
     final arrestData = {
       'analyzer.kpi.arrested'.tr(): summary.arrested,
       'analyzer.kpi.wanted'.tr(): summary.wanted,
@@ -324,37 +790,14 @@ class _ChartGrid extends StatelessWidget {
         'analyzer.chart.station'.tr(): _sorted(summary.stationCounts),
     };
 
+    // The duo suite above already shows trends, crime types, day-of-week,
+    // stations, etc. as table+chart pairs — nothing here repeats those
+    // datasets (the CP's rule: never show the same thing twice).
     final cards = <Widget>[
       // Two build-your-own charts: choose the data and the chart shape, then
       // tap to enlarge. Officers can compare any metric in any chart type.
       CustomChartCard(datasets: datasets),
       CustomChartCard(datasets: datasets, initialType: ChartType.pie),
-      // Station comparison — only meaningful across multiple stations (the
-      // officer portal), so hidden on a single-station install.
-      if (summary.stationCounts.length >= 2)
-        ConfigurableChartCard(
-          title: 'analyzer.chart.station'.tr(),
-          entries: _sorted(summary.stationCounts),
-          emptyLabel: empty,
-        ),
-      ConfigurableChartCard(
-        title: 'analyzer.chart.trend'.tr(),
-        entries: summary.monthlyTrend,
-        initialType: ChartType.line,
-        emptyLabel: empty,
-      ),
-      ConfigurableChartCard(
-        title: 'analyzer.chart.crimeType'.tr(),
-        entries: _sorted(summary.crimeTypeCounts),
-        initialType: ChartType.pie,
-        emptyLabel: empty,
-      ),
-      ConfigurableChartCard(
-        title: 'analyzer.chart.status'.tr(),
-        entries: statusDisplay.entries.toList(),
-        initialType: ChartType.pie,
-        emptyLabel: empty,
-      ),
       ConfigurableChartCard(
         title: 'analyzer.chart.topSections'.tr(),
         entries: summary.topSections,
@@ -364,10 +807,6 @@ class _ChartGrid extends StatelessWidget {
         title: 'analyzer.chart.officer'.tr(),
         entries: _sorted(summary.officerCounts),
         emptyLabel: empty,
-      ),
-      ChartCard(
-        title: 'analyzer.chart.dow'.tr(),
-        child: DayOfWeekBars(counts: summary.dayOfWeekCounts, labels: dow),
       ),
       ChartCard(
         title: 'analyzer.chart.arrest'.tr(),
@@ -394,15 +833,6 @@ class _ChartGrid extends StatelessWidget {
         ),
       ),
       ChartCard(
-        title: 'analyzer.chart.area'.tr(),
-        child: AreaTrend(entries: summary.monthlyTrend, emptyLabel: empty),
-      ),
-      ChartCard(
-        title: 'analyzer.chart.column'.tr(),
-        height: 320,
-        child: ColumnChart(entries: crimeRanked, emptyLabel: empty),
-      ),
-      ChartCard(
         title: 'analyzer.chart.stacked'.tr(),
         height: 340,
         child: StackedColumn(
@@ -413,33 +843,6 @@ class _ChartGrid extends StatelessWidget {
           openLabel: openLabel,
           emptyLabel: empty,
         ),
-      ),
-      ChartCard(
-        title: 'analyzer.chart.comparison'.tr(),
-        height: 340,
-        child: ComparisonColumns(
-          types: crimeTypeLabels,
-          solvedByType: summary.solvedByType,
-          openByType: summary.openByType,
-          solvedLabel: solvedLabel,
-          openLabel: openLabel,
-          emptyLabel: empty,
-        ),
-      ),
-      ChartCard(
-        title: 'analyzer.chart.radar'.tr(),
-        height: 340,
-        child: RadarCrime(entries: crimeRanked, emptyLabel: empty),
-      ),
-      ChartCard(
-        title: 'analyzer.chart.bubble'.tr(),
-        height: 320,
-        child: BubbleCrime(entries: crimeRanked, emptyLabel: empty),
-      ),
-      ChartCard(
-        title: 'analyzer.chart.scatter'.tr(),
-        height: 320,
-        child: ScatterCrime(entries: crimeRanked, emptyLabel: empty),
       ),
     ];
 

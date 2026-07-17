@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../access/access_service.dart';
+import '../brain/fuzzy.dart';
 import 'data/bns_data.dart';
 import 'crime_form_controller.dart';
+import 'crime_repository.dart';
 import 'models/crime_draft.dart';
 import 'scan_crop_screen.dart';
 import 'scanner_service.dart';
@@ -183,6 +185,7 @@ class CrimeInfoTab extends ConsumerWidget {
         initial: d.section,
         options: kBnsSections,
         acts: kActs,
+        crimeType: d.crimeType,
         onChanged: (v) => d.section = v,
       ),
       FieldRow(children: [
@@ -245,7 +248,7 @@ class CrimeInfoTab extends ConsumerWidget {
           AppAutocompleteField(
             label: 'crime.info.policeStation'.tr(),
             initialValue: d.policeStation,
-            options: kPoliceStations,
+            options: kPoliceStationsAll,
             onChanged: (v) => d.policeStation = v,
           ),
       ]),
@@ -294,6 +297,25 @@ class CrimeInfoTab extends ConsumerWidget {
           onChanged: (v) => d.timeRegistered = v,
         ),
       ]),
+      // Brain check: an FIR can't be registered before the offence happened.
+      if (d.dateRegistered != null &&
+          d.dateOccurred != null &&
+          d.dateRegistered!.isBefore(d.dateOccurred!))
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Row(children: [
+            Icon(Icons.warning_amber_rounded,
+                size: 16, color: Theme.of(context).colorScheme.error),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text('brain.dateOrder'.tr(),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: Theme.of(context).colorScheme.error)),
+            ),
+          ]),
+        ),
       // Court → chargesheet deadline (Sessions 90 days / JMFC 60 days).
       FieldRow(children: [
         AppDropdownField<String?>(
@@ -484,13 +506,25 @@ class ComplainantTab extends StatelessWidget {
 // ---------------------------------------------------------------------------
 // Tab 3 — Accused (multiple)
 // ---------------------------------------------------------------------------
-class AccusedTab extends StatelessWidget {
+class AccusedTab extends ConsumerWidget {
   const AccusedTab({super.key, required this.model});
   final CrimeFormModel model;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final accused = model.draft.accused;
+    // Brain: intel on typed names (repeat offenders + WANTED radar, matching
+    // aliases too) and on typed mobiles (same phone across FIRs).
+    Future<BrainPersonIntel> repeatLookup(String name) =>
+        ref.read(crimeRepositoryProvider).accusedIntel(
+              name,
+              excludeCrimeId: model.draft.id,
+            );
+    Future<int> mobileLookup(String mobile) =>
+        ref.read(crimeRepositoryProvider).crimesWithMobile(
+              mobile,
+              excludeCrimeId: model.draft.id,
+            );
     return _TabBody(children: [
       if (accused.isEmpty)
         Padding(
@@ -503,7 +537,12 @@ class AccusedTab extends StatelessWidget {
           title: 'crime.accused.title'.tr(namedArgs: {'n': '${i + 1}'}),
           onRemove: () => model.removeAccused(i),
           child: Column(children: [
-            PersonFields(person: accused[i], notify: model.refresh),
+            PersonFields(
+              person: accused[i],
+              notify: model.refresh,
+              repeatLookup: repeatLookup,
+              mobileLookup: mobileLookup,
+            ),
             FieldRow(children: [
               AppTextField(
                 label: 'crime.accused.alias'.tr(),
@@ -681,9 +720,9 @@ class PropertyTab extends StatelessWidget {
             AppTextField(
               label: 'crime.property.value'.tr(),
               initialValue: stolen[i].value?.toString(),
-              keyboardType: TextInputType.number,
-              validator: V.optNumber,
-              onChanged: (v) => stolen[i].value = double.tryParse(v),
+              helperText: 'brain.amountHint'.tr(),
+              validator: V.optAmount,
+              onChanged: (v) => stolen[i].value = parseIndianAmount(v),
             ),
           ]),
         ),
@@ -720,9 +759,9 @@ class PropertyTab extends StatelessWidget {
               AppTextField(
                 label: 'crime.property.value'.tr(),
                 initialValue: recovered[i].value?.toString(),
-                keyboardType: TextInputType.number,
-                validator: V.optNumber,
-                onChanged: (v) => recovered[i].value = double.tryParse(v),
+                helperText: 'brain.amountHint'.tr(),
+                validator: V.optAmount,
+                onChanged: (v) => recovered[i].value = parseIndianAmount(v),
               ),
               AppDateField(
                 label: 'crime.property.recoveryDate'.tr(),

@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../../brain/law_brain.dart';
 import '../data/bns_data.dart';
 
 /// Multi-select sections editor. The officer picks an Act (BNS, NDPS, etc.) on
@@ -16,6 +17,7 @@ class SectionsField extends StatefulWidget {
     required this.onChanged,
     required this.options,
     required this.acts,
+    this.crimeType,
   });
 
   /// Comma-separated initial value from the draft.
@@ -28,6 +30,10 @@ class SectionsField extends StatefulWidget {
 
   /// Acts shown in the left dropdown.
   final List<ActOption> acts;
+
+  /// The draft's current crime type — lets the brain suggest the usual
+  /// sections and warn when the chosen sections don't match the offence.
+  final String? crimeType;
 
   @override
   State<SectionsField> createState() => _SectionsFieldState();
@@ -50,12 +56,88 @@ class _SectionsFieldState extends State<SectionsField> {
     final v = raw.trim();
     if (v.isEmpty) return;
     // Prefix the chosen act's short code, e.g. "BNS 103" (skip for "Other").
-    final entry = _act.code == 'Other' ? v : '${_act.code} $v';
+    _addEntry(_act.code == 'Other' ? v : '${_act.code} $v');
+    _ctrl?.clear();
+  }
+
+  void _addEntry(String entry) {
     if (!_items.contains(entry)) {
       setState(() => _items.add(entry));
       _emit();
     }
-    _ctrl?.clear();
+  }
+
+  /// Brain: suggested sections for the chosen crime type, a mismatch warning
+  /// when the added sections don't cover the offence, and special-act hints.
+  /// Suggestions are one tap away — the brain never adds anything by itself.
+  List<Widget> _brainBlock(ThemeData theme) {
+    final o = offenceForType(widget.crimeType ?? '');
+    if (o == null) return const [];
+    final have = _items.join(', ').toLowerCase();
+    final out = <Widget>[];
+
+    final missing = <String>[
+      for (final s in o.bns)
+        if (!have.contains(s.split('(').first.toLowerCase())) s,
+    ];
+    if (missing.isNotEmpty) {
+      out.add(Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Text('brain.suggestedSections'.tr(),
+                style: theme.textTheme.labelMedium
+                    ?.copyWith(color: theme.colorScheme.primary)),
+            for (final s in missing)
+              ActionChip(
+                avatar: const Icon(Icons.add, size: 16),
+                label: Text(bnsSectionLabel(s) == null
+                    ? 'BNS $s'
+                    : 'BNS ${bnsSectionLabel(s)!}'),
+                onPressed: () => _addEntry('BNS $s'),
+              ),
+          ],
+        ),
+      ));
+    }
+    if (_items.isNotEmpty && !sectionsCoverOffence(_items.join(', '), o)) {
+      out.add(Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Row(children: [
+          Icon(Icons.warning_amber_rounded,
+              size: 16, color: theme.colorScheme.error),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              'brain.sectionMismatch'.tr(namedArgs: {
+                'sections': [...o.bns.map((s) => 'BNS $s'),
+                             ...o.ipc.map((s) => 'IPC $s')].join(', '),
+              }),
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: theme.colorScheme.error),
+            ),
+          ),
+        ]),
+      ));
+    }
+    if (o.hint != null) {
+      out.add(Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Row(children: [
+          const Text('🧠', style: TextStyle(fontSize: 13)),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(o.hint!,
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+          ),
+        ]),
+      ));
+    }
+    return out;
   }
 
   void _remove(String v) {
@@ -106,6 +188,7 @@ class _SectionsFieldState extends State<SectionsField> {
                 ],
               ),
             ),
+          ..._brainBlock(theme),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -175,12 +258,17 @@ class _SectionsFieldState extends State<SectionsField> {
                             itemCount: opts.length,
                             itemBuilder: (context, i) {
                               final o = opts.elementAt(i);
+                              // For BNS, show the offence name next to the
+                              // number so a wrong pick is caught on sight.
+                              final label = _act.code == 'BNS'
+                                  ? (bnsSectionLabel(o) ?? o)
+                                  : o;
                               return InkWell(
                                 onTap: () => onSelected(o),
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 12, vertical: 10),
-                                  child: Text(o),
+                                  child: Text(label),
                                 ),
                               );
                             },
