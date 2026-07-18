@@ -31,6 +31,7 @@ func (a *App) registerAdminActions(mux *http.ServeMux) {
 	mux.HandleFunc("POST /admin/trash/purge", a.adminAuth(a.actTrashPurge))
 	mux.HandleFunc("POST /admin/suppressed/clear", a.adminAuth(a.actSuppressedClear))
 	mux.HandleFunc("POST /admin/org/station", a.adminAuth(a.actStationSave))
+	mux.HandleFunc("POST /admin/org/unlinked/delete", a.adminAuth(a.actUnlinkedDelete))
 	mux.HandleFunc("POST /admin/org/station/add", a.adminAuth(a.actStationAdd))
 	mux.HandleFunc("POST /admin/health/relink", a.adminAuth(a.actRelink))
 	mux.HandleFunc("POST /admin/health/dedupe", a.adminAuth(a.actDedupe))
@@ -339,6 +340,39 @@ func (a *App) actTrashPurge(w http.ResponseWriter, r *http.Request) {
 	}
 	back(w, r, "/admin/trash",
 		fmt.Sprintf("%d FIRs permanently deleted from the recycle bin", tag.RowsAffected()))
+}
+
+// actUnlinkedDelete moves every station-less FIR carrying the given uploaded
+// name ("(blank)" = no name at all) to the recycle bin — the cleanup button on
+// the Organization page's "not linked to any station" list.
+func (a *App) actUnlinkedDelete(w http.ResponseWriter, r *http.Request) {
+	_ = r.ParseForm()
+	ctx := r.Context()
+	name := strings.TrimSpace(r.PostFormValue("name"))
+	var (
+		ids []int64
+		err error
+	)
+	if name == "" || name == "(blank)" {
+		ids, err = a.collectIDs(ctx, `
+			SELECT id FROM central_crimes
+			 WHERE station_id IS NULL AND COALESCE(station_name, '') = ''`)
+	} else {
+		ids, err = a.collectIDs(ctx, `
+			SELECT id FROM central_crimes
+			 WHERE station_id IS NULL AND station_name = $1`, name)
+	}
+	if err != nil {
+		back(w, r, "/admin/org", "Error: "+err.Error())
+		return
+	}
+	n := 0
+	for _, id := range ids {
+		if a.softDeleteCrime(ctx, id, "Admin panel (unlinked cleanup)") == nil {
+			n++
+		}
+	}
+	back(w, r, "/admin/org", fmt.Sprintf("%d FIRs moved to the recycle bin", n))
 }
 
 // actSuppressedClear removes delete-markers (tombstones) so station apps may

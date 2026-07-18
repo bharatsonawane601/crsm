@@ -762,6 +762,7 @@ h2{margin:26px 0 12px;font-size:16.5px;font-weight:700}
  .side{width:100%;height:auto;position:static;flex-direction:row;flex-wrap:wrap;align-items:center;gap:2px;padding:10px}
  .side .sec,.side .foot{display:none}.brand{padding:4px 8px}
  .main{padding:18px 16px 40px}
+ table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
 }
 /* Phones: nav becomes one swipeable strip; every table scrolls sideways inside
    itself instead of stretching the page; inputs at 16px so iOS doesn't zoom. */
@@ -776,8 +777,7 @@ h2{margin:26px 0 12px;font-size:16.5px;font-weight:700}
  .cards{grid-template-columns:repeat(auto-fit,minmax(126px,1fr));gap:9px}
  .card{padding:12px 13px}.card b{font-size:21px}
  th,td{padding:7px 9px;font-size:12.5px}
- table{display:block;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
- .scrolly{max-height:70vh}
+ table{white-space:nowrap}
  .duo>.t{max-height:320px}
  .duo>.c{padding:14px 12px}
  input,select{font-size:16px}
@@ -828,7 +828,7 @@ tr:last-child td{border-bottom:none}
 tbody tr:hover td,tr:hover td{background:rgba(91,140,255,.04)}
 td small{color:var(--faint)}
 .num{font-variant-numeric:tabular-nums}
-.scrolly{max-height:520px;overflow:auto;border-radius:14px;border:1px solid var(--line)}
+.scrolly{max-height:calc(100vh - 230px);min-height:300px;overflow:auto;border-radius:14px;border:1px solid var(--line)}
 .scrolly table{border:none}
 
 /* ---- Tags ---- */
@@ -1144,8 +1144,12 @@ pre{background:rgba(11,17,32,.7);border:1px solid var(--line);border-radius:12px
 <select name="division_id"><option value="">No division</option>{{range .DivOpts}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select>
 <button>Add</button></form>
 {{if .Unlinked}}<h2>⚠ Station names not linked to any station</h2>
-<table><tr><th>Uploaded name</th><th>FIRs</th></tr>
-{{range .Unlinked}}<tr><td>{{.Name}}</td><td class="num">{{.N}}</td></tr>{{end}}</table>{{end}}
+<p style="color:var(--dim);font-size:13px;margin-bottom:8px">Link a name by adding it as a station alias above — or move its FIRs to the recycle bin if they're junk (restorable for 30 days).</p>
+<table><tr><th>Uploaded name</th><th>FIRs</th><th></th></tr>
+{{range .Unlinked}}<tr><td>{{.Name}}</td><td class="num">{{.N}}</td>
+<td><form class="inline" method="post" action="/admin/org/unlinked/delete" onsubmit="return confirm('Move all {{.N}} FIRs with station name {{.Name}} to the recycle bin? They can be restored from there. Station apps are also told to remove them on their next sync (the app asks the user before applying a mass deletion).')">
+<input type="hidden" name="name" value="{{.Name}}">
+<button class="sm danger">🗑 Move {{.N}} to recycle bin</button></form></td></tr>{{end}}</table>{{end}}
 {{end}}{{template "foot" .}}{{end}}
 
 {{define "trash"}}{{template "head" .}}{{template "nav" .}}
