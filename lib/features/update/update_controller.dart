@@ -8,8 +8,11 @@ import 'update_models.dart';
 import 'update_service.dart';
 
 /// Drives the update flow: a silent check at launch, a manual check from
-/// Settings, and the download+install action. Updates are only ever applied on
-/// launch or when the user asks — never mid-session on their own.
+/// Settings, and the download+install action. On Windows/Linux any newer
+/// release is applied automatically and invisibly (download → silent install →
+/// self-relaunch); the check only runs at launch or on user request, so the
+/// restart never lands mid-work. macOS keeps the ask-first dialog because a
+/// .dmg can't install itself.
 class UpdateController extends Notifier<UpdateState> {
   final _service = UpdateService();
 
@@ -38,6 +41,12 @@ class UpdateController extends Notifier<UpdateState> {
         phase: release.mandatory ? UpdatePhase.mandatory : UpdatePhase.available,
         release: release,
       );
+      // Auto-update: don't wait for a click — install straight away. The root
+      // gate swaps to a full-screen progress page while this runs, then the
+      // app exits and the silent installer relaunches it.
+      if (!Platform.isMacOS) {
+        await downloadAndInstall(quietOnFail: silent);
+      }
     } catch (_) {
       // On a silent launch check, stay quiet (offline is normal). On a manual
       // check, show the error.
@@ -53,7 +62,11 @@ class UpdateController extends Notifier<UpdateState> {
   /// executable, launches it and exits. On macOS we can't silently install a
   /// .dmg, so we open its download URL in the browser and let the user drag it
   /// to Applications.
-  Future<void> downloadAndInstall() async {
+  ///
+  /// [quietOnFail] is the launch auto-update: an optional release that fails to
+  /// download drops back to idle without bothering the user (they'll get it
+  /// next launch). A mandatory release keeps its gate up either way.
+  Future<void> downloadAndInstall({bool quietOnFail = false}) async {
     final release = state.release;
     if (release == null) return;
 
@@ -82,10 +95,17 @@ class UpdateController extends Notifier<UpdateState> {
       await Future<void>.delayed(const Duration(milliseconds: 800));
       exit(0);
     } catch (_) {
-      state = state.copyWith(
-        phase: release.mandatory ? UpdatePhase.mandatory : UpdatePhase.available,
-        error: 'update.error.download',
-      );
+      if (release.mandatory) {
+        state = state.copyWith(
+            phase: UpdatePhase.mandatory, error: 'update.error.download');
+      } else if (quietOnFail) {
+        // Launch auto-update couldn't download (offline is normal) — let the
+        // user into the app; the next launch will try again.
+        state = const UpdateState(phase: UpdatePhase.idle);
+      } else {
+        state = state.copyWith(
+            phase: UpdatePhase.failed, error: 'update.error.download');
+      }
     }
   }
 

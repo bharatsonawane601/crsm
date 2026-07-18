@@ -61,9 +61,11 @@
     "upToDate": "You're on the latest version.",
     "downloading": "Downloading update… {pct}%",
     "installing": "Starting installer… the app will close to finish.",
+    "autoTitle": "Updating to version {v}",
+    "autoBody": "CRMS will close and reopen by itself in a moment. Please don't switch off the computer.",
     "mandatoryBody": "A required update must be installed before you can continue using the software.",
     "settingsTitle": "Software updates",
-    "settingsHint": "The app checks for updates on launch. You can also check manually.",
+    "settingsHint": "The app checks on launch and installs updates by itself — no setup file needed. You can also check manually.",
     "macHint": "On macOS, “Update now” opens the new version in your browser — open the downloaded .dmg and drag CRMS to Applications.",
     "error": {
       "network": "Could not reach the update server. Check your internet and try again.",

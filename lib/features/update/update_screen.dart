@@ -32,6 +32,67 @@ class MandatoryUpdateScreen extends ConsumerWidget {
   }
 }
 
+/// Full-screen page shown while an update downloads and installs itself.
+/// No buttons — the app closes and reopens on its own when it's done.
+class AutoUpdateScreen extends ConsumerWidget {
+  const AutoUpdateScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(updateControllerProvider);
+    final scheme = Theme.of(context).colorScheme;
+    final installing = state.phase == UpdatePhase.installing;
+    return Scaffold(
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 380),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.s8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(PhosphorIconsRegular.downloadSimple,
+                    size: 40, color: AppColors.policeNavy),
+                const SizedBox(height: AppSpacing.s4),
+                Text(
+                  'update.autoTitle'.tr(
+                      namedArgs: {'v': state.release?.version ?? ''}),
+                  textAlign: TextAlign.center,
+                  style: AppType.h2,
+                ),
+                const SizedBox(height: AppSpacing.s5),
+                LinearProgressIndicator(
+                  value: installing || state.progress == 0
+                      ? null
+                      : state.progress,
+                ),
+                const SizedBox(height: AppSpacing.s2),
+                Text(
+                  installing
+                      ? 'update.installing'.tr()
+                      : 'update.downloading'.tr(namedArgs: {
+                          'pct': (state.progress * 100).round().toString()
+                        }),
+                  textAlign: TextAlign.center,
+                  style:
+                      AppType.caption.copyWith(color: scheme.onSurfaceVariant),
+                ),
+                const SizedBox(height: AppSpacing.s4),
+                Text(
+                  'update.autoBody'.tr(),
+                  textAlign: TextAlign.center,
+                  style:
+                      AppType.bodySm.copyWith(color: scheme.onSurfaceVariant),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Shows the optional-update dialog (used at launch and from Settings). The
 /// dialog content reacts to download progress live.
 Future<void> showUpdateDialog(BuildContext context) {

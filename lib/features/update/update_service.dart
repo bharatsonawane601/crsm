@@ -130,9 +130,10 @@ class UpdateService {
     if (Platform.isWindows) {
       Process.start(
         installer.path,
-        // Silent-but-visible install; relaunch is handled by the installer's
-        // [Run] postinstall step.
-        ['/SILENT', '/NOCANCEL', '/RESTARTAPPLICATIONS'],
+        // Fully invisible install — no wizard, no progress window, no message
+        // boxes. Relaunch is handled by the installer's [Run] postinstall step
+        // (which runs even under /VERYSILENT because it has no skipifsilent).
+        ['/VERYSILENT', '/SUPPRESSMSGBOXES', '/NOCANCEL'],
         mode: ProcessStartMode.detached,
       );
     } else if (Platform.isLinux) {

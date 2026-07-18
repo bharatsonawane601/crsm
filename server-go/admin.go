@@ -729,7 +729,7 @@ h2{margin:26px 0 12px;font-size:16.5px;font-weight:700}
 
 /* ---- Shell: sidebar + main ---- */
 .shell{display:flex;min-height:100vh}
-.side{width:238px;flex-shrink:0;background:rgba(12,18,36,.72);backdrop-filter:blur(10px);border-right:1px solid var(--line);
+.side{width:238px;flex-shrink:0;background:rgba(12,18,36,.72);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-right:1px solid var(--line);
  padding:22px 14px 14px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
 .brand{display:flex;gap:11px;align-items:center;padding:2px 10px 20px;font-weight:750;font-size:16px;letter-spacing:-.2px}
 .brand .logo{width:38px;height:38px;border-radius:12px;background:var(--grad);display:flex;align-items:center;justify-content:center;
@@ -754,6 +754,26 @@ h2{margin:26px 0 12px;font-size:16.5px;font-weight:700}
  .side{width:100%;height:auto;position:static;flex-direction:row;flex-wrap:wrap;align-items:center;gap:2px;padding:10px}
  .side .sec,.side .foot{display:none}.brand{padding:4px 8px}
  .main{padding:18px 16px 40px}
+}
+/* Phones: nav becomes one swipeable strip; every table scrolls sideways inside
+   itself instead of stretching the page; inputs at 16px so iOS doesn't zoom. */
+@media(max-width:760px){
+ h1{font-size:19px}
+ .main{padding:12px 10px 36px}
+ .pagehead{margin-bottom:12px}
+ .side{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+ .side::-webkit-scrollbar{display:none}
+ .side a{flex-shrink:0;padding:8px 10px;font-size:13px}
+ .brand{flex-shrink:0;padding:2px 6px 2px 2px}
+ .cards{grid-template-columns:repeat(auto-fit,minmax(126px,1fr));gap:9px}
+ .card{padding:12px 13px}.card b{font-size:21px}
+ th,td{padding:7px 9px;font-size:12.5px}
+ table{display:block;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
+ .scrolly{max-height:70vh}
+ .duo>.t{max-height:320px}
+ .duo>.c{padding:14px 12px}
+ input,select{font-size:16px}
+ pre{font-size:12px}
 }
 
 /* ---- Alerts / banners ---- */
@@ -800,7 +820,7 @@ tr:last-child td{border-bottom:none}
 tbody tr:hover td,tr:hover td{background:rgba(91,140,255,.04)}
 td small{color:var(--faint)}
 .num{font-variant-numeric:tabular-nums}
-.scrolly{max-height:520px;overflow-y:auto;border-radius:14px;border:1px solid var(--line)}
+.scrolly{max-height:520px;overflow:auto;border-radius:14px;border:1px solid var(--line)}
 .scrolly table{border:none}
 
 /* ---- Tags ---- */
@@ -832,7 +852,7 @@ pre{background:rgba(11,17,32,.7);border:1px solid var(--line);border-radius:12px
 .kv td:first-child{color:var(--dim);width:190px}
 
 /* ---- Login ---- */
-.login{max-width:380px;margin:14vh auto;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:34px 32px;box-shadow:var(--shadow)}
+.login{width:min(380px,calc(100% - 32px));margin:14vh auto;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:34px 32px;box-shadow:var(--shadow)}
 .login .logo{width:52px;height:52px;border-radius:15px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:16px;box-shadow:0 8px 24px rgba(91,140,255,.4)}
 .login h1{font-size:21px;margin-bottom:4px}
 .login p{color:var(--dim);font-size:13px;margin-bottom:14px}
@@ -1066,11 +1086,11 @@ pre{background:rgba(11,17,32,.7);border:1px solid var(--line);border-radius:12px
 <option value="acp" {{if eq .Role "acp"}}selected{{end}}>ACP</option>
 <option value="dcp" {{if eq .Role "dcp"}}selected{{end}}>DCP</option>
 <option value="cp" {{if eq .Role "cp"}}selected{{end}}>CP</option>
-<option value="hq" {{if eq .Role "hq"}}selected{{end}}>HQ — all stations (entry + view)</option>
+<option value="hq" {{if eq .Role "hq"}}selected{{end}}>Tester — sees everything (all stations + portal + entry)</option>
 </select>
 {{$sk := .ScopeKey}}
 <select name="scope" class="sm" style="max-width:210px">
-<option value="">— no scope (CP / HQ) —</option>
+<option value="">— no scope (CP / Tester) —</option>
 <optgroup label="Zone — for DCP">
 {{range $zones}}<option value="z:{{.ID}}"{{if eq (printf "z:%d" .ID) $sk}} selected{{end}}>{{.Name}}</option>{{end}}
 </optgroup>
@@ -1143,7 +1163,7 @@ pre{background:rgba(11,17,32,.7);border:1px solid var(--line);border-radius:12px
 {{template "foot" .}}{{end}}
 
 {{define "messages"}}{{template "head" .}}{{template "nav" .}}
-<p style="color:var(--dim);font-size:13px;margin-bottom:14px">Every command message sent by CP / DCP / ACP / HQ from the app. Messages are composed in the app's Officer Portal — this page is the audit trail.</p>
+<p style="color:var(--dim);font-size:13px;margin-bottom:14px">Every command message sent by CP / DCP / ACP / Tester from the app. Messages are composed in the app's Officer Portal — this page is the audit trail.</p>
 <div class="scrolly"><table><tr><th>From</th><th>Rank</th><th>To</th><th>Message</th><th>Sent (IST)</th></tr>
 {{range .Data}}<tr><td>{{.From}}</td><td><span class="tag dim">{{.Role}}</span></td><td>{{.Target}}</td><td style="max-width:420px">{{.Body}}</td><td>{{.At}}</td></tr>{{end}}</table></div>
 {{template "foot" .}}{{end}}

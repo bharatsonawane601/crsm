@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -96,9 +98,11 @@ class _RootGateState extends ConsumerState<_RootGate> {
       }
     });
 
-    // Offer the optional update once, after the launch splash has cleared.
+    // macOS only: offer the optional update once, after the launch splash has
+    // cleared (a .dmg can't self-install). Windows/Linux auto-install instead.
     ref.listen(updateControllerProvider, (prev, next) {
-      if (next.phase == UpdatePhase.available &&
+      if (Platform.isMacOS &&
+          next.phase == UpdatePhase.available &&
           !_updateDialogShown &&
           _ready &&
           _restoreDone) {
@@ -111,14 +115,17 @@ class _RootGateState extends ConsumerState<_RootGate> {
 
     final auth = ref.watch(authControllerProvider);
     final update = ref.watch(updateControllerProvider);
-    final mandatoryActive = update.phase == UpdatePhase.mandatory ||
-        ((update.phase == UpdatePhase.downloading ||
-                update.phase == UpdatePhase.installing) &&
-            (update.release?.mandatory ?? false));
+    // Any in-flight install (auto or mandatory) takes over the whole window so
+    // the user can't start work in an app that's about to restart itself.
+    final updating = update.phase == UpdatePhase.downloading ||
+        update.phase == UpdatePhase.installing;
+    final mandatoryActive = update.phase == UpdatePhase.mandatory;
 
     final Widget child;
     if (!_ready || !_restoreDone) {
       child = const SplashScreen();
+    } else if (updating) {
+      child = const AutoUpdateScreen();
     } else if (mandatoryActive) {
       // A forced update blocks everything, even before sign-in.
       child = const MandatoryUpdateScreen();
