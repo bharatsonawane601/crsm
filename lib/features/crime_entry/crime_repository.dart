@@ -539,6 +539,31 @@ class CrimeRepository {
   /// numeric id that was suppressed long ago — new records carry a "c_" uid that
   /// can't appear in a numeric-only suppression. Returns how many were removed;
   /// child rows cascade.
+  /// How many local crimes [purgeLocalByUids] would delete for [uids], without
+  /// deleting anything. The sync fuse uses this to spot a suspicious server-side
+  /// mass deletion (e.g. old delete-markers after a server wipe) BEFORE obeying.
+  Future<int> countSuppressionMatches(List<String> uids) async {
+    if (uids.isEmpty) return 0;
+    final numericIds = uids.map(int.tryParse).whereType<int>().toList();
+    const chunk = 500;
+    final targetIds = <int>{};
+    for (var i = 0; i < uids.length; i += chunk) {
+      final part = uids.sublist(i, min(i + chunk, uids.length));
+      final byUid = await (_db.select(
+        _db.crimes,
+      )..where((t) => t.remoteUid.isIn(part))).get();
+      targetIds.addAll([for (final c in byUid) c.id]);
+    }
+    for (var i = 0; i < numericIds.length; i += chunk) {
+      final part = numericIds.sublist(i, min(i + chunk, numericIds.length));
+      final byLegacyId = await (_db.select(
+        _db.crimes,
+      )..where((t) => t.remoteUid.isNull() & t.id.isIn(part))).get();
+      targetIds.addAll([for (final c in byLegacyId) c.id]);
+    }
+    return targetIds.length;
+  }
+
   Future<int> purgeLocalByUids(List<String> uids) async {
     if (uids.isEmpty) return 0;
     final numericIds = uids.map(int.tryParse).whereType<int>().toList();

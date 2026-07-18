@@ -29,6 +29,7 @@ func (a *App) registerAdminActions(mux *http.ServeMux) {
 	mux.HandleFunc("POST /admin/trash/restore", a.adminAuth(a.actTrashRestore))
 	mux.HandleFunc("POST /admin/trash/restore_bulk", a.adminAuth(a.actTrashRestoreBulk))
 	mux.HandleFunc("POST /admin/trash/purge", a.adminAuth(a.actTrashPurge))
+	mux.HandleFunc("POST /admin/suppressed/clear", a.adminAuth(a.actSuppressedClear))
 	mux.HandleFunc("POST /admin/org/station", a.adminAuth(a.actStationSave))
 	mux.HandleFunc("POST /admin/org/station/add", a.adminAuth(a.actStationAdd))
 	mux.HandleFunc("POST /admin/health/relink", a.adminAuth(a.actRelink))
@@ -271,6 +272,15 @@ func (a *App) actFirDeleteBulk(w http.ResponseWriter, r *http.Request) {
 			back(w, r, "/admin/firs", "Error: "+err.Error())
 			return
 		}
+		// Type-to-confirm guard for the button that once wiped 35k records:
+		// the page embeds the match count it displayed; refuse when the live
+		// match count differs (new uploads, changed filter, stale tab).
+		if exp, err := strconv.Atoi(r.PostFormValue("expected")); err != nil || exp != len(ids) {
+			back(w, r, "/admin/firs", fmt.Sprintf(
+				"Nothing deleted: this search now matches %d FIRs but the page showed %q. Refresh and try again.",
+				len(ids), r.PostFormValue("expected")))
+			return
+		}
 	}
 	n := 0
 	for _, id := range ids {
@@ -329,6 +339,32 @@ func (a *App) actTrashPurge(w http.ResponseWriter, r *http.Request) {
 	}
 	back(w, r, "/admin/trash",
 		fmt.Sprintf("%d FIRs permanently deleted from the recycle bin", tag.RowsAffected()))
+}
+
+// actSuppressedClear removes delete-markers (tombstones) so station apps may
+// keep and re-upload those records — the recovery path after a server wipe or
+// when a station restores an old backup and its sync trips the mass-delete
+// fuse. Deletes no crime data itself. Optional owner email narrows the clear.
+func (a *App) actSuppressedClear(w http.ResponseWriter, r *http.Request) {
+	_ = r.ParseForm()
+	email := strings.ToLower(strings.TrimSpace(r.PostFormValue("email")))
+	var (
+		tag pgconn.CommandTag
+		err error
+	)
+	if email == "" {
+		tag, err = a.db.Exec(r.Context(), `DELETE FROM central_suppressed`)
+	} else {
+		tag, err = a.db.Exec(r.Context(),
+			`DELETE FROM central_suppressed WHERE owner_email = $1`, email)
+	}
+	if err != nil {
+		back(w, r, "/admin/trash", "Error: "+err.Error())
+		return
+	}
+	back(w, r, "/admin/trash", fmt.Sprintf(
+		"%d delete-markers cleared — stations can re-upload those records on their next sync",
+		tag.RowsAffected()))
 }
 
 // --- Organization ------------------------------------------------------------

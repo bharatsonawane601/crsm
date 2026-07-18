@@ -12,6 +12,7 @@ import '../../data/db/database.dart';
 import '../../data/db/database_provider.dart';
 import '../crime_entry/crime_repository.dart';
 import '../crime_entry/models/crime_draft.dart';
+import '../portal/central_upload_controller.dart';
 
 /// What to do with a FIR in the backup that already exists locally.
 enum RestoreConflictMode { replace, keepBoth }
@@ -194,7 +195,19 @@ class BackupService {
         // Skip any record that can't be merged (e.g. dangling custom-field ref).
       }
     }
+    await _resetCentralSyncMarkers();
     return added;
+  }
+
+  /// After any restore, the central-sync markers lie: the restored records are
+  /// older than the "last upload" marker (so they'd never re-upload) and the
+  /// delete-marker pull would be incremental (so old tombstones wouldn't be
+  /// re-checked through the mass-delete fuse). Clearing both forces the next
+  /// sync to start from scratch.
+  static Future<void> _resetCentralSyncMarkers() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(kCentralLastUploadPref);
+    await prefs.remove(kCentralLastSuppressedPref);
   }
 
   /// Finds the local crime id matching [firNo] (+ [year] when set), or null.
@@ -219,6 +232,7 @@ class BackupService {
     final live = File(p.join(docs.path, _liveDbName));
     await staging.copy(live.path);
     await staging.delete();
+    await _resetCentralSyncMarkers();
     return true;
   }
 }

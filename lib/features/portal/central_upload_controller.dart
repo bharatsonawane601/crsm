@@ -9,13 +9,27 @@ import '../crime_entry/crime_repository.dart';
 import '../settings/settings_repository.dart';
 import 'central_client.dart';
 
-enum UploadPhase { idle, uploading, done, failed }
+enum UploadPhase { idle, uploading, done, failed, blocked }
 
 class CentralUploadState {
-  const CentralUploadState({this.phase = UploadPhase.idle, this.saved = 0});
+  const CentralUploadState({
+    this.phase = UploadPhase.idle,
+    this.saved = 0,
+    this.pendingServerDeletes = 0,
+  });
   final UploadPhase phase;
   final int saved;
+
+  /// How many LOCAL records the server's deletion list would remove — set when
+  /// the mass-delete fuse trips ([UploadPhase.blocked]) so the UI can ask the
+  /// user before anything is destroyed.
+  final int pendingServerDeletes;
 }
+
+/// Keys shared with [BackupService]: a restore clears them so the next sync
+/// re-sends everything instead of "nothing changed since the marker".
+const kCentralLastUploadPref = 'central_last_upload_millis';
+const kCentralLastSuppressedPref = 'central_last_suppressed_millis';
 
 /// Pushes this station's crime records to the central officer-portal store.
 /// Runs quietly in the background for station (data-entry) users so senior
@@ -23,11 +37,17 @@ class CentralUploadState {
 class CentralUploadController extends Notifier<CentralUploadState> {
   /// When the last fully-successful upload finished. Only records saved/edited
   /// after this are sent on the next sync (the server upsert keeps the rest).
-  static const _lastUploadPrefKey = 'central_last_upload_millis';
+  static const _lastUploadPrefKey = kCentralLastUploadPref;
 
   /// When the last suppressed-tombstone pull ran, so the frequent background
   /// poll only fetches NEW deletions instead of the whole (growing) list.
-  static const _lastSuppressedPrefKey = 'central_last_suppressed_millis';
+  static const _lastSuppressedPrefKey = kCentralLastSuppressedPref;
+
+  /// Mass-delete fuse: the most local records one sync may delete on the
+  /// server's say-so without the user explicitly confirming. A server that was
+  /// reset/wiped still carries delete-markers for every old record — obeying
+  /// them blindly would erase a station's (possibly just-restored) data.
+  static const massDeleteFuse = 25;
 
   /// Records per request. The Go server pipelines each chunk as one Postgres
   /// batch, so bigger chunks just mean fewer HTTP round trips; 1000 keeps a
@@ -38,7 +58,7 @@ class CentralUploadController extends Notifier<CentralUploadState> {
   @override
   CentralUploadState build() => const CentralUploadState();
 
-  Future<void> uploadNow() async {
+  Future<void> uploadNow({bool allowMassDelete = false}) async {
     if (!AccessConfig.isConfigured) return;
     final user = ref.read(authControllerProvider).value;
     if (user == null) return;
@@ -57,6 +77,15 @@ class CentralUploadController extends Notifier<CentralUploadState> {
       final suppressedPulledAt = DateTime.now();
       final suppressed = await client.fetchSuppressed(email: user.email);
       if (suppressed.isNotEmpty) {
+        final wouldDelete = await repo.countSuppressionMatches(suppressed);
+        if (wouldDelete > massDeleteFuse && !allowMassDelete) {
+          // Fuse tripped: the server wants a big chunk of this station's data
+          // gone (typical after a server wipe while old delete-markers linger).
+          // Keep everything, don't advance the marker, and let the UI ask.
+          state = CentralUploadState(
+              phase: UploadPhase.blocked, pendingServerDeletes: wouldDelete);
+          return;
+        }
         await repo.purgeLocalByUids(suppressed);
       }
       await prefs.setInt(_lastSuppressedPrefKey,
@@ -129,16 +158,37 @@ class CentralUploadController extends Notifier<CentralUploadState> {
       final pulledAt = DateTime.now();
       final suppressed =
           await client.fetchSuppressed(email: user.email, since: since);
+      if (suppressed.isEmpty) {
+        await prefs.setInt(
+            _lastSuppressedPrefKey, pulledAt.millisecondsSinceEpoch);
+        return 0;
+      }
+      final repo = ref.read(crimeRepositoryProvider);
+      final wouldDelete = await repo.countSuppressionMatches(suppressed);
+      if (wouldDelete > massDeleteFuse) {
+        // Same fuse as the manual sync, but never auto-applied here: the
+        // background timer just flags it (the shell shows the confirm dialog)
+        // and leaves the marker alone so nothing is lost while the user reads.
+        state = CentralUploadState(
+            phase: UploadPhase.blocked, pendingServerDeletes: wouldDelete);
+        return 0;
+      }
       await prefs.setInt(
           _lastSuppressedPrefKey, pulledAt.millisecondsSinceEpoch);
-      if (suppressed.isEmpty) return 0;
-      return await ref
-          .read(crimeRepositoryProvider)
-          .purgeLocalByUids(suppressed);
+      return await repo.purgeLocalByUids(suppressed);
     } catch (_) {
       return 0;
     } finally {
       client.dispose();
+    }
+  }
+
+  /// User chose "keep my data" on the mass-delete warning: go back to idle.
+  /// The server's delete-markers stay untouched, so the question will come
+  /// back on a future sync until the admin clears the markers server-side.
+  void dismissBlocked() {
+    if (state.phase == UploadPhase.blocked) {
+      state = const CentralUploadState();
     }
   }
 

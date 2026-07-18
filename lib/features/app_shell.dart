@@ -43,6 +43,7 @@ class _AppShellState extends ConsumerState<AppShell> {
   int _section = 1; // default: Crime Records
   bool _collapsed = false;
   Timer? _syncTimer;
+  bool _massDeleteDialogOpen = false;
 
   @override
   void initState() {
@@ -106,8 +107,61 @@ class _AppShellState extends ConsumerState<AppShell> {
     }
   }
 
+  /// The mass-delete fuse tripped: the server asked this device to erase a
+  /// large number of local records (typical after a server wipe/reset while
+  /// old delete-markers linger). Nothing is deleted until the user says so.
+  Future<void> _confirmServerMassDelete(int n) async {
+    if (_massDeleteDialogOpen || !mounted) return;
+    _massDeleteDialogOpen = true;
+    try {
+      final args = {'n': '$n'};
+      final wipe = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          icon: const Icon(PhosphorIconsRegular.warningCircle,
+              color: AppColors.dangerRed, size: 36),
+          title: Text('sync.server.massTitle'.tr(namedArgs: args)),
+          content: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Text('sync.server.massBody'.tr(namedArgs: args)),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text('sync.server.massKeep'.tr()),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: AppColors.dangerRed),
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text('sync.server.massDelete'.tr(namedArgs: args)),
+            ),
+          ],
+        ),
+      );
+      if (!mounted) return;
+      final controller = ref.read(centralUploadControllerProvider.notifier);
+      if (wipe == true) {
+        await controller.uploadNow(allowMassDelete: true);
+      } else {
+        controller.dismissBlocked();
+        CrmsToast.show(context, title: 'sync.server.kept'.tr());
+      }
+    } finally {
+      _massDeleteDialogOpen = false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Server-side mass deletion needs the user's explicit yes — from any sync
+    // path (launch upload, 90s background pull, or the manual button).
+    ref.listen(centralUploadControllerProvider, (prev, next) {
+      if (next.phase == UploadPhase.blocked && next.pendingServerDeletes > 0) {
+        _confirmServerMassDelete(next.pendingServerDeletes);
+      }
+    });
+
     // Admin-assigned station: unlocks the read-only "Station FIRs" view of the
     // whole station's central records (all users, not just this device).
     // HQ role instead gets the full officer portal (all stations) + free entry.
@@ -416,6 +470,8 @@ class _CentralSyncButton extends ConsumerWidget {
                   .uploadNow();
               if (!context.mounted) return;
               final s = ref.read(centralUploadControllerProvider);
+              // A blocked sync opens the mass-delete dialog instead of a toast.
+              if (s.phase == UploadPhase.blocked) return;
               CrmsToast.show(
                 context,
                 title: s.phase == UploadPhase.failed

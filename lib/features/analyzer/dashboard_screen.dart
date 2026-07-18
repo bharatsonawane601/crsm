@@ -2,10 +2,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:printing/printing.dart';
 
 import '../../shared/widgets/crms.dart';
 import '../crime_entry/data/crime_types_data.dart';
 import 'analytics_model.dart';
+import 'analytics_pdf.dart';
 import 'analytics_repository.dart';
 import 'charts.dart';
 import 'duo_panels.dart';
@@ -150,16 +152,35 @@ class _AnalyticsDashboardBodyState extends State<AnalyticsDashboardBody> {
           ),
         if (widget.showStatsButton) const SizedBox(height: 8),
         if (analytics) ...[
-          _FilterBar(
-            filter: _filter,
-            crimeTypes: crimeTypes,
-            onStatus: (v) => setState(() =>
-                _filter = _filter.copyWith(status: v, clearStatus: v == null)),
-            onTypes: (set) =>
-                setState(() => _filter = _filter.copyWith(crimeTypes: set)),
-            onFrom: () => _pickDate(isFrom: true),
-            onTo: () => _pickDate(isFrom: false),
-            onClear: () => setState(() => _filter = const AnalyticsFilter()),
+          Row(
+            children: [
+              Expanded(
+                child: _FilterBar(
+                  filter: _filter,
+                  crimeTypes: crimeTypes,
+                  onStatus: (v) => setState(() => _filter =
+                      _filter.copyWith(status: v, clearStatus: v == null)),
+                  onTypes: (set) => setState(
+                      () => _filter = _filter.copyWith(crimeTypes: set)),
+                  onFrom: () => _pickDate(isFrom: true),
+                  onTo: () => _pickDate(isFrom: false),
+                  onClear: () =>
+                      setState(() => _filter = const AnalyticsFilter()),
+                ),
+              ),
+              const SizedBox(width: 8),
+              CrmsButton(
+                label: 'analyzer.pdf.export'.tr(),
+                variant: CrmsButtonVariant.secondary,
+                icon: PhosphorIconsRegular.filePdf,
+                onPressed: () async {
+                  // Prints/saves the filtered numbers currently on screen.
+                  final bytes = await renderAnalyticsPdf(s);
+                  await Printing.layoutPdf(
+                      onLayout: (_) async => bytes, name: 'crms-analytics');
+                },
+              ),
+            ],
           ),
           const SizedBox(height: 8),
         ],

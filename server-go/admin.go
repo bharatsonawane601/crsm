@@ -609,7 +609,15 @@ func (a *App) adminTrash(w http.ResponseWriter, r *http.Request) {
 		}
 		rows.Close()
 	}
-	renderAdmin(w, "trash", a.page(r, "Recycle bin", "trash", list))
+	// Delete-marker count for the tombstone panel: markers are what make
+	// station apps drop local copies and refuse re-uploads.
+	var tombstones int64
+	_ = a.db.QueryRow(r.Context(),
+		`SELECT COUNT(*) FROM central_suppressed`).Scan(&tombstones)
+	renderAdmin(w, "trash", a.page(r, "Recycle bin", "trash", struct {
+		Rows       []row
+		Tombstones int64
+	}{list, tombstones}))
 }
 
 func (a *App) adminDeletions(w http.ResponseWriter, r *http.Request) {
@@ -1028,9 +1036,10 @@ pre{background:rgba(11,17,32,.7);border:1px solid var(--line);border-radius:12px
 {{if .DidYouMean}}<div class="msg">🧠 Did you mean:
 {{range .DidYouMean}}&nbsp;<a href="/admin/firs?q={{.}}"><b>{{.}}</b></a>{{end}}</div>{{end}}
 <div class="pager"><span>{{.Total}} records</span><span class="sp" style="flex:1"></span>
-<form method="post" action="/admin/fir/delete_bulk" onsubmit="return confirm('Move ALL {{.Total}} FIRs matching this search to the recycle bin? They will also be removed from the station apps on their next sync. You can restore them from the recycle bin.')">
+<form method="post" action="/admin/fir/delete_bulk" onsubmit="var n=prompt('This moves ALL {{.Total}} matching FIRs to the recycle bin AND deletes them from the station apps on their next sync.\n\nType the number {{.Total}} to confirm:');if(n===null)return false;if(n.trim()!=={{.Total}}+''){alert('Number did not match — nothing was deleted.');return false}return true">
 <input type="hidden" name="all" value="1"><input type="hidden" name="q" value="{{.Q}}">
 <input type="hidden" name="year" value="{{.Year}}"><input type="hidden" name="status" value="{{.Status}}">
+<input type="hidden" name="expected" value="{{.Total}}">
 <button class="sm danger">🗑 Delete ALL {{.Total}} matching</button></form></div>
 <form method="post" action="/admin/fir/delete_bulk" onsubmit="return confirm('Move the selected FIRs to the recycle bin? They will also be removed from the station apps on their next sync.')">
 <div class="scrolly"><table><tr><th><input type="checkbox" onclick="document.querySelectorAll('input[name=ids]').forEach(c=>c.checked=this.checked)"></th><th>FIR</th><th>Year</th><th>Station</th><th>Type</th><th>Sections</th><th>Status</th><th>Registered</th><th>Owner</th></tr>
@@ -1148,13 +1157,20 @@ pre{background:rgba(11,17,32,.7);border:1px solid var(--line);border-radius:12px
 </div>
 <form method="post">
 <div class="scrolly"><table><tr><th><input type="checkbox" onclick="document.querySelectorAll('input[name=ids]').forEach(c=>c.checked=this.checked)"></th><th>FIR</th><th>Year</th><th>Station</th><th>Owner</th><th>Deleted by</th><th>When (IST)</th></tr>
-{{range .Data}}<tr><td><input type="checkbox" name="ids" value="{{.ID}}"></td>
+{{range .Data.Rows}}<tr><td><input type="checkbox" name="ids" value="{{.ID}}"></td>
 <td>{{.FirNo}}</td><td>{{.Year}}</td><td>{{.Station}}</td><td>{{.Owner}}</td><td>{{.DeletedBy}}</td><td>{{.DeletedAt}}</td></tr>{{end}}</table></div>
 <div class="pager">
 <button class="sm gray" formaction="/admin/trash/restore_bulk" onclick="return confirm('Restore the selected FIRs?')">↩ Restore selected</button>
 <button class="sm danger" formaction="/admin/trash/purge" onclick="return confirm('PERMANENTLY delete the selected FIRs? This CANNOT be undone.')">🔥 Delete selected forever</button>
 </div>
 </form>
+<h2>Delete-markers (tombstones)</h2>
+<p style="color:var(--dim);font-size:13px;margin-bottom:10px">
+The server holds <b>{{.Data.Tombstones}}</b> delete-markers. A marker tells every station app to delete that record locally and blocks it from being re-uploaded.
+If the server's data was wiped/reset, or a station restored a backup and its sync is blocked by the mass-delete warning, clear the markers so stations can send their records back. Clearing markers deletes NO data.</p>
+<form method="post" action="/admin/suppressed/clear" class="search" onsubmit="return confirm('Clear delete-markers? Station apps will be allowed to keep and re-upload those records on their next sync. No records are deleted by this action.')">
+<input class="sm" name="email" placeholder="Only this owner email (empty = ALL markers)" style="min-width:280px">
+<button class="sm gray">♻ Clear delete-markers</button></form>
 {{template "foot" .}}{{end}}
 
 {{define "deletions"}}{{template "head" .}}{{template "nav" .}}

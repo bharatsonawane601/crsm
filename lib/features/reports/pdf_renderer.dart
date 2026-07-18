@@ -124,6 +124,11 @@ double _estimateRowHeight(
 List<Uint8List> sliceReportImageForTest(Uint8List png, PdfPageFormat fmt) =>
     _sliceToPages(png, fmt);
 
+/// Public slicer for other capture-based PDFs (e.g. the Analytics export):
+/// same whitespace-snapped pagination as the report renderer.
+List<Uint8List> sliceCapturedImage(Uint8List png, PdfPageFormat fmt) =>
+    _sliceToPages(png, fmt);
+
 List<Uint8List> _sliceToPages(Uint8List png, PdfPageFormat fmt) {
   final full = img.decodePng(png);
   if (full == null) return [png];

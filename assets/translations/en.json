@@ -167,7 +167,12 @@
     "server": {
       "syncing": "Syncing data with server…",
       "done": "Data synced with server",
-      "failed": "Sync failed — will retry automatically"
+      "failed": "Sync failed — will retry automatically",
+      "massTitle": "Server wants to delete {n} records",
+      "massBody": "The central server asked this computer to delete {n} of its crime records. This is normal only if the admin really deleted them. If the server was recently reset, or you just restored a backup, choose “Keep my data” and contact the admin — nothing has been deleted yet.",
+      "massDelete": "Delete {n} records",
+      "massKeep": "Keep my data",
+      "kept": "Your data was kept — server deletions were not applied"
     }
   },
   "audit": {
@@ -282,6 +287,27 @@
       "recovered": "Property recovered",
       "avgChargesheet": "Avg days to chargesheet",
       "chargesheetOverdue": "Chargesheet overdue"
+    },
+    "pdf": {
+      "export": "Export PDF",
+      "title": "Crime Analytics Report",
+      "printed": "Generated {when} — CRMS",
+      "summary": "Summary",
+      "insights": "Automatic findings",
+      "byYear": "Year-wise",
+      "byMonth": "Month-wise",
+      "byWeekday": "Day of week",
+      "byTime": "Time of day (occurrence)",
+      "byType": "Crime types",
+      "byStation": "Stations",
+      "hotDates": "High-activity dates",
+      "total": "Registered",
+      "detected": "Detected",
+      "undetected": "Undetected",
+      "detectionRate": "Detection rate",
+      "thisYear": "This year",
+      "lost": "Property lost",
+      "recovered": "Property recovered"
     },
     "other": "Other",
     "chargesheet": {
