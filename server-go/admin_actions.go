@@ -496,6 +496,36 @@ func (a *App) actDedupe(w http.ResponseWriter, r *http.Request) {
 var releaseNameRe = regexp.MustCompile(`^[\w.\- ]+\.(exe|dmg|pkg|AppImage|deb)$`)
 var releaseVerRe = regexp.MustCompile(`(\d+)\.(\d+)\.(\d+)`)
 
+// versionToBuild maps "1.14.1" to a single comparable integer
+// (major*1_000_000 + minor*1_000 + patch), identical to the app's
+// UpdateService.versionToBuild in lib/features/update/update_service.dart —
+// both sides must agree on ordering or update checks silently stall.
+func versionToBuild(version string) int {
+	parts := strings.FieldsFunc(version, func(r rune) bool {
+		return r == '.' || r == '+' || r == '-'
+	})
+	at := func(i int) int {
+		if i >= len(parts) {
+			return 0
+		}
+		n, err := strconv.Atoi(strings.TrimSpace(parts[i]))
+		if err != nil {
+			return 0
+		}
+		return n
+	}
+	clamp := func(v, max int) int {
+		if v < 0 {
+			return 0
+		}
+		if v > max {
+			return max
+		}
+		return v
+	}
+	return clamp(at(0), 2000)*1000000 + clamp(at(1), 999)*1000 + clamp(at(2), 999)
+}
+
 func (a *App) actReleaseUpload(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseMultipartForm(512 << 20); err != nil {
 		back(w, r, "/admin/releases", "Upload error: "+err.Error())
@@ -540,9 +570,12 @@ func (a *App) actReleaseUpload(w http.ResponseWriter, r *http.Request) {
 	}
 	dst.Close()
 
-	var build int
-	_ = a.db.QueryRow(r.Context(),
-		`SELECT COALESCE(MAX(build), 0) + 1 FROM app_release`).Scan(&build)
+	// The build MUST be derived from the version, in lock-step with the app's
+	// UpdateService.versionToBuild (major*1e6 + minor*1e3 + patch): the app
+	// compares its own version-derived number against this one. A sequential
+	// counter only worked by coincidence during 1.13.x and stalled every app
+	// the moment it reached 1.14.0 (its 1014000 outran the counter's 1013005).
+	build := versionToBuild(ver)
 	_, err = a.db.Exec(r.Context(), `
 		INSERT INTO app_release (version, build, platform, file_name, notes, mandatory, sha256)
 		VALUES ($1, $2, $3, $4, NULLIF($5, ''), $6, $7)`,
