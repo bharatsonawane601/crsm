@@ -22,6 +22,7 @@ import 'io/io_portal_shell.dart';
 import 'notifications/notification_center.dart';
 import 'notifications/notifications_controller.dart';
 import 'portal/central_upload_controller.dart';
+import 'portal/portal_providers.dart';
 import 'portal/portal_shell.dart';
 import 'portal/station_firs_screen.dart';
 import 'settings/backup_service.dart';
@@ -62,6 +63,11 @@ class _AppShellState extends ConsumerState<AppShell> {
       ref.read(centralUploadControllerProvider.notifier).pullServerDeletions();
       // Refresh the bell: new command messages + pending-case alerts.
       ref.read(notificationsControllerProvider.notifier).refresh();
+      // Tester (hq): the Dashboard/Analytics tabs show central data, so
+      // re-pull it on the same cadence as the officer portal.
+      if (ref.read(accessControllerProvider).role == OfficerRole.hq) {
+        ref.invalidate(portalAnalyticsRowsProvider);
+      }
     });
   }
 
@@ -271,13 +277,24 @@ class _AppShellState extends ConsumerState<AppShell> {
                   child: IndexedStack(
                     index: _section,
                     children: [
-                      _lazy(0, const DashboardScreen()),
+                      // Tester (hq) sees the whole city's server data on the
+                      // Dashboard/Analytics tabs — a tester PC has no local
+                      // records, so the local-DB versions would sit empty.
+                      _lazy(
+                          0,
+                          isHq
+                              ? const CentralDashboardScreen()
+                              : const DashboardScreen()),
                       _lazy(1, const CrimeListScreen()),
                       _lazy(2, const TemplateListScreen()),
                       _lazy(3, const ReportsHubScreen()),
                       _lazy(4, const AuditLogScreen(embedded: true)),
                       _lazy(5, const SettingsScreen(embedded: true)),
-                      _lazy(6, const AnalyticsScreen()),
+                      _lazy(
+                          6,
+                          isHq
+                              ? const CentralAnalyticsScreen()
+                              : const AnalyticsScreen()),
                     ],
                   ),
                 ),

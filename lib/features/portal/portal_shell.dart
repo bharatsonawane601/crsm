@@ -514,6 +514,26 @@ class _PortalDashboard extends StatelessWidget {
       const _PortalAnalyticsBody(mode: DashboardMode.overview);
 }
 
+/// Server-fed Dashboard used by the Tester (hq) role inside the station app
+/// shell: identical to the portal's Dashboard tab, so a tester machine with an
+/// empty local database still sees every station's data.
+class CentralDashboardScreen extends StatelessWidget {
+  const CentralDashboardScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) =>
+      const _PortalAnalyticsBody(mode: DashboardMode.overview);
+}
+
+/// Server-fed Analytics for the Tester (hq) role inside the station app shell.
+class CentralAnalyticsScreen extends StatelessWidget {
+  const CentralAnalyticsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) =>
+      const _PortalAnalyticsBody(mode: DashboardMode.analytics);
+}
+
 class _PortalAnalytics extends StatelessWidget {
   const _PortalAnalytics();
 
