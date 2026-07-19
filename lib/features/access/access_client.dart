@@ -15,7 +15,8 @@ enum AccessStatus { approved, pending, denied, deviceMismatch, expired, error }
 /// read-only senior-officer portal (acp/dcp/cp) and the full station app.
 enum OfficerRole { station, acp, dcp, cp, io, hq }
 
-OfficerRole _roleFrom(String? s) => switch (s) {
+/// Maps a server role string to [OfficerRole]. Shared with the auth client.
+OfficerRole roleFromString(String? s) => switch (s) {
       'acp' => OfficerRole.acp,
       'dcp' => OfficerRole.dcp,
       'cp' => OfficerRole.cp,
@@ -112,7 +113,7 @@ class AccessClient {
       return AccessResult(
         status: status,
         message: json['message'] as String?,
-        role: _roleFrom(json['role'] as String?),
+        role: roleFromString(json['role'] as String?),
         portal: json['portal'] == true,
         scope: OfficerScope(
           zone: scope?['zone'] as String?,

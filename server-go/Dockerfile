@@ -1,5 +1,5 @@
 # Build the CRMS Go server as a tiny static binary.
-FROM golang:1.24-alpine AS build
+FROM golang:1.25-alpine AS build
 WORKDIR /src
 # The office network resets connections to sum.golang.org, and there is no
 # go.sum to verify against anyway — skip the checksum-DB lookup.

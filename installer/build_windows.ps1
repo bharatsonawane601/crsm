@@ -9,8 +9,10 @@
 # Usage (from repo root):   powershell -File installer\build_windows.ps1
 # Then compile the installer:  & "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe" installer\crms.iss
 #
-# Required in crms.env: CRMS_APP_KEY, CRMS_GOOGLE_CLIENT_ID,
-#   CRMS_GOOGLE_CLIENT_SECRET, CRMS_API_BASE_URL. CRMS_FIELD_KEY optional.
+# Required in crms.env: CRMS_API_BASE_URL, CRMS_APP_KEY.
+#   CRMS_FIELD_KEY optional. The old CRMS_GOOGLE_* keys are no longer used
+#   (Google sign-in was replaced by admin-issued DB Square logins) but are
+#   still passed through if present, so an older crms.env keeps working.
 
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path -Parent $PSScriptRoot
@@ -30,16 +32,15 @@ foreach ($line in Get-Content $envFile) {
 # Every define that MUST be present, or the app silently degrades:
 #  - CRMS_API_BASE_URL missing:  talks to the wrong/backup server
 #  - CRMS_APP_KEY missing:       access gate open + can't auth to server
-#  - CRMS_GOOGLE_CLIENT_ID miss: falls back to the demo auto-login stub
-#  - CRMS_GOOGLE_CLIENT_SECRET:  Google OAuth token exchange fails
-$required = @('CRMS_API_BASE_URL','CRMS_APP_KEY','CRMS_GOOGLE_CLIENT_ID','CRMS_GOOGLE_CLIENT_SECRET')
+$required = @('CRMS_API_BASE_URL','CRMS_APP_KEY')
 $missing = $required | Where-Object { -not $vars.ContainsKey($_) -or $vars[$_] -eq '' }
 if ($missing) { throw "crms.env is missing required keys: $($missing -join ', ')" }
 
+# Pass EVERY key in crms.env through as a define (required + any optional ones
+# like CRMS_FIELD_KEY or leftover CRMS_GOOGLE_*), so nothing is ever dropped.
 $defines = @()
-foreach ($k in $required) { $defines += @('--dart-define', "$k=$($vars[$k])") }
-if ($vars.ContainsKey('CRMS_FIELD_KEY') -and $vars['CRMS_FIELD_KEY'] -ne '') {
-  $defines += @('--dart-define', "CRMS_FIELD_KEY=$($vars['CRMS_FIELD_KEY'])")
+foreach ($k in $vars.Keys) {
+  if ($vars[$k] -ne '') { $defines += @('--dart-define', "$k=$($vars[$k])") }
 }
 
 $flutter = 'C:\flutter\bin\flutter.bat'

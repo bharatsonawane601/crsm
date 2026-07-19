@@ -162,6 +162,13 @@ func (a *App) suppressedSet(ctx context.Context, email string) (map[string]bool,
 // app can purge its local copies (server/suppressed.php). An optional "since"
 // timestamp returns only tombstones created after it, so the app's frequent
 // background poll stays tiny instead of re-downloading the whole list.
+//
+// Every tombstone also carries the deleted FIR's IDENTITY (fir_no / year /
+// station, taken from the recycle-bin copy). A uid alone is not safe to delete
+// on: pre-v8 records were uploaded with their local row id as the uid ("1",
+// "2", …), so a restored or reinstalled station whose ids start over at 1
+// collides with another device's tombstones and wipes unrelated FIRs. The app
+// deletes only when the identity matches too.
 func (a *App) handleSuppressed(w http.ResponseWriter, r *http.Request) {
 	b := jsonBody(r)
 	email := strings.ToLower(bodyStr(b, "email"))
@@ -169,10 +176,23 @@ func (a *App) handleSuppressed(w http.ResponseWriter, r *http.Request) {
 		respond(w, map[string]any{"ok": false, "message": "access.error.server"})
 		return
 	}
-	sql := `SELECT remote_uid FROM central_suppressed WHERE owner_email = $1`
+	// DISTINCT ON: the same (owner, uid) can be deleted, restored and deleted
+	// again, leaving several trash rows — the newest one is the live identity.
+	sql := `
+		SELECT s.remote_uid, t.fir_no, t.year, t.station_name
+		  FROM central_suppressed s
+		  LEFT JOIN LATERAL (
+		       SELECT fir_no, year, station_name
+		         FROM central_trash x
+		        WHERE x.owner_email = s.owner_email
+		          AND x.remote_uid  = s.remote_uid
+		        ORDER BY x.deleted_at DESC
+		        LIMIT 1
+		  ) t ON TRUE
+		 WHERE s.owner_email = $1`
 	args := []any{email}
 	if since := parseDate(bodyStr(b, "since")); since != nil {
-		sql += ` AND suppressed_at > $2`
+		sql += ` AND s.suppressed_at > $2`
 		args = append(args, *since)
 	}
 	rows, err := a.db.Query(r.Context(), sql, args...)
@@ -182,13 +202,26 @@ func (a *App) handleSuppressed(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 	uids := []string{}
+	items := []map[string]any{}
 	for rows.Next() {
-		var uid string
-		if rows.Scan(&uid) == nil {
-			uids = append(uids, uid)
+		var (
+			uid              string
+			firNo, stationNm *string
+			year             *int
+		)
+		if err := rows.Scan(&uid, &firNo, &year, &stationNm); err != nil {
+			continue
 		}
+		uids = append(uids, uid)
+		items = append(items, map[string]any{
+			"uid":            uid,
+			"fir_no":         firNo,
+			"year":           year,
+			"police_station": stationNm,
+		})
 	}
-	respond(w, map[string]any{"ok": true, "uids": uids})
+	// "uids" is kept for older app builds, which ignore "items".
+	respond(w, map[string]any{"ok": true, "uids": uids, "items": items})
 }
 
 // handleDeletions logs a station-side FIR deletion, moves the central copy to

@@ -7,6 +7,29 @@ import 'package:http/http.dart' as http;
 import '../../shared/platform/device_meta.dart';
 import '../access/access_config.dart';
 
+/// A FIR the server says was deleted centrally, with the identity of the record
+/// that was deleted. [uid] alone can't be trusted: records created before the
+/// stable-uid migration were uploaded under their local row id ("1", "2", …),
+/// so the same uid means different FIRs on different devices. Matching
+/// [firNo]/[year] as well makes a purge safe on a restored or reinstalled PC.
+class SuppressedRecord {
+  const SuppressedRecord({
+    required this.uid,
+    this.firNo,
+    this.year,
+    this.policeStation,
+  });
+
+  final String uid;
+  final String? firNo;
+  final int? year;
+  final String? policeStation;
+
+  /// True when the server told us which FIR this tombstone refers to, i.e. the
+  /// local copy can be identity-checked before it is deleted.
+  bool get hasIdentity => (firNo ?? '').trim().isNotEmpty;
+}
+
 /// HTTP client for the central officer-portal API on Hostinger: station uploads
 /// plus the read-only portal search / dashboard. All calls are gated by the
 /// shared app key and identify the caller by their approved email.
@@ -54,11 +77,11 @@ class CentralClient {
     }
   }
 
-  /// The remote_uids of this user's FIRs that were deleted on the server (admin
-  /// panel). The app deletes its matching local copies so a server-side deletion
-  /// isn't re-created on sync. Pass [since] to fetch only tombstones created
-  /// after it (the frequent background poll). Returns an empty list on failure.
-  Future<List<String>> fetchSuppressed({
+  /// This user's FIRs that were deleted on the server (admin panel). The app
+  /// deletes its matching local copies so a server-side deletion isn't
+  /// re-created on sync. Pass [since] to fetch only tombstones created after it
+  /// (the frequent background poll). Returns an empty list on failure.
+  Future<List<SuppressedRecord>> fetchSuppressed({
     required String email,
     DateTime? since,
   }) async {
@@ -73,7 +96,25 @@ class CentralClient {
           .timeout(const Duration(seconds: 30));
       final json = jsonDecode(res.body) as Map<String, dynamic>;
       if (json['ok'] != true) return const [];
-      return [for (final u in (json['uids'] as List? ?? [])) u.toString()];
+      // Newer servers send "items" (uid + the deleted FIR's identity); fall
+      // back to the bare "uids" list when talking to an older one.
+      final items = json['items'] as List?;
+      if (items != null) {
+        return [
+          for (final raw in items)
+            if (raw is Map)
+              SuppressedRecord(
+                uid: (raw['uid'] ?? '').toString(),
+                firNo: raw['fir_no']?.toString(),
+                year: (raw['year'] as num?)?.toInt(),
+                policeStation: raw['police_station']?.toString(),
+              ),
+        ];
+      }
+      return [
+        for (final u in (json['uids'] as List? ?? []))
+          SuppressedRecord(uid: u.toString()),
+      ];
     } catch (_) {
       return const [];
     }

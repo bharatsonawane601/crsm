@@ -10,6 +10,7 @@ import '../../data/db/database.dart';
 import '../../data/db/database_provider.dart';
 import '../brain/fuzzy.dart';
 import '../crime_list/models/crime_list_item.dart';
+import '../portal/central_client.dart' show SuppressedRecord;
 import 'data/bns_data.dart';
 import 'models/crime_draft.dart';
 
@@ -539,34 +540,65 @@ class CrimeRepository {
   /// numeric id that was suppressed long ago — new records carry a "c_" uid that
   /// can't appear in a numeric-only suppression. Returns how many were removed;
   /// child rows cascade.
-  /// How many local crimes [purgeLocalByUids] would delete for [uids], without
-  /// deleting anything. The sync fuse uses this to spot a suspicious server-side
-  /// mass deletion (e.g. old delete-markers after a server wipe) BEFORE obeying.
-  Future<int> countSuppressionMatches(List<String> uids) async {
-    if (uids.isEmpty) return 0;
-    final numericIds = uids.map(int.tryParse).whereType<int>().toList();
+  /// Local crime ids that [records] (the server's delete-markers) refer to.
+  ///
+  /// A marker's uid is matched against [Crimes.remoteUid], but a uid match is
+  /// NOT enough on its own to delete: records predating the stable-uid
+  /// migration were uploaded under their local row id ("1", "2", …), so uid
+  /// "57" means a different FIR on every device. Restoring a backup onto
+  /// another PC used to collide with those markers and wipe good data.
+  ///
+  /// So when the server tells us WHICH FIR a marker refers to, the local
+  /// record's FIR number + year must match it too. Station name is deliberately
+  /// left out of the check — it gets canonicalized/translated and would cause
+  /// real admin deletions to be skipped.
+  Future<Set<int>> _suppressionTargets(List<SuppressedRecord> records) async {
+    if (records.isEmpty) return const {};
     const chunk = 500;
+    final byUid = <String, List<SuppressedRecord>>{};
+    for (final r in records) {
+      if (r.uid.isNotEmpty) (byUid[r.uid] ??= <SuppressedRecord>[]).add(r);
+    }
+    final uids = byUid.keys.toList();
+
     final targetIds = <int>{};
     for (var i = 0; i < uids.length; i += chunk) {
       final part = uids.sublist(i, min(i + chunk, uids.length));
-      final byUid = await (_db.select(
+      final rows = await (_db.select(
         _db.crimes,
       )..where((t) => t.remoteUid.isIn(part))).get();
-      targetIds.addAll([for (final c in byUid) c.id]);
+      for (final c in rows) {
+        final markers = byUid[c.remoteUid ?? ''] ?? const <SuppressedRecord>[];
+        // An identity-less marker (older server) is obeyed on the uid alone,
+        // which is how this always behaved; anything with an identity has to
+        // agree with the local record before it is destroyed.
+        final ok = markers.any(
+          (m) => !m.hasIdentity || _sameFir(m, c),
+        );
+        if (ok) targetIds.add(c.id);
+      }
     }
-    for (var i = 0; i < numericIds.length; i += chunk) {
-      final part = numericIds.sublist(i, min(i + chunk, numericIds.length));
-      final byLegacyId = await (_db.select(
-        _db.crimes,
-      )..where((t) => t.remoteUid.isNull() & t.id.isIn(part))).get();
-      targetIds.addAll([for (final c in byLegacyId) c.id]);
-    }
-    return targetIds.length;
+    return targetIds;
   }
 
-  Future<int> purgeLocalByUids(List<String> uids) async {
-    if (uids.isEmpty) return 0;
-    final numericIds = uids.map(int.tryParse).whereType<int>().toList();
+  /// Whether a delete-marker and a local crime are the same FIR.
+  static bool _sameFir(SuppressedRecord marker, Crime local) {
+    final a = _normIdPart(marker.firNo ?? '');
+    final b = _normIdPart(local.firNo);
+    if (a.isEmpty || b.isEmpty || a != b) return false;
+    // A marker with no year can't disprove an otherwise-matching FIR number.
+    return marker.year == null || marker.year == local.year;
+  }
+
+  /// How many local crimes [purgeLocalByUids] would delete for [records],
+  /// without deleting anything. The sync fuse uses this to spot a suspicious
+  /// server-side mass deletion (e.g. old delete-markers after a server wipe)
+  /// BEFORE obeying it.
+  Future<int> countSuppressionMatches(List<SuppressedRecord> records) async =>
+      (await _suppressionTargets(records)).length;
+
+  Future<int> purgeLocalByUids(List<SuppressedRecord> records) async {
+    if (records.isEmpty) return 0;
 
     // Everything runs in ONE transaction with set-based (IN …) statements —
     // a bulk admin deletion of thousands of FIRs clears locally in seconds,
@@ -574,23 +606,7 @@ class CrimeRepository {
     // under SQLite's bound-variable limit.
     const chunk = 500;
     return _db.transaction(() async {
-      final targetIds = <int>{};
-      // 1) Records whose stable uid is in the suppressed set.
-      for (var i = 0; i < uids.length; i += chunk) {
-        final part = uids.sublist(i, min(i + chunk, uids.length));
-        final byUid = await (_db.select(
-          _db.crimes,
-        )..where((t) => t.remoteUid.isIn(part))).get();
-        targetIds.addAll([for (final c in byUid) c.id]);
-      }
-      // 2) Legacy rows without a stable uid, matched by their numeric id only.
-      for (var i = 0; i < numericIds.length; i += chunk) {
-        final part = numericIds.sublist(i, min(i + chunk, numericIds.length));
-        final byLegacyId = await (_db.select(
-          _db.crimes,
-        )..where((t) => t.remoteUid.isNull() & t.id.isIn(part))).get();
-        targetIds.addAll([for (final c in byLegacyId) c.id]);
-      }
+      final targetIds = await _suppressionTargets(records);
       if (targetIds.isEmpty) return 0;
 
       final ids = targetIds.toList();

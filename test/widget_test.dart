@@ -15,7 +15,7 @@ void main() {
     SharedPreferences.setMockInitialValues(const {});
   });
 
-  testWidgets('Welcome screen leads to the Google sign-in button',
+  testWidgets('Welcome screen leads to the ID/password sign-in screen',
       (tester) async {
     await EasyLocalization.ensureInitialized();
 
@@ -44,7 +44,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 200));
     }
 
+    // The new sign-in screen: a Sign in button plus the Request-access button.
     expect(find.byType(FilledButton), findsWidgets);
-    expect(find.text('Sign in with Google'), findsOneWidget);
+    expect(find.text('Sign in'), findsOneWidget);
+    expect(find.text('Request ID & password'), findsOneWidget);
   });
 }

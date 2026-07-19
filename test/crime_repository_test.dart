@@ -6,6 +6,7 @@ import 'package:crms/core/crypto/field_cipher.dart';
 import 'package:crms/data/db/database.dart';
 import 'package:crms/features/crime_entry/crime_repository.dart';
 import 'package:crms/features/crime_entry/models/crime_draft.dart';
+import 'package:crms/features/portal/central_client.dart' show SuppressedRecord;
 
 void main() {
   late AppDatabase db;
@@ -158,7 +159,11 @@ void main() {
       // purged, because it now carries a unique "c_" uid.
       final id = await repo.saveDraft(CrimeDraft(firNo: 'NEW/2026', year: 2026));
 
-      final removed = await repo.purgeLocalByUids(['1', '2', '3']);
+      final removed = await repo.purgeLocalByUids(const [
+        SuppressedRecord(uid: '1'),
+        SuppressedRecord(uid: '2'),
+        SuppressedRecord(uid: '3'),
+      ]);
       expect(removed, 0);
       expect(await repo.loadDraft(id), isNotNull); // survived the sync
     });
@@ -167,7 +172,9 @@ void main() {
       final id = await repo.saveDraft(CrimeDraft(firNo: 'DEL/2026', year: 2026));
       final uid = (await repo.loadDraft(id))!.remoteUid!;
 
-      final removed = await repo.purgeLocalByUids([uid]);
+      final removed = await repo.purgeLocalByUids([
+        SuppressedRecord(uid: uid, firNo: 'DEL/2026', year: 2026),
+      ]);
       expect(removed, 1);
       expect(await repo.loadDraft(id), isNull);
     });
@@ -178,9 +185,57 @@ void main() {
       await (db.update(db.crimes)..where((t) => t.id.equals(id)))
           .write(CrimesCompanion(remoteUid: Value(id.toString())));
 
-      final removed = await repo.purgeLocalByUids([id.toString()]);
+      final removed = await repo.purgeLocalByUids([
+        SuppressedRecord(uid: id.toString(), firNo: 'OLD/2026', year: 2026),
+      ]);
       expect(removed, 1);
       expect(await repo.loadDraft(id), isNull);
+    });
+
+    test('a numeric uid that collides with a DIFFERENT FIR is not purged',
+        () async {
+      // The real-world data loss: this PC was restored from a backup, so its
+      // legacy row reuses uid "7" — which the server tombstoned for a totally
+      // different FIR belonging to another device. Identity must save it.
+      final id = await repo.saveDraft(CrimeDraft(firNo: 'MINE/2026', year: 2026));
+      await (db.update(db.crimes)..where((t) => t.id.equals(id)))
+          .write(const CrimesCompanion(remoteUid: Value('7')));
+
+      final removed = await repo.purgeLocalByUids(const [
+        SuppressedRecord(uid: '7', firNo: 'THEIRS/2026', year: 2026),
+      ]);
+      expect(removed, 0);
+      expect(await repo.loadDraft(id), isNotNull);
+    });
+
+    test('same FIR number but a different year is not purged', () async {
+      final id = await repo.saveDraft(CrimeDraft(firNo: '12/2026', year: 2026));
+      final uid = (await repo.loadDraft(id))!.remoteUid!;
+
+      final removed = await repo.purgeLocalByUids([
+        SuppressedRecord(uid: uid, firNo: '12/2026', year: 2019),
+      ]);
+      expect(removed, 0);
+      expect(await repo.loadDraft(id), isNotNull);
+    });
+
+    test('Devanagari FIR digits still match their ASCII tombstone', () async {
+      final id = await repo.saveDraft(CrimeDraft(firNo: '१२/२०२६', year: 2026));
+      final uid = (await repo.loadDraft(id))!.remoteUid!;
+
+      final removed = await repo.purgeLocalByUids([
+        SuppressedRecord(uid: uid, firNo: '12/2026', year: 2026),
+      ]);
+      expect(removed, 1);
+    });
+
+    test('an identity-less tombstone (old server) still purges by uid',
+        () async {
+      final id = await repo.saveDraft(CrimeDraft(firNo: 'LEG/2026', year: 2026));
+      final uid = (await repo.loadDraft(id))!.remoteUid!;
+
+      final removed = await repo.purgeLocalByUids([SuppressedRecord(uid: uid)]);
+      expect(removed, 1);
     });
   });
 

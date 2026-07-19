@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"crypto/subtle"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -34,6 +36,8 @@ func (a *App) registerAdmin(mux *http.ServeMux) {
 	mux.HandleFunc("GET /admin/firs", a.adminAuth(a.adminFirs))
 	mux.HandleFunc("GET /admin/fir", a.adminAuth(a.adminFirDetail))
 	mux.HandleFunc("GET /admin/users", a.adminAuth(a.adminUsers))
+	mux.HandleFunc("GET /admin/admins", a.adminAuth(a.adminAdmins))
+	mux.HandleFunc("GET /admin/audit", a.adminAuth(a.adminAudit))
 	mux.HandleFunc("GET /admin/org", a.adminAuth(a.adminOrg))
 	mux.HandleFunc("GET /admin/trash", a.adminAuth(a.adminTrash))
 	mux.HandleFunc("GET /admin/deletions", a.adminAuth(a.adminDeletions))
@@ -43,23 +47,53 @@ func (a *App) registerAdmin(mux *http.ServeMux) {
 }
 
 // --- Auth: password -> HMAC-signed expiring cookie ---------------------------
+//
+// The cookie carries WHO is signed in (the admin username), so every action can
+// be attributed in the audit trail. Two credential sources are accepted: the
+// per-admin logins in admin_users, and the bootstrap ADMIN_PASSWORD from the
+// environment (username "root") — the latter can never be locked out or
+// deleted, so you can always get back in to fix a broken admin_users table.
 
-func (a *App) adminSign(exp int64) string {
+const adminRootUser = "root"
+
+func (a *App) adminSign(exp int64, user string) string {
 	mac := hmac.New(sha256.New, []byte(a.cfg.AppKey))
-	fmt.Fprintf(mac, "admin|%d", exp)
-	return fmt.Sprintf("%d.%s", exp, hex.EncodeToString(mac.Sum(nil)))
+	fmt.Fprintf(mac, "admin|%d|%s", exp, user)
+	return fmt.Sprintf("%d.%s.%s", exp,
+		base64.RawURLEncoding.EncodeToString([]byte(user)),
+		hex.EncodeToString(mac.Sum(nil)))
 }
 
-func (a *App) adminCookieValid(v string) bool {
-	parts := strings.SplitN(v, ".", 2)
-	if len(parts) != 2 {
-		return false
+// adminActorFromCookie returns the signed-in admin's username and true when the
+// cookie is present, unexpired and correctly signed; "" and false otherwise.
+func (a *App) adminActorFromCookie(v string) (string, bool) {
+	parts := strings.SplitN(v, ".", 3)
+	if len(parts) != 3 {
+		return "", false
 	}
 	exp, err := strconv.ParseInt(parts[0], 10, 64)
 	if err != nil || time.Now().Unix() > exp {
-		return false
+		return "", false
 	}
-	return subtle.ConstantTimeCompare([]byte(a.adminSign(exp)), []byte(v)) == 1
+	ub, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		return "", false
+	}
+	user := string(ub)
+	if subtle.ConstantTimeCompare([]byte(a.adminSign(exp, user)), []byte(v)) != 1 {
+		return "", false
+	}
+	return user, true
+}
+
+// adminActor is the username of the admin making this request, for audit rows.
+func (a *App) adminActor(r *http.Request) string {
+	if c, err := r.Cookie(adminCookie); err == nil {
+		if user, ok := a.adminActorFromCookie(c.Value); ok {
+			return user
+		}
+	}
+	return "?"
 }
 
 func (a *App) adminAuth(h http.HandlerFunc) http.HandlerFunc {
@@ -69,7 +103,11 @@ func (a *App) adminAuth(h http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 		c, err := r.Cookie(adminCookie)
-		if err != nil || !a.adminCookieValid(c.Value) {
+		if err != nil {
+			http.Redirect(w, r, "/admin/login", http.StatusFound)
+			return
+		}
+		if _, ok := a.adminActorFromCookie(c.Value); !ok {
 			http.Redirect(w, r, "/admin/login", http.StatusFound)
 			return
 		}
@@ -81,20 +119,63 @@ func (a *App) adminLoginPage(w http.ResponseWriter, r *http.Request) {
 	renderAdmin(w, "login", adminPage{Title: "Login"})
 }
 
+// adminAuthenticate resolves a username+password to the actor name to sign into
+// the cookie, or "" if the credentials are rejected. A blank username with the
+// bootstrap password logs in as root, so the existing single-password habit
+// still works.
+func (a *App) adminAuthenticate(ctx context.Context, username, pw string) string {
+	// Bootstrap root: blank or "root" username + the env password.
+	if (username == "" || strings.EqualFold(username, adminRootUser)) &&
+		a.cfg.AdminPassword != "" &&
+		subtle.ConstantTimeCompare([]byte(pw), []byte(a.cfg.AdminPassword)) == 1 {
+		return adminRootUser
+	}
+	if username == "" {
+		return ""
+	}
+	var (
+		hash   string
+		active bool
+	)
+	err := a.db.QueryRow(ctx,
+		`SELECT password_hash, is_active FROM admin_users WHERE lower(username) = lower($1)`,
+		username).Scan(&hash, &active)
+	if err != nil || !active {
+		// Constant-ish work so a missing username and a wrong password look alike.
+		_ = verifyPassword(pw, "$argon2id$v=19$m=65536,t=3,p=4$"+
+			"AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+		return ""
+	}
+	if !verifyPassword(pw, hash) {
+		return ""
+	}
+	return username
+}
+
 func (a *App) adminLoginSubmit(w http.ResponseWriter, r *http.Request) {
 	_ = r.ParseForm()
+	username := strings.TrimSpace(r.PostFormValue("username"))
 	pw := r.PostFormValue("password")
-	if a.cfg.AdminPassword == "" ||
-		subtle.ConstantTimeCompare([]byte(pw), []byte(a.cfg.AdminPassword)) != 1 {
+	actor := a.adminAuthenticate(r.Context(), username, pw)
+	if actor == "" {
 		time.Sleep(time.Second) // slow brute force a little
-		renderAdmin(w, "login", adminPage{Title: "Login", Error: "Wrong password"})
+		a.audit(r.Context(), auditEvent{
+			Actor: username, Event: "admin.login_failed", IP: clientIP(r),
+		})
+		renderAdmin(w, "login", adminPage{Title: "Login", Error: "Wrong username or password"})
 		return
 	}
 	exp := time.Now().Add(12 * time.Hour).Unix()
 	http.SetCookie(w, &http.Cookie{
-		Name: adminCookie, Value: a.adminSign(exp), Path: "/",
+		Name: adminCookie, Value: a.adminSign(exp, actor), Path: "/",
 		HttpOnly: true, SameSite: http.SameSiteLaxMode, Secure: true, MaxAge: 12 * 3600,
 	})
+	if actor != adminRootUser {
+		_, _ = a.db.Exec(r.Context(),
+			`UPDATE admin_users SET last_login_at = now(), last_ip = $1 WHERE lower(username) = lower($2)`,
+			clientIP(r), actor)
+	}
+	a.audit(r.Context(), auditEvent{Actor: actor, Event: "admin.login_ok", IP: clientIP(r)})
 	http.Redirect(w, r, "/admin", http.StatusFound)
 }
 
@@ -422,6 +503,13 @@ func (a *App) adminUsers(w http.ResponseWriter, r *http.Request) {
 		ScopeKey                         string
 		Device, OS, Platform, AppVer, IP string
 		LastSeen                         string
+		LoginID                          string
+		HasLogin                         bool
+		Expires                          string // "" = no expiry (permanent)
+		Expired                          bool
+		Designation, Gender, Phone       string
+		RecoveryEmail, StationText, Note string
+		IsRequest                        bool // a "Request ID & password" row
 	}
 	type orgOpt struct {
 		ID   int64
@@ -448,21 +536,30 @@ func (a *App) adminUsers(w http.ResponseWriter, r *http.Request) {
 		       u.scope_zone_id, u.scope_division_id, u.scope_station_id,
 		       COALESCE(u.client_device, ''), COALESCE(u.client_os, ''),
 		       COALESCE(u.client_platform, ''), COALESCE(u.app_version, ''),
-		       COALESCE(u.last_ip, ''), u.last_seen_at
+		       COALESCE(u.last_ip, ''), u.last_seen_at,
+		       COALESCE(u.login_id, ''),
+		       (u.password_hash IS NOT NULL AND u.password_hash <> ''),
+		       u.expires_at,
+		       COALESCE(u.designation, ''), COALESCE(u.gender, ''),
+		       COALESCE(u.phone, ''), COALESCE(u.recovery_email, ''),
+		       COALESCE(u.station_text, ''), COALESCE(u.request_note, '')
 		  FROM access_users u
 		  LEFT JOIN org_zones z ON z.id = u.scope_zone_id
 		  LEFT JOIN org_divisions d ON d.id = u.scope_division_id
 		  LEFT JOIN org_stations s ON s.id = u.scope_station_id
-		 ORDER BY u.status, u.email`)
+		 ORDER BY (u.status = 'pending') DESC, u.status, u.login_id NULLS LAST, u.email`)
 	list := []userRow{}
 	if err == nil {
 		for rows.Next() {
 			var x userRow
-			var seen *time.Time
+			var seen, expires *time.Time
 			var zoneID, divID, stID *int64
 			if rows.Scan(&x.Email, &x.Name, &x.Status, &x.Role, &x.Scope,
 				&zoneID, &divID, &stID,
-				&x.Device, &x.OS, &x.Platform, &x.AppVer, &x.IP, &seen) == nil {
+				&x.Device, &x.OS, &x.Platform, &x.AppVer, &x.IP, &seen,
+				&x.LoginID, &x.HasLogin, &expires,
+				&x.Designation, &x.Gender, &x.Phone, &x.RecoveryEmail,
+				&x.StationText, &x.Note) == nil {
 				switch {
 				case stID != nil:
 					x.ScopeKey = fmt.Sprintf("s:%d", *stID)
@@ -474,6 +571,14 @@ func (a *App) adminUsers(w http.ResponseWriter, r *http.Request) {
 				if seen != nil {
 					x.LastSeen = istStamp(*seen)
 				}
+				if expires != nil {
+					x.Expires = istStamp(*expires)
+					x.Expired = expires.Before(time.Now())
+				}
+				// A pending row with no login and a placeholder email is an
+				// unfulfilled "Request ID & password" from the app.
+				x.IsRequest = !x.HasLogin && x.LoginID == "" &&
+					strings.HasSuffix(x.Email, "@pending.local")
 				list = append(list, x)
 			}
 		}
@@ -878,6 +983,9 @@ pre{background:rgba(11,17,32,.7);border:1px solid var(--line);border-radius:12px
 <a href="/admin/users" class="{{if eq .Active "users"}}on{{end}}"><span class="ico">👥</span>Users</a>
 <a href="/admin/org" class="{{if eq .Active "org"}}on{{end}}"><span class="ico">🏢</span>Organization</a>
 <a href="/admin/messages" class="{{if eq .Active "messages"}}on{{end}}"><span class="ico">📨</span>Messages</a>
+<div class="sec">Security</div>
+<a href="/admin/admins" class="{{if eq .Active "admins"}}on{{end}}"><span class="ico">🛡️</span>Admins</a>
+<a href="/admin/audit" class="{{if eq .Active "audit"}}on{{end}}"><span class="ico">📋</span>Security log</a>
 <div class="sec">Housekeeping</div>
 <a href="/admin/trash" class="{{if eq .Active "trash"}}on{{end}}"><span class="ico">🗑️</span>Recycle bin</a>
 <a href="/admin/deletions" class="{{if eq .Active "deletions"}}on{{end}}"><span class="ico">📜</span>Deletion log</a>
@@ -901,7 +1009,8 @@ pre{background:rgba(11,17,32,.7);border:1px solid var(--line);border-radius:12px
 <div class="login"><div class="logo">🚔</div><h1>CRMS Admin</h1>
 <p>Central crime records — authorized personnel only.</p>
 <form method="post" action="/admin/login">
-<input type="password" name="password" placeholder="Admin password" autofocus>
+<input type="text" name="username" placeholder="Username" autocomplete="username" autofocus>
+<input type="password" name="password" placeholder="Password" autocomplete="current-password">
 <button type="submit">Sign in</button>
 {{if .Error}}<div class="err">{{.Error}}</div>{{end}}
 </form></div></body></html>{{end}}
@@ -1078,15 +1187,30 @@ pre{background:rgba(11,17,32,.7);border:1px solid var(--line);border-radius:12px
 
 {{define "users"}}{{template "head" .}}{{template "nav" .}}
 {{$zones := .Data.Zones}}{{$divs := .Data.Divisions}}{{$sts := .Data.Stations}}
-<div class="scrolly"><table><tr><th>Email</th><th>Status</th><th>Access</th><th>Role &amp; scope</th><th>Device</th><th>App</th><th>IP address</th><th>Last seen (IST)</th></tr>
-{{range .Data.Users}}<tr>
-<td>{{.Email}}{{if .Name}}<br><small>{{.Name}}</small>{{end}}</td>
+<p style="color:var(--dim);font-size:13px;margin-bottom:14px">Give an officer access: on a <b>pending request</b> (or any approved user) click <b>Give ID &amp; password</b>. The ID and one-time password appear once in the green bar — copy and hand them over. The officer sets their own password on first sign-in. One login works on one device only.</p>
+<div class="scrolly"><table><tr><th>Login / user</th><th>Status &amp; access</th><th>Credentials</th><th>Role &amp; scope</th><th>Details</th><th>Device / IP</th><th>Last seen</th></tr>
+{{range .Data.Users}}<tr{{if .IsRequest}} style="background:rgba(251,191,36,.06)"{{end}}>
+<td>{{if .LoginID}}<b>{{.LoginID}}</b><br>{{end}}<small>{{.Email}}</small>{{if .Name}}<br>{{.Name}}{{end}}{{if .IsRequest}}<br><span class="tag warn">new request</span>{{end}}</td>
 <td>{{if eq .Status "approved"}}<span class="tag ok">approved</span>{{else if eq .Status "pending"}}<span class="tag warn">pending</span>{{else}}<span class="tag bad">{{.Status}}</span>{{end}}
-{{if .Scope}}<br><small>{{.Scope}}</small>{{end}}</td>
+{{if .Scope}}<br><small>{{.Scope}}</small>{{end}}
+{{if .HasLogin}}<br><small>Access: {{if .Expires}}{{if .Expired}}<span class="tag bad">expired {{.Expires}}</span>{{else}}until {{.Expires}}{{end}}{{else}}permanent{{end}}</small>{{end}}
+<form class="inline" method="post" action="/admin/user/set_expiry" style="margin-top:4px">
+<input type="hidden" name="email" value="{{.Email}}">
+<select name="period" class="sm"><option value="1m">1 month</option><option value="3m">3 months</option><option value="6m">6 months</option><option value="1y">1 year</option><option value="perm">permanent</option></select>
+<button class="sm gray">Set access</button></form></td>
 <td>
-{{if ne .Status "approved"}}<form class="inline" method="post" action="/admin/user/status"><input type="hidden" name="email" value="{{.Email}}"><input type="hidden" name="status" value="approved"><button class="sm">✓ Approve</button></form>{{end}}
-{{if ne .Status "denied"}}<form class="inline" method="post" action="/admin/user/status" onsubmit="return confirm('Deny {{.Email}}?')"><input type="hidden" name="email" value="{{.Email}}"><input type="hidden" name="status" value="denied"><button class="sm danger">✕ Deny</button></form>{{end}}
-<form class="inline" method="post" action="/admin/user/reset_device" onsubmit="return confirm('Reset the bound device for {{.Email}}? The next PC that signs in becomes their device.')"><input type="hidden" name="email" value="{{.Email}}"><button class="sm gray">↺ Reset device</button></form>
+{{if .HasLogin}}
+<form class="inline" method="post" action="/admin/user/reset_password" onsubmit="return confirm('Issue a NEW temporary password for {{.LoginID}}? Their current password stops working.')"><input type="hidden" name="email" value="{{.Email}}"><button class="sm">🔑 Reset password</button></form>
+<form class="inline" method="post" action="/admin/user/reset_device" onsubmit="return confirm('Reset the bound device for {{.LoginID}}? The next PC that signs in becomes their device.')"><input type="hidden" name="email" value="{{.Email}}"><button class="sm gray">↺ Reset device</button></form>
+{{else}}
+<form class="inline" method="post" action="/admin/user/issue_login">
+<input type="hidden" name="email" value="{{.Email}}">
+<input class="sm" name="login_id" placeholder="login id (optional)" style="width:130px">
+<select name="period" class="sm"><option value="1y">1 year</option><option value="6m">6 months</option><option value="3m">3 months</option><option value="1m">1 month</option><option value="perm">permanent</option></select>
+<button class="sm">🎫 Give ID &amp; password</button></form>
+{{end}}
+{{if ne .Status "denied"}}<form class="inline" method="post" action="/admin/user/status" onsubmit="return confirm('Deny / suspend {{.Email}}?')"><input type="hidden" name="email" value="{{.Email}}"><input type="hidden" name="status" value="denied"><button class="sm danger">✕ Suspend</button></form>{{end}}
+{{if eq .Status "denied"}}<form class="inline" method="post" action="/admin/user/status"><input type="hidden" name="email" value="{{.Email}}"><input type="hidden" name="status" value="approved"><button class="sm">✓ Re-approve</button></form>{{end}}
 </td>
 <td><form class="inline" method="post" action="/admin/user/role">
 <input type="hidden" name="email" value="{{.Email}}">
@@ -1095,10 +1219,10 @@ pre{background:rgba(11,17,32,.7);border:1px solid var(--line);border-radius:12px
 <option value="acp" {{if eq .Role "acp"}}selected{{end}}>ACP</option>
 <option value="dcp" {{if eq .Role "dcp"}}selected{{end}}>DCP</option>
 <option value="cp" {{if eq .Role "cp"}}selected{{end}}>CP</option>
-<option value="hq" {{if eq .Role "hq"}}selected{{end}}>Tester — sees everything (all stations + portal + entry)</option>
+<option value="hq" {{if eq .Role "hq"}}selected{{end}}>Tester — sees everything</option>
 </select>
 {{$sk := .ScopeKey}}
-<select name="scope" class="sm" style="max-width:210px">
+<select name="scope" class="sm" style="max-width:180px">
 <option value="">— no scope (CP / Tester) —</option>
 <optgroup label="Zone — for DCP">
 {{range $zones}}<option value="z:{{.ID}}"{{if eq (printf "z:%d" .ID) $sk}} selected{{end}}>{{.Name}}</option>{{end}}
@@ -1111,10 +1235,50 @@ pre{background:rgba(11,17,32,.7);border:1px solid var(--line);border-radius:12px
 </optgroup>
 </select>
 <button class="sm">Save</button></form></td>
-<td>{{.Device}}{{if .OS}}<br><small>{{.OS}}{{if .Platform}} · {{.Platform}}{{end}}</small>{{end}}</td>
-<td>{{.AppVer}}</td>
-<td class="num">{{.IP}}</td>
+<td><small>{{if .Designation}}{{.Designation}}<br>{{end}}{{if .Gender}}{{.Gender}}<br>{{end}}{{if .Phone}}📞 {{.Phone}}<br>{{end}}{{if .RecoveryEmail}}✉ {{.RecoveryEmail}}<br>{{end}}{{if .StationText}}🏢 {{.StationText}}<br>{{end}}{{if .Note}}<i>{{.Note}}</i>{{end}}</small></td>
+<td>{{.Device}}{{if .OS}}<br><small>{{.OS}}{{if .Platform}} · {{.Platform}}{{end}}</small>{{end}}{{if .IP}}<br><small class="num">{{.IP}}</small>{{end}}<br><small>{{.AppVer}}</small></td>
 <td>{{.LastSeen}}</td></tr>{{end}}</table></div>
+{{template "foot" .}}{{end}}
+
+{{define "admins"}}{{template "head" .}}{{template "nav" .}}
+{{with .Data}}
+<p style="color:var(--dim);font-size:13px;margin-bottom:14px">Panel logins. Each admin signs in with their own username and password, so the security log names who did what. The bootstrap <b>root</b> account (the ADMIN_PASSWORD in the server config) always works and can't be deleted here — keep it safe.</p>
+<div class="scrolly"><table><tr><th>Username</th><th>Name</th><th>Status</th><th>Last login (IST)</th><th>Reset password</th><th></th></tr>
+{{range .Admins}}<tr>
+<td><b>{{.Username}}</b>{{if eq .Username $.Data.Me}} <span class="tag dim">you</span>{{end}}</td>
+<td>{{.Name}}</td>
+<td>{{if .Active}}<span class="tag ok">active</span>{{else}}<span class="tag bad">disabled</span>{{end}}</td>
+<td>{{.LastLogin}}{{if .LastIP}}<br><small class="num">{{.LastIP}}</small>{{end}}</td>
+<td><form class="inline" method="post" action="/admin/admin/reset"><input type="hidden" name="username" value="{{.Username}}"><input class="sm" type="password" name="password" placeholder="new password" style="width:130px"><button class="sm">Set</button></form></td>
+<td>
+{{if .Active}}<form class="inline" method="post" action="/admin/admin/toggle"><input type="hidden" name="username" value="{{.Username}}"><input type="hidden" name="active" value="0"><button class="sm gray">Disable</button></form>
+{{else}}<form class="inline" method="post" action="/admin/admin/toggle"><input type="hidden" name="username" value="{{.Username}}"><input type="hidden" name="active" value="1"><button class="sm">Enable</button></form>{{end}}
+<form class="inline" method="post" action="/admin/admin/delete" onsubmit="return confirm('Delete admin {{.Username}}?')"><input type="hidden" name="username" value="{{.Username}}"><button class="sm danger">Delete</button></form>
+</td></tr>{{end}}</table></div>
+<h2>Add an admin</h2>
+<form class="search" method="post" action="/admin/admin/create">
+<input name="username" placeholder="username" required>
+<input name="name" placeholder="full name">
+<input type="password" name="password" placeholder="password (min 8)" required>
+<button>Create admin</button></form>
+{{end}}
+{{template "foot" .}}{{end}}
+
+{{define "audit"}}{{template "head" .}}{{template "nav" .}}
+{{with .Data}}
+{{if gt .Alerts 0}}<div class="banner">🚨 <b>{{.Alerts}} device-mismatch alert(s)</b> in the last 7 days — someone tried to sign in from a machine that isn't their bound device. Check the rows marked <b>device.mismatch</b> below.</div>{{end}}
+<p style="color:var(--dim);font-size:13px;margin-bottom:14px">Last 500 security events — logins, failures, device changes, password resets and admin actions.</p>
+<div class="scrolly"><table><tr><th>Time (IST)</th><th>Event</th><th>Login / user</th><th>By</th><th>Detail</th><th>IP</th><th>Device</th></tr>
+{{range .Rows}}<tr>
+<td>{{.At}}</td>
+<td>{{if .Bad}}<span class="tag bad">{{.Event}}</span>{{else}}<span class="tag dim">{{.Event}}</span>{{end}}</td>
+<td>{{if .LoginID}}<b>{{.LoginID}}</b><br>{{end}}<small>{{.Email}}</small></td>
+<td>{{.Actor}}</td>
+<td><small>{{.Detail}}</small></td>
+<td class="num">{{.IP}}</td>
+<td><small>{{.Device}}{{if .OS}} · {{.OS}}{{end}}{{if .AppVer}} · {{.AppVer}}{{end}}</small></td>
+</tr>{{end}}</table></div>
+{{end}}
 {{template "foot" .}}{{end}}
 
 {{define "org"}}{{template "head" .}}{{template "nav" .}}

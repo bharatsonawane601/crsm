@@ -39,6 +39,13 @@ func main() {
 	mux.HandleFunc("POST /portal_rows.php", app.gated(app.handlePortalRows))
 	mux.HandleFunc("POST /portal_compare.php", app.gated(app.handlePortalCompare))
 	mux.HandleFunc("POST /io_sync.php", app.gated(app.handleIoSync))
+	// DB Square auth: admin-issued ID + password, device-bound session tokens
+	// (auth.go). Replaces Google sign-in; /check.php stays for older builds.
+	mux.HandleFunc("POST /auth_login.php", app.gated(app.handleAuthLogin))
+	mux.HandleFunc("POST /auth_change_password.php", app.gated(app.handleAuthChangePassword))
+	mux.HandleFunc("POST /auth_session.php", app.gated(app.handleAuthSession))
+	mux.HandleFunc("POST /auth_logout.php", app.gated(app.handleAuthLogout))
+	mux.HandleFunc("POST /auth_request.php", app.gated(app.handleAuthRequest))
 	// Command messaging (CP/DCP/ACP/HQ → units or individuals; apps poll inbox).
 	mux.HandleFunc("POST /messages.php", app.gated(app.handleMessages))
 	mux.HandleFunc("POST /messages_send.php", app.gated(app.handleMessageSend))

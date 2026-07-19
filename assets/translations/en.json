@@ -16,9 +16,22 @@
     "signOut": "Sign out",
     "error": {
       "server": "The access server returned an error. Try again.",
-      "network": "Could not reach the access server. Check your internet connection."
+      "network": "Could not reach the server. Check your internet connection.",
+      "credentials": "Wrong login ID or password.",
+      "locked": "Too many wrong attempts. Try again in about {minutes} minutes.",
+      "no_password": "No password has been set for this ID yet. Contact the administrator.",
+      "temp_expired": "Your one-time password has expired. Ask the administrator for a new one.",
+      "device": "This ID is already linked to another device. Contact the administrator.",
+      "expired": "Your access has expired. Contact the administrator to renew it.",
+      "session": "Your session has ended. Please sign in again.",
+      "request_fields": "Enter at least your name and mobile number.",
+      "already_issued": "This device already has a login. Please sign in."
     },
-    "poweredBy": "Software by"
+    "poweredBy": "Software by",
+    "status": {
+      "pending": "Your access is awaiting approval. Contact the administrator.",
+      "denied": "Your access has been suspended. Contact the administrator."
+    }
   },
   "welcome": {
     "title": "Welcome to Chhatrapati Sambhaji Nagar Police",
@@ -437,13 +450,37 @@
   "login": {
     "heading": "Sign in to continue",
     "subheading": "Maharashtra Police — Crime Records",
-    "signInWithGoogle": "Sign in with Google",
-    "signingIn": "Signing in...",
+    "idLabel": "Login ID",
+    "passwordLabel": "Password",
+    "signIn": "Sign in",
+    "signingIn": "Signing in…",
     "signInFailed": "Sign-in failed. Please try again.",
-    "stubNotice": "Demo mode: Google OAuth credentials not configured yet.",
     "signedInAs": "Signed in as {email}",
     "signOut": "Sign out",
-    "quote": "Service is the highest duty"
+    "quote": "Service is the highest duty",
+    "noAccount": "Don't have an ID and password?",
+    "requestButton": "Request ID & password",
+    "requestTitle": "Request access",
+    "requestBody": "Fill in your details. The administrator will create your login and give you an ID and a one-time password.",
+    "fName": "Full name",
+    "fPhone": "Mobile number",
+    "fDesignation": "Designation / rank",
+    "fGender": "Gender",
+    "fStation": "Police station",
+    "fRecoveryEmail": "Personal email (for recovery)",
+    "fNote": "Note to admin (optional)",
+    "submitRequest": "Send request",
+    "cancel": "Cancel",
+    "requestSent": "Request sent. The administrator will contact you with your ID and password.",
+    "requestFailed": "Could not send the request. Check your connection and try again.",
+    "requestNeedFields": "Enter at least your name and mobile number.",
+    "changeTitle": "Set your password",
+    "changeBody": "This is your first sign-in. Choose a new password only you know.",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "changeButton": "Set password & continue",
+    "pwMismatch": "The two passwords don't match.",
+    "pwTooShort": "Use at least 8 characters."
   },
   "home": {
     "welcome": "Welcome, {name}",

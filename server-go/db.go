@@ -200,6 +200,81 @@ var schema = []string{
 		created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 	)`,
 	`CREATE INDEX IF NOT EXISTS idx_messages_id ON messages (id)`,
+
+	// --- DB Square auth (replaces Google sign-in) --------------------------
+	// Credentials are ISSUED BY AN ADMIN — nobody self-registers. access_users
+	// stays the single source of truth for a user (role, scope, HWID binding,
+	// access window); these columns add the login itself.
+	`ALTER TABLE access_users
+		ADD COLUMN IF NOT EXISTS login_id         TEXT,
+		ADD COLUMN IF NOT EXISTS password_hash    TEXT,
+		ADD COLUMN IF NOT EXISTS must_change_pw   BOOLEAN NOT NULL DEFAULT false,
+		ADD COLUMN IF NOT EXISTS temp_expires_at  TIMESTAMPTZ,
+		ADD COLUMN IF NOT EXISTS failed_attempts  INT NOT NULL DEFAULT 0,
+		ADD COLUMN IF NOT EXISTS locked_until     TIMESTAMPTZ,
+		ADD COLUMN IF NOT EXISTS pw_changed_at    TIMESTAMPTZ,
+		ADD COLUMN IF NOT EXISTS designation      TEXT,
+		ADD COLUMN IF NOT EXISTS gender           TEXT,
+		ADD COLUMN IF NOT EXISTS phone            TEXT,
+		ADD COLUMN IF NOT EXISTS recovery_email   TEXT,
+		ADD COLUMN IF NOT EXISTS station_text     TEXT,
+		ADD COLUMN IF NOT EXISTS request_note     TEXT,
+		ADD COLUMN IF NOT EXISTS last_login_at    TIMESTAMPTZ,
+		ADD COLUMN IF NOT EXISTS last_city        TEXT`,
+	// Login IDs are case-insensitively unique. Partial index: rows that have no
+	// login yet (pending requests, legacy Google users) don't collide on NULL.
+	`CREATE UNIQUE INDEX IF NOT EXISTS idx_access_login_id
+		ON access_users (lower(login_id)) WHERE login_id IS NOT NULL`,
+
+	// Device-bound sessions. The app types a password once, then holds a token
+	// that only works from the machine it was issued to.
+	`CREATE TABLE IF NOT EXISTS auth_sessions (
+		id           BIGSERIAL PRIMARY KEY,
+		user_id      BIGINT NOT NULL REFERENCES access_users(id) ON DELETE CASCADE,
+		token_hash   TEXT NOT NULL UNIQUE,
+		hwid         TEXT NOT NULL,
+		created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+		last_used_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+		expires_at   TIMESTAMPTZ,
+		revoked_at   TIMESTAMPTZ,
+		client_ip    TEXT,
+		client_device TEXT,
+		client_os    TEXT,
+		app_version  TEXT
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_sessions_user ON auth_sessions (user_id)`,
+
+	// Per-admin panel logins, so the audit trail names a person rather than
+	// "whoever knew the shared password".
+	`CREATE TABLE IF NOT EXISTS admin_users (
+		id            BIGSERIAL PRIMARY KEY,
+		username      TEXT NOT NULL UNIQUE,
+		name          TEXT,
+		password_hash TEXT NOT NULL,
+		is_active     BOOLEAN NOT NULL DEFAULT true,
+		must_change_pw BOOLEAN NOT NULL DEFAULT false,
+		created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+		last_login_at TIMESTAMPTZ,
+		last_ip       TEXT
+	)`,
+
+	// Security trail: logins, failures, device changes, resets, approvals.
+	`CREATE TABLE IF NOT EXISTS login_audit (
+		id          BIGSERIAL PRIMARY KEY,
+		at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+		login_id    TEXT,
+		email       TEXT,
+		actor       TEXT,
+		event       TEXT NOT NULL,
+		detail      TEXT,
+		ip          TEXT,
+		hwid        TEXT,
+		device      TEXT,
+		os          TEXT,
+		app_version TEXT
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_login_audit_at ON login_audit (at DESC)`,
+	`CREATE INDEX IF NOT EXISTS idx_login_audit_login ON login_audit (login_id)`,
 }
 
 // --- Request helpers -------------------------------------------------------
