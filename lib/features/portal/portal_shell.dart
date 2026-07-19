@@ -534,6 +534,17 @@ class CentralAnalyticsScreen extends StatelessWidget {
       const _PortalAnalyticsBody(mode: DashboardMode.analytics);
 }
 
+/// Server-fed Crime Records for the Tester (hq) role inside the station app
+/// shell: the central FIR search across every station, so a tester machine
+/// with an empty local database still sees all crime records (the local
+/// [CrimeListScreen] would sit empty on a tester PC).
+class CentralCrimeRecordsScreen extends StatelessWidget {
+  const CentralCrimeRecordsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) => const PortalSearchView();
+}
+
 class _PortalAnalytics extends StatelessWidget {
   const _PortalAnalytics();
 

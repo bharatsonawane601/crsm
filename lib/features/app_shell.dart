@@ -259,7 +259,9 @@ class _AppShellState extends ConsumerState<AppShell> {
               children: [
                 CrmsTopBar(
                   title: _titleKeys[_section].tr(),
-                  center: _section == 1 ? const _TopSearch() : null,
+                  // The tester's central Crime Records view has its own search
+                  // bar; only the local list needs the top-bar search box.
+                  center: (_section == 1 && !isHq) ? const _TopSearch() : null,
                   actions: [
                     const _CentralSyncButton(),
                     const SizedBox(width: 4),
@@ -285,7 +287,13 @@ class _AppShellState extends ConsumerState<AppShell> {
                           isHq
                               ? const CentralDashboardScreen()
                               : const DashboardScreen()),
-                      _lazy(1, const CrimeListScreen()),
+                      // Tester (hq): central FIR records (all stations) instead
+                      // of the empty local list on a tester PC.
+                      _lazy(
+                          1,
+                          isHq
+                              ? const CentralCrimeRecordsScreen()
+                              : const CrimeListScreen()),
                       _lazy(2, const TemplateListScreen()),
                       _lazy(3, const ReportsHubScreen()),
                       _lazy(4, const AuditLogScreen(embedded: true)),
