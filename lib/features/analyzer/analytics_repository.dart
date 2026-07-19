@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/db/database.dart';
 import '../../data/db/database_provider.dart';
+import '../access/station_scope.dart';
 import 'analytics_model.dart';
 
 /// Assembles [AnalyticsRow]s from several tables. Re-emits whenever crimes
@@ -104,6 +105,15 @@ final analyticsRepositoryProvider = Provider<AnalyticsRepository>(
   (ref) => AnalyticsRepository(ref.watch(databaseProvider)),
 );
 
-final analyticsRowsProvider = StreamProvider<List<AnalyticsRow>>(
-  (ref) => ref.watch(analyticsRepositoryProvider).watchRows(),
-);
+/// Rows feeding the Dashboard and Analytics. A user pinned to one police
+/// station only ever sees that station's rows, so their charts and totals match
+/// the Crime Records list exactly.
+final analyticsRowsProvider = StreamProvider<List<AnalyticsRow>>((ref) {
+  final assigned = ref.watch(assignedStationProvider);
+  final stream = ref.watch(analyticsRepositoryProvider).watchRows();
+  if (assigned == null) return stream;
+  return stream.map((rows) => [
+        for (final row in rows)
+          if (stationInScope(row.station, assigned)) row,
+      ]);
+});

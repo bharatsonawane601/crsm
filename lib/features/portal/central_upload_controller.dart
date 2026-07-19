@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../access/access_config.dart';
+import '../access/station_scope.dart';
 import '../auth/auth_service.dart';
 import '../crime_entry/crime_repository.dart';
 import '../settings/settings_repository.dart';
@@ -104,7 +105,17 @@ class CentralUploadController extends Notifier<CentralUploadState> {
           ? null
           : DateTime.fromMillisecondsSinceEpoch(lastMillis);
       final startedAt = DateTime.now();
-      final records = await repo.exportForCentral(since: since);
+      var records = await repo.exportForCentral(since: since);
+      // A user pinned to one police station uploads ONLY that station's
+      // records, so a shared machine holding other stations' data can never
+      // push it up under their account.
+      final assigned = ref.read(assignedStationProvider);
+      if (assigned != null) {
+        records = [
+          for (final r in records)
+            if (stationInScope(r['police_station'] as String?, assigned)) r,
+        ];
+      }
       if (records.isEmpty) {
         state = const CentralUploadState(phase: UploadPhase.done, saved: 0);
         return;
