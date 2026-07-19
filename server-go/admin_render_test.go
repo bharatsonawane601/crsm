@@ -31,6 +31,7 @@ func TestAdminTemplatesRender(t *testing.T) {
 			LastSeen                         string
 			LoginID                          string
 			HasLogin                         bool
+			PwKnown                          bool
 			Expires                          string
 			Expired                          bool
 			Designation, Gender, Phone       string
@@ -38,7 +39,7 @@ func TestAdminTemplatesRender(t *testing.T) {
 			IsRequest                        bool
 		}{
 			{Email: "a@b.com", Status: "approved", Role: "station", LoginID: "cp1234",
-				HasLogin: true, Expires: "01 Jan 2027", Phone: "999"},
+				HasLogin: true, PwKnown: true, Expires: "01 Jan 2027", Phone: "999"},
 			{Email: "x@pending.local", Status: "pending", Role: "station",
 				IsRequest: true, Designation: "PSI", Gender: "male", Note: "new joiner"},
 		},

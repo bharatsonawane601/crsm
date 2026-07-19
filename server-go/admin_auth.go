@@ -40,16 +40,24 @@ func accessPeriod(v string) (*time.Time, bool) {
 	return nil, false
 }
 
-// actUserIssueLogin turns an approved user / access request into a working
-// login: it assigns a (unique) login ID, a one-time password the officer must
-// change on first sign-in, and an access window. The credentials are shown to
-// the admin exactly once, in the redirect banner — they are never stored in
-// readable form and can only be reset, never viewed again.
+// actUserIssueLogin creates OR updates a user's login. The admin controls both
+// the username (login ID) and the password:
+//
+//   - Type a password  -> that becomes the working password immediately. The
+//     admin knows it (they set it), so it is what the officer signs in with;
+//     no forced change. pw_admin_set is marked so the panel can show that the
+//     admin still knows this password.
+//   - Leave it blank    -> a one-time password is generated that the officer
+//     must change on first sign-in (only they will know the new one).
+//
+// Either way the credentials are shown once in the redirect banner; the stored
+// form is always an Argon2id hash, never readable plaintext.
 func (a *App) actUserIssueLogin(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	_ = r.ParseForm()
 	email := strings.ToLower(strings.TrimSpace(r.PostFormValue("email")))
 	loginID := strings.ToLower(strings.TrimSpace(r.PostFormValue("login_id")))
+	chosenPw := r.PostFormValue("password")
 	period := r.PostFormValue("period")
 	if email == "" {
 		back(w, r, "/admin/users", "Missing user")
@@ -60,12 +68,13 @@ func (a *App) actUserIssueLogin(w http.ResponseWriter, r *http.Request) {
 	var (
 		id           int64
 		currentEmail string
+		currentLogin *string
 		hasLogin     bool
 	)
 	err := a.db.QueryRow(ctx, `
-		SELECT id, email, (password_hash IS NOT NULL AND password_hash <> '')
+		SELECT id, email, login_id, (password_hash IS NOT NULL AND password_hash <> '')
 		  FROM access_users WHERE lower(email) = lower($1)`, email,
-	).Scan(&id, &currentEmail, &hasLogin)
+	).Scan(&id, &currentEmail, &currentLogin, &hasLogin)
 	if errors.Is(err, pgx.ErrNoRows) {
 		back(w, r, "/admin/users", "User not found")
 		return
@@ -74,23 +83,24 @@ func (a *App) actUserIssueLogin(w http.ResponseWriter, r *http.Request) {
 		back(w, r, "/admin/users", "Error: "+err.Error())
 		return
 	}
-	if hasLogin {
-		back(w, r, "/admin/users",
-			"That user already has a login. Use ‘Reset password’ instead.")
-		return
-	}
 
-	// A blank login ID auto-generates one; otherwise validate the admin's choice.
-	if loginID == "" {
+	// Resolve the login ID: keep the current one if the admin left it blank,
+	// auto-generate if there's none yet, otherwise validate their choice.
+	switch {
+	case loginID != "":
+		if !loginIDRe.MatchString(loginID) {
+			back(w, r, "/admin/users",
+				"Login ID must be 3–40 chars: letters, digits, dot, dash, underscore.")
+			return
+		}
+	case currentLogin != nil && *currentLogin != "":
+		loginID = *currentLogin
+	default:
 		loginID, err = a.uniqueLoginID(ctx)
 		if err != nil {
 			back(w, r, "/admin/users", "Could not allocate a login ID")
 			return
 		}
-	} else if !loginIDRe.MatchString(loginID) {
-		back(w, r, "/admin/users",
-			"Login ID must be 3–40 chars: letters, digits, dot, dash, underscore.")
-		return
 	}
 
 	// Fresh app requests carry a placeholder email; give them a stable identity
@@ -101,31 +111,49 @@ func (a *App) actUserIssueLogin(w http.ResponseWriter, r *http.Request) {
 		newEmail = loginID + "@dbsquare.local"
 	}
 
-	tempPw, err := generatePassword()
-	if err != nil {
-		back(w, r, "/admin/users", "Could not generate a password")
-		return
-	}
-	hash, err := hashPassword(tempPw)
-	if err != nil {
-		back(w, r, "/admin/users", "Could not secure the password")
-		return
-	}
 	expires, ok := accessPeriod(period)
 	if !ok {
 		back(w, r, "/admin/users", "Invalid access period")
 		return
 	}
-	tempExpiry := time.Now().Add(48 * time.Hour)
+
+	// Admin-typed password vs auto one-time password.
+	adminSet := strings.TrimSpace(chosenPw) != ""
+	var (
+		showPw     string
+		mustChange bool
+		tempExpiry *time.Time
+	)
+	if adminSet {
+		if len([]rune(chosenPw)) < 6 {
+			back(w, r, "/admin/users", "Password must be at least 6 characters.")
+			return
+		}
+		showPw = chosenPw
+	} else {
+		showPw, err = generatePassword()
+		if err != nil {
+			back(w, r, "/admin/users", "Could not generate a password")
+			return
+		}
+		mustChange = true
+		t := time.Now().Add(48 * time.Hour)
+		tempExpiry = &t
+	}
+	hash, err := hashPassword(showPw)
+	if err != nil {
+		back(w, r, "/admin/users", "Could not secure the password")
+		return
+	}
 
 	if _, err := a.db.Exec(ctx, `
 		UPDATE access_users
-		   SET login_id = $1, email = $2, password_hash = $3, must_change_pw = true,
-		       temp_expires_at = $4, expires_at = $5, status = 'approved',
+		   SET login_id = $1, email = $2, password_hash = $3, must_change_pw = $4,
+		       temp_expires_at = $5, expires_at = $6, status = 'approved',
+		       pw_admin_set = $7, pw_changed_at = now(),
 		       failed_attempts = 0, locked_until = NULL, decided_at = now()
-		 WHERE id = $6`,
-		loginID, newEmail, hash, tempExpiry, expires, id); err != nil {
-		// Most likely a duplicate login ID (unique index) — say so plainly.
+		 WHERE id = $8`,
+		loginID, newEmail, hash, mustChange, tempExpiry, expires, adminSet, id); err != nil {
 		if strings.Contains(err.Error(), "idx_access_login_id") {
 			back(w, r, "/admin/users", "That login ID is already taken. Pick another.")
 			return
@@ -133,15 +161,26 @@ func (a *App) actUserIssueLogin(w http.ResponseWriter, r *http.Request) {
 		back(w, r, "/admin/users", "Error: "+err.Error())
 		return
 	}
+	// Any admin credential change invalidates existing sessions on this account.
+	_, _ = a.db.Exec(ctx,
+		`UPDATE auth_sessions SET revoked_at = now() WHERE user_id = $1 AND revoked_at IS NULL`, id)
 
 	a.audit(ctx, auditEvent{
 		Actor: a.adminActor(r), LoginID: loginID, Email: newEmail,
 		Event: "admin.login_issued", IP: clientIP(r),
-		Detail: "access " + periodLabel(period),
+		Detail: fmt.Sprintf("access %s, %s", periodLabel(period),
+			map[bool]string{true: "admin-set password", false: "one-time password"}[adminSet]),
 	})
-	back(w, r, "/admin/users", fmt.Sprintf(
-		"Login created — give these to the officer now (shown once):  ID: %s   Temporary password: %s   (they set their own on first sign-in; this expires in 48 h)",
-		loginID, tempPw))
+
+	if adminSet {
+		back(w, r, "/admin/users", fmt.Sprintf(
+			"Login saved — ID: %s   Password: %s   (you set this, so you know it; the officer signs in with it directly)",
+			loginID, showPw))
+	} else {
+		back(w, r, "/admin/users", fmt.Sprintf(
+			"Login saved — give these to the officer now (shown once):  ID: %s   Temporary password: %s   (they set their own on first sign-in; expires in 48 h)",
+			loginID, showPw))
+	}
 }
 
 // actUserResetPassword issues a fresh one-time password for an existing login.
@@ -178,6 +217,7 @@ func (a *App) actUserResetPassword(w http.ResponseWriter, r *http.Request) {
 	if _, err := a.db.Exec(ctx, `
 		UPDATE access_users
 		   SET password_hash = $1, must_change_pw = true, temp_expires_at = $2,
+		       pw_admin_set = false, pw_changed_at = now(),
 		       failed_attempts = 0, locked_until = NULL
 		 WHERE lower(email) = lower($3)`, hash, tempExpiry, email); err != nil {
 		back(w, r, "/admin/users", "Error: "+err.Error())

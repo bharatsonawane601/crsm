@@ -505,6 +505,7 @@ func (a *App) adminUsers(w http.ResponseWriter, r *http.Request) {
 		LastSeen                         string
 		LoginID                          string
 		HasLogin                         bool
+		PwKnown                          bool // admin set it (so admin knows it)
 		Expires                          string // "" = no expiry (permanent)
 		Expired                          bool
 		Designation, Gender, Phone       string
@@ -539,6 +540,7 @@ func (a *App) adminUsers(w http.ResponseWriter, r *http.Request) {
 		       COALESCE(u.last_ip, ''), u.last_seen_at,
 		       COALESCE(u.login_id, ''),
 		       (u.password_hash IS NOT NULL AND u.password_hash <> ''),
+		       COALESCE(u.pw_admin_set, false),
 		       u.expires_at,
 		       COALESCE(u.designation, ''), COALESCE(u.gender, ''),
 		       COALESCE(u.phone, ''), COALESCE(u.recovery_email, ''),
@@ -557,7 +559,7 @@ func (a *App) adminUsers(w http.ResponseWriter, r *http.Request) {
 			if rows.Scan(&x.Email, &x.Name, &x.Status, &x.Role, &x.Scope,
 				&zoneID, &divID, &stID,
 				&x.Device, &x.OS, &x.Platform, &x.AppVer, &x.IP, &seen,
-				&x.LoginID, &x.HasLogin, &expires,
+				&x.LoginID, &x.HasLogin, &x.PwKnown, &expires,
 				&x.Designation, &x.Gender, &x.Phone, &x.RecoveryEmail,
 				&x.StationText, &x.Note) == nil {
 				switch {
@@ -1187,7 +1189,7 @@ pre{background:rgba(11,17,32,.7);border:1px solid var(--line);border-radius:12px
 
 {{define "users"}}{{template "head" .}}{{template "nav" .}}
 {{$zones := .Data.Zones}}{{$divs := .Data.Divisions}}{{$sts := .Data.Stations}}
-<p style="color:var(--dim);font-size:13px;margin-bottom:14px">Give an officer access: on a <b>pending request</b> (or any approved user) click <b>Give ID &amp; password</b>. The ID and one-time password appear once in the green bar — copy and hand them over. The officer sets their own password on first sign-in. One login works on one device only.</p>
+<p style="color:var(--dim);font-size:13px;margin-bottom:14px">Set an officer's <b>username</b> and <b>password</b> in the Credentials box, pick an access period, and press Save. Type a password to choose it yourself (you'll know it — shown 🔑) or leave it blank for a one-time password the officer changes on first sign-in (then only they know it — shown 🔒). One login works on one device only. Passwords are stored encrypted and can't be read back, only re-set.</p>
 <div class="scrolly"><table><tr><th>Login / user</th><th>Status &amp; access</th><th>Credentials</th><th>Role &amp; scope</th><th>Details</th><th>Device / IP</th><th>Last seen</th></tr>
 {{range .Data.Users}}<tr{{if .IsRequest}} style="background:rgba(251,191,36,.06)"{{end}}>
 <td>{{if .LoginID}}<b>{{.LoginID}}</b><br>{{end}}<small>{{.Email}}</small>{{if .Name}}<br>{{.Name}}{{end}}{{if .IsRequest}}<br><span class="tag warn">new request</span>{{end}}</td>
@@ -1199,15 +1201,16 @@ pre{background:rgba(11,17,32,.7);border:1px solid var(--line);border-radius:12px
 <select name="period" class="sm"><option value="1m">1 month</option><option value="3m">3 months</option><option value="6m">6 months</option><option value="1y">1 year</option><option value="perm">permanent</option></select>
 <button class="sm gray">Set access</button></form></td>
 <td>
-{{if .HasLogin}}
-<form class="inline" method="post" action="/admin/user/reset_password" onsubmit="return confirm('Issue a NEW temporary password for {{.LoginID}}? Their current password stops working.')"><input type="hidden" name="email" value="{{.Email}}"><button class="sm">🔑 Reset password</button></form>
-<form class="inline" method="post" action="/admin/user/reset_device" onsubmit="return confirm('Reset the bound device for {{.LoginID}}? The next PC that signs in becomes their device.')"><input type="hidden" name="email" value="{{.Email}}"><button class="sm gray">↺ Reset device</button></form>
-{{else}}
+{{if .HasLogin}}<div style="margin-bottom:4px">{{if .PwKnown}}<span class="tag ok" title="You set this password, so you know it">🔑 password set by admin</span>{{else}}<span class="tag dim" title="The user changed their own password — only they know it now">🔒 changed by user</span>{{end}}</div>{{end}}
 <form class="inline" method="post" action="/admin/user/issue_login">
 <input type="hidden" name="email" value="{{.Email}}">
-<input class="sm" name="login_id" placeholder="login id (optional)" style="width:130px">
-<select name="period" class="sm"><option value="1y">1 year</option><option value="6m">6 months</option><option value="3m">3 months</option><option value="1m">1 month</option><option value="perm">permanent</option></select>
-<button class="sm">🎫 Give ID &amp; password</button></form>
+<input class="sm" name="login_id" value="{{.LoginID}}" placeholder="username" style="width:120px">
+<input class="sm" type="text" name="password" placeholder="set password (or blank = one-time)" style="width:120px">
+<select name="period" class="sm"><option value="1y">1 year</option><option value="6m">6 months</option><option value="3m">3 months</option><option value="1m">1 month</option><option value="perm"{{if not .Expires}} selected{{end}}>permanent</option></select>
+<button class="sm">{{if .HasLogin}}💾 Save login{{else}}🎫 Give ID &amp; password{{end}}</button></form>
+{{if .HasLogin}}
+<form class="inline" method="post" action="/admin/user/reset_password" onsubmit="return confirm('Issue a NEW one-time password for {{.LoginID}}? Their current password stops working and they set a new one on next sign-in.')"><input type="hidden" name="email" value="{{.Email}}"><button class="sm gray">🎲 One-time password</button></form>
+<form class="inline" method="post" action="/admin/user/reset_device" onsubmit="return confirm('Reset the bound device for {{.LoginID}}? The next PC that signs in becomes their device.')"><input type="hidden" name="email" value="{{.Email}}"><button class="sm gray">↺ Reset device</button></form>
 {{end}}
 {{if ne .Status "denied"}}<form class="inline" method="post" action="/admin/user/status" onsubmit="return confirm('Deny / suspend {{.Email}}?')"><input type="hidden" name="email" value="{{.Email}}"><input type="hidden" name="status" value="denied"><button class="sm danger">✕ Suspend</button></form>{{end}}
 {{if eq .Status "denied"}}<form class="inline" method="post" action="/admin/user/status"><input type="hidden" name="email" value="{{.Email}}"><input type="hidden" name="status" value="approved"><button class="sm">✓ Re-approve</button></form>{{end}}

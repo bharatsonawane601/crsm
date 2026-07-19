@@ -220,7 +220,8 @@ var schema = []string{
 		ADD COLUMN IF NOT EXISTS station_text     TEXT,
 		ADD COLUMN IF NOT EXISTS request_note     TEXT,
 		ADD COLUMN IF NOT EXISTS last_login_at    TIMESTAMPTZ,
-		ADD COLUMN IF NOT EXISTS last_city        TEXT`,
+		ADD COLUMN IF NOT EXISTS last_city        TEXT,
+		ADD COLUMN IF NOT EXISTS pw_admin_set     BOOLEAN NOT NULL DEFAULT false`,
 	// Login IDs are case-insensitively unique. Partial index: rows that have no
 	// login yet (pending requests, legacy Google users) don't collide on NULL.
 	`CREATE UNIQUE INDEX IF NOT EXISTS idx_access_login_id

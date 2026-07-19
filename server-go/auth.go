@@ -460,7 +460,8 @@ func (a *App) handleAuthChangePassword(w http.ResponseWriter, r *http.Request) {
 	if _, err := tx.Exec(ctx, `
 		UPDATE access_users
 		   SET password_hash = $1, must_change_pw = false, temp_expires_at = NULL,
-		       pw_changed_at = now(), failed_attempts = 0, locked_until = NULL
+		       pw_admin_set = false, pw_changed_at = now(),
+		       failed_attempts = 0, locked_until = NULL
 		 WHERE id = $2`, hash, u.ID); err != nil {
 		respondStatus(w, 500, map[string]any{"ok": false, "message": "access.error.server"})
 		return
