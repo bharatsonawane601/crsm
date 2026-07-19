@@ -270,6 +270,38 @@ func (a *App) actUserSetExpiry(w http.ResponseWriter, r *http.Request) {
 	back(w, r, "/admin/users", "Access period updated: "+periodLabel(period))
 }
 
+// actUserDelete removes a user's access record entirely (login, sessions,
+// request details, device binding). Their uploaded FIRs are NOT touched — those
+// are keyed by email in central_crimes and stay in the system. If the same
+// person requests access again from the app, a fresh pending row is created and
+// they reappear in the list, exactly as the admin asked for.
+func (a *App) actUserDelete(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	_ = r.ParseForm()
+	email := strings.ToLower(strings.TrimSpace(r.PostFormValue("email")))
+	if email == "" {
+		back(w, r, "/admin/users", "Missing user")
+		return
+	}
+	// auth_sessions rows cascade on the access_users delete (FK ON DELETE CASCADE).
+	tag, err := a.db.Exec(ctx,
+		`DELETE FROM access_users WHERE lower(email) = lower($1)`, email)
+	if err != nil {
+		back(w, r, "/admin/users", "Error: "+err.Error())
+		return
+	}
+	if tag.RowsAffected() == 0 {
+		back(w, r, "/admin/users", "User not found")
+		return
+	}
+	a.audit(ctx, auditEvent{
+		Actor: a.adminActor(r), Email: email, Event: "admin.user_deleted",
+		IP: clientIP(r),
+	})
+	back(w, r, "/admin/users",
+		"User deleted. If they request access again from the app, they'll reappear as a new request.")
+}
+
 // uniqueLoginID returns an unused auto-generated login ID like "cp4821".
 func (a *App) uniqueLoginID(ctx context.Context) (string, error) {
 	for i := 0; i < 20; i++ {

@@ -27,6 +27,7 @@ func (a *App) registerAdminActions(mux *http.ServeMux) {
 	mux.HandleFunc("POST /admin/user/issue_login", a.adminAuth(a.actUserIssueLogin))
 	mux.HandleFunc("POST /admin/user/reset_password", a.adminAuth(a.actUserResetPassword))
 	mux.HandleFunc("POST /admin/user/set_expiry", a.adminAuth(a.actUserSetExpiry))
+	mux.HandleFunc("POST /admin/user/delete", a.adminAuth(a.actUserDelete))
 	mux.HandleFunc("POST /admin/admin/create", a.adminAuth(a.actAdminCreate))
 	mux.HandleFunc("POST /admin/admin/reset", a.adminAuth(a.actAdminReset))
 	mux.HandleFunc("POST /admin/admin/toggle", a.adminAuth(a.actAdminToggle))

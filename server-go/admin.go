@@ -1214,6 +1214,7 @@ pre{background:rgba(11,17,32,.7);border:1px solid var(--line);border-radius:12px
 {{end}}
 {{if ne .Status "denied"}}<form class="inline" method="post" action="/admin/user/status" onsubmit="return confirm('Deny / suspend {{.Email}}?')"><input type="hidden" name="email" value="{{.Email}}"><input type="hidden" name="status" value="denied"><button class="sm danger">✕ Suspend</button></form>{{end}}
 {{if eq .Status "denied"}}<form class="inline" method="post" action="/admin/user/status"><input type="hidden" name="email" value="{{.Email}}"><input type="hidden" name="status" value="approved"><button class="sm">✓ Re-approve</button></form>{{end}}
+<form class="inline" method="post" action="/admin/user/delete" onsubmit="return confirm('Delete {{.Email}} completely? They are removed from this list (their uploaded FIRs are kept). If they request access again from the app, they reappear as a new request.')"><input type="hidden" name="email" value="{{.Email}}"><button class="sm danger">🗑 Delete</button></form>
 </td>
 <td><form class="inline" method="post" action="/admin/user/role">
 <input type="hidden" name="email" value="{{.Email}}">
