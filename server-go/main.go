@@ -33,6 +33,10 @@ func main() {
 	mux.HandleFunc("GET /version.php", app.gated(app.handleVersion))
 	mux.HandleFunc("POST /upload.php", app.gated(app.handleUpload))
 	mux.HandleFunc("POST /suppressed.php", app.gated(app.handleSuppressed))
+	// Two-way sync, pull half: a station/zone account fetches the FIRs it is
+	// scoped to (handlers_download.go). Without this, sync was upload-only and a
+	// new station login found an empty Crime Records list on its own PC.
+	mux.HandleFunc("POST /download.php", app.gated(app.handleDownload))
 	mux.HandleFunc("POST /deletions.php", app.gated(app.handleDeletions))
 	mux.HandleFunc("POST /portal_scope.php", app.gated(app.handlePortalScope))
 	mux.HandleFunc("POST /portal_search.php", app.gated(app.handlePortalSearch))

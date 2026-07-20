@@ -131,22 +131,68 @@ func (a *App) scopeLabels(ctx context.Context, email string) map[string]any {
 		out["division"] = *division
 	}
 	if station != nil {
+		// The ONE station a station-user is pinned to — the crime form locks its
+		// station field to this. A zone user has no single station, so this stays
+		// null for them and only the alias list below narrows their view.
 		out["station"] = *station
-		// EVERY spelling this station is known by — English, Marathi and the
-		// admin's alias/code. A station-scoped app matches its local records
-		// against these, so a record filed as "एम.वाळूज" is recognised as
-		// "MIDC Waluj". Without them the app would fall back to its built-in
-		// name list, which does not know the aliases an admin added here, and
-		// would hide the user's own station's records.
-		aliases := []string{*station}
-		for _, alt := range []*string{stationMr, stationCode} {
-			if alt != nil && strings.TrimSpace(*alt) != "" {
-				aliases = append(aliases, strings.TrimSpace(*alt))
-			}
+	}
+
+	// EVERY spelling of EVERY station this account may see — English, Marathi
+	// and the admin's alias/code. The app matches its local records against
+	// this list, so a record filed as "एम.वाळूज" is recognised as "MIDC Waluj".
+	//
+	// Two rules learned the hard way:
+	//   * Never rely on the app's built-in station names. An admin can rename a
+	//     station or add aliases here, and the app has no way to know — that is
+	//     exactly what hid 1,985 MIDC Waluj FIRs from their own station.
+	//   * Build the list from station IDs, not from the pinned name, so a zone
+	//     user gets all 8 of their zone's stations in one list and the app's
+	//     existing single filter covers both roles unchanged.
+	//
+	// Only station/zone accounts are narrowed this way. Senior officers
+	// (acp/dcp/cp/hq) read central data through the portal, and restricting
+	// their local list here would hide records they legitimately hold.
+	u, err := a.requireApprovedUser(ctx, email)
+	if err == nil && (u.Role == "station" || u.Role == "zone") {
+		if ids, err := a.baseStationIDs(ctx, u); err == nil && ids != nil {
+			out["station_aliases"] = a.stationAliases(ctx, ids)
 		}
-		out["station_aliases"] = aliases
 	}
 	return out
+}
+
+// stationAliases returns every name a set of stations answers to, for the app's
+// record-to-scope matching. Empty ids yields an empty list (sees nothing).
+func (a *App) stationAliases(ctx context.Context, ids []int64) []string {
+	aliases := []string{}
+	if len(ids) == 0 {
+		return aliases
+	}
+	rows, err := a.db.Query(ctx, `
+		SELECT name, name_mr, code FROM org_stations WHERE id = ANY($1)`, ids)
+	if err != nil {
+		return aliases
+	}
+	defer rows.Close()
+	seen := map[string]bool{}
+	for rows.Next() {
+		var name string
+		var nameMr, code *string
+		if err := rows.Scan(&name, &nameMr, &code); err != nil {
+			continue
+		}
+		for _, v := range []*string{&name, nameMr, code} {
+			if v == nil {
+				continue
+			}
+			t := strings.TrimSpace(*v)
+			if t != "" && !seen[t] {
+				seen[t] = true
+				aliases = append(aliases, t)
+			}
+		}
+	}
+	return aliases
 }
 
 // verifyGoogleToken checks the id_token against Google's tokeninfo endpoint

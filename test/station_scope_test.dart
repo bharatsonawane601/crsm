@@ -85,4 +85,41 @@ void main() {
       expect(stationKey('City Chowk'), isNot(stationKey('Begumpura')));
     });
   });
+
+  group('zone office scope', () {
+    // Zone staff get one flat alias list covering every station in their zone,
+    // so the same single filter serves both roles.
+    final zoneOne = <String>{
+      for (final s in [
+        'City Chowk', 'सिटी चौक',
+        'Kranti Chowk', 'क्रांती चौक',
+        'Vedant Nagar', 'वेदांत नगर',
+        'Begumpura', 'बेगमपुरा',
+        'Chhavani', 'chhavni',
+        'Waluj', 'वाळूज',
+        'MIDC Waluj', 'एम.वाळूज', 'MIDCWALUJ',
+        'Daulatabad', 'दौलताबाद',
+      ])
+        if (stationKey(s) != null) stationKey(s)!,
+    };
+
+    test('every station in the zone is in scope', () {
+      for (final s in ['City Chowk', 'Kranti Chowk', 'Waluj', 'Daulatabad']) {
+        expect(stationInScope(s, zoneOne), isTrue, reason: s);
+      }
+    });
+
+    test('the admin alias spelling is in scope, not just the app name', () {
+      // The exact failure that hid 1,985 FIRs: data is filed as "एम.वाळूज",
+      // which the app's built-in list does not know.
+      expect(stationInScope('एम.वाळूज', zoneOne), isTrue);
+      expect(stationInScope('chhavni', zoneOne), isTrue);
+    });
+
+    test('a station from the other zone is out of scope', () {
+      for (final s in ['CIDCO', 'Usmanpura', 'Harsul', 'Satara']) {
+        expect(stationInScope(s, zoneOne), isFalse, reason: s);
+      }
+    });
+  });
 }

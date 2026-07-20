@@ -13,10 +13,16 @@ enum AccessStatus { approved, pending, denied, deviceMismatch, expired, error }
 /// What experience an approved user gets. `io` opens the Investigating-Officer
 /// portal (field-first case building + auto-generated forms), separate from the
 /// read-only senior-officer portal (acp/dcp/cp) and the full station app.
-enum OfficerRole { station, acp, dcp, cp, io, hq }
+/// [zone] is zone-office staff: the same working screens as a station user
+/// (Crime Records is editable, Dashboard and Analytics are theirs), but their
+/// data covers every station in the zone instead of one — Zone 1 office sees
+/// all 8 of its stations. Distinct from [dcp], which is a senior officer on the
+/// read-only portal.
+enum OfficerRole { station, zone, acp, dcp, cp, io, hq }
 
 /// Maps a server role string to [OfficerRole]. Shared with the auth client.
 OfficerRole roleFromString(String? s) => switch (s) {
+      'zone' => OfficerRole.zone,
       'acp' => OfficerRole.acp,
       'dcp' => OfficerRole.dcp,
       'cp' => OfficerRole.cp,

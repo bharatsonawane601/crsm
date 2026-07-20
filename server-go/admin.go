@@ -441,10 +441,10 @@ func (a *App) adminFirDetail(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.ParseInt(r.URL.Query().Get("id"), 10, 64)
 	var (
 		station, firNo, crimeType, section, status, owner, srcDevice, srcIP *string
-		year                                                               *int
-		reg, occ                                                           *time.Time
-		updated                                                            time.Time
-		dataJSON                                                           []byte
+		year                                                                *int
+		reg, occ                                                            *time.Time
+		updated                                                             time.Time
+		dataJSON                                                            []byte
 	)
 	err := a.db.QueryRow(r.Context(), `
 		SELECT COALESCE(s.name, c.station_name), c.fir_no, c.crime_type, c.section,
@@ -505,7 +505,7 @@ func (a *App) adminUsers(w http.ResponseWriter, r *http.Request) {
 		LastSeen                         string
 		LoginID                          string
 		HasLogin                         bool
-		PwKnown                          bool // admin set it (so admin knows it)
+		PwKnown                          bool   // admin set it (so admin knows it)
 		Expires                          string // "" = no expiry (permanent)
 		Expired                          bool
 		Designation, Gender, Phone       string
@@ -1220,6 +1220,7 @@ pre{background:rgba(11,17,32,.7);border:1px solid var(--line);border-radius:12px
 <input type="hidden" name="email" value="{{.Email}}">
 <select name="role" class="sm">
 <option value="station" {{if eq .Role "station"}}selected{{end}}>station</option>
+<option value="zone" {{if eq .Role "zone"}}selected{{end}}>zone office — whole zone, can edit</option>
 <option value="acp" {{if eq .Role "acp"}}selected{{end}}>ACP</option>
 <option value="dcp" {{if eq .Role "dcp"}}selected{{end}}>DCP</option>
 <option value="cp" {{if eq .Role "cp"}}selected{{end}}>CP</option>

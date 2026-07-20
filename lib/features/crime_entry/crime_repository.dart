@@ -664,6 +664,159 @@ class CrimeRepository {
     });
   }
 
+  /// Writes downloaded central FIRs into the local database.
+  ///
+  /// The pull half of two-way sync. Every FIR used to be typed on one machine
+  /// and pushed up with nothing ever coming back, so a freshly issued station
+  /// login opened an empty Crime Records list. This fills that PC with the
+  /// records it is scoped to.
+  ///
+  /// Conflict rule — the local copy wins unless the server's is strictly newer:
+  ///   * unknown record  -> created;
+  ///   * server newer    -> scalar fields overlaid onto the local draft;
+  ///   * local newer/equal -> left alone, so an edit that hasn't uploaded yet
+  ///     is never overwritten by the older central copy.
+  ///
+  /// Child rows are MERGED, not replaced. Central stores accused as bare names,
+  /// so blindly rewriting them would strip the age/address/ID detail typed on
+  /// the station PC; existing child rows are therefore kept whenever the local
+  /// record already has them.
+  ///
+  /// Returns (created, updated).
+  Future<({int created, int updated})> importFromCentral(
+    List<Map<String, dynamic>> records,
+  ) async {
+    if (records.isEmpty) return (created: 0, updated: 0);
+
+    final existing = await _db.select(_db.crimes).get();
+    final byUid = <String, Crime>{
+      for (final c in existing)
+        if ((c.remoteUid ?? '').isNotEmpty) c.remoteUid!: c,
+    };
+    // Pre-v8 records were uploaded under their local row id and legacy imports
+    // have no uid at all, so fall back to FIR identity — otherwise a station
+    // would end up with two copies of every FIR it already had.
+    final byIdentity = <String, Crime>{
+      for (final c in existing)
+        if (firIdentityKey(c.firNo, c.year, c.policeStation) != null)
+          firIdentityKey(c.firNo, c.year, c.policeStation)!: c,
+    };
+
+    var created = 0;
+    var updated = 0;
+    await _db.transaction(() async {
+      for (final row in records) {
+        final uid = (row['uid'] ?? '').toString();
+        final data = (row['data'] as Map?)?.cast<String, dynamic>() ?? const {};
+        final firNo = (data['fir_no'] ?? row['fir_no'] ?? '').toString();
+        final year = _asInt(data['year'] ?? row['year']);
+        final station =
+            (data['police_station'] ?? row['station'] ?? '').toString();
+        // A row with no FIR number and no uid can't be identified on either
+        // side; importing it would create an untraceable duplicate.
+        if (uid.isEmpty && firNo.trim().isEmpty) continue;
+
+        final identity = firIdentityKey(firNo, year, station);
+        final local = byUid[uid] ?? (identity == null ? null : byIdentity[identity]);
+        final serverAt = DateTime.tryParse((row['updated_at'] ?? '').toString());
+
+        if (local == null) {
+          final draft = CrimeDraft(firNo: firNo);
+          draft.remoteUid = uid.isEmpty ? null : uid;
+          _applyCentral(draft, data, station: station, year: year);
+          await saveDraft(draft);
+          created++;
+          continue;
+        }
+        // Local is at least as fresh as the server's copy — keep it.
+        if (serverAt == null || !serverAt.isAfter(local.updatedAt)) continue;
+
+        final draft = await loadDraft(local.id);
+        if (draft == null) continue;
+        // Adopt the central uid so this record stops being matched by FIR
+        // identity on later syncs (and so delete-markers land on it correctly).
+        if (uid.isNotEmpty) draft.remoteUid = uid;
+        _applyCentral(draft, data, station: station, year: year);
+        await saveDraft(draft);
+        updated++;
+      }
+    });
+    return (created: created, updated: updated);
+  }
+
+  /// Overlays a central `data_json` payload onto [d]. Only fields the server
+  /// actually stores are touched, so anything the station typed but central
+  /// never carried (accused detail, attachments, custom fields) survives.
+  void _applyCentral(
+    CrimeDraft d,
+    Map<String, dynamic> data, {
+    required String station,
+    int? year,
+  }) {
+    String? s(String key) {
+      final v = data[key];
+      if (v == null) return null;
+      final t = v.toString().trim();
+      return t.isEmpty ? null : t;
+    }
+
+    DateTime? dt(String key) {
+      final v = s(key);
+      return v == null ? null : DateTime.tryParse(v);
+    }
+
+    d.firNo = s('fir_no') ?? d.firNo;
+    d.year = year ?? _asInt(data['year']) ?? d.year;
+    d.section = s('section') ?? d.section;
+    d.subSection = s('sub_section') ?? d.subSection;
+    d.crimeType = s('crime_type') ?? d.crimeType;
+    d.status = s('status') ?? d.status;
+    d.caseStage = s('case_stage') ?? d.caseStage;
+    d.district = s('district') ?? d.district;
+    if (station.trim().isNotEmpty) d.policeStation = station.trim();
+    d.dateOccurred = dt('date_occurred') ?? d.dateOccurred;
+    d.dateOccurredTo = dt('date_occurred_to') ?? d.dateOccurredTo;
+    d.timeOccurred = s('time_occurred') ?? d.timeOccurred;
+    d.timeOccurredTo = s('time_occurred_to') ?? d.timeOccurredTo;
+    d.placeOccurred = s('place_occurred') ?? d.placeOccurred;
+    d.dateRegistered = dt('date_registered') ?? d.dateRegistered;
+    d.timeRegistered = s('time_registered') ?? d.timeRegistered;
+    d.detailedDescription = s('description') ?? d.detailedDescription;
+
+    d.complainant.name = s('complainant_name') ?? d.complainant.name;
+    d.complainant.mobile = s('complainant_mobile') ?? d.complainant.mobile;
+    d.complainant.address = s('complainant_address') ?? d.complainant.address;
+
+    d.investigation.officerName =
+        s('investigating_officer') ?? s('officer_name') ?? d.investigation.officerName;
+    d.investigation.preventiveAction =
+        s('preventive_action') ?? d.investigation.preventiveAction;
+    d.investigation.preventiveDate =
+        dt('preventive_date') ?? d.investigation.preventiveDate;
+
+    d.verdict.finalOrder = s('final_order') ?? d.verdict.finalOrder;
+    d.verdict.punishment = s('punishment') ?? d.verdict.punishment;
+    d.verdict.chargesheetDate =
+        dt('chargesheet_date') ?? d.verdict.chargesheetDate;
+
+    // Central keeps accused as bare names only. Seed them when this PC has none
+    // (so a downloaded FIR still shows who was booked); never overwrite the
+    // richer rows an officer typed here.
+    if (d.accused.isEmpty) {
+      for (final n in (data['accused_names'] as List? ?? const [])) {
+        final name = n.toString().trim();
+        if (name.isNotEmpty) d.accused.add(AccusedDraft(name: name));
+      }
+    }
+  }
+
+  static int? _asInt(Object? v) => switch (v) {
+        int i => i,
+        num n => n.toInt(),
+        String s => int.tryParse(s.trim()),
+        _ => null,
+      };
+
   /// Canonical "fir|year|station" identity of a record — Devanagari digits map
   /// to ASCII and case/whitespace/punctuation are ignored, so "१२/२०२४ सिटी चौक"
   /// and "12/2024 सिटीचौक" identify the same FIR. Null when there's no FIR

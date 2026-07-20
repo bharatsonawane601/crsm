@@ -62,6 +62,7 @@ class _PortalShellState extends ConsumerState<PortalShell> {
         OfficerRole.dcp => 'DCP',
         OfficerRole.acp => 'ACP',
         OfficerRole.station => 'Officer',
+        OfficerRole.zone => 'Zone Office',
         OfficerRole.io => 'IO',
         OfficerRole.hq => 'Tester',
       };

@@ -87,7 +87,8 @@ func (a *App) actUserRole(w http.ResponseWriter, r *http.Request) {
 	email := strings.ToLower(strings.TrimSpace(r.PostFormValue("email")))
 	role := r.PostFormValue("role")
 	if email == "" ||
-		(role != "station" && role != "acp" && role != "dcp" && role != "cp" && role != "hq") {
+		(role != "station" && role != "zone" && role != "acp" &&
+			role != "dcp" && role != "cp" && role != "hq") {
 		back(w, r, "/admin/users", "Invalid request")
 		return
 	}
@@ -114,6 +115,10 @@ func (a *App) actUserRole(w http.ResponseWriter, r *http.Request) {
 		zone, station = nil, nil
 	case "station":
 		zone, division = nil, nil
+	// Zone office staff: the same app screens as a station user, but scoped to a
+	// whole zone — every station in it syncs to their PC — so keep only the zone.
+	case "zone":
+		division, station = nil, nil
 	default: // cp, hq
 		zone, division, station = nil, nil, nil
 	}

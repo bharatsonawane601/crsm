@@ -32,6 +32,11 @@ class CentralUploadState {
 const kCentralLastUploadPref = 'central_last_upload_millis';
 const kCentralLastSuppressedPref = 'central_last_suppressed_millis';
 
+/// Watermark for the download half of sync: the `updated_at` of the newest
+/// central record already applied locally. Server-issued (never this PC's
+/// clock), so a station machine with a wrong date cannot skip records.
+const kCentralLastDownloadPref = 'central_last_download_cursor';
+
 /// Pushes this station's crime records to the central officer-portal store.
 /// Runs quietly in the background for station (data-entry) users so senior
 /// officers always see up-to-date data. No-op when the server isn't configured.
@@ -43,6 +48,9 @@ class CentralUploadController extends Notifier<CentralUploadState> {
   /// When the last suppressed-tombstone pull ran, so the frequent background
   /// poll only fetches NEW deletions instead of the whole (growing) list.
   static const _lastSuppressedPrefKey = kCentralLastSuppressedPref;
+
+  /// How far the download half of sync has got (see [kCentralLastDownloadPref]).
+  static const _lastDownloadPrefKey = kCentralLastDownloadPref;
 
   /// Mass-delete fuse: the most local records one sync may delete on the
   /// server's say-so without the user explicitly confirming. A server that was
@@ -91,6 +99,13 @@ class CentralUploadController extends Notifier<CentralUploadState> {
       }
       await prefs.setInt(_lastSuppressedPrefKey,
           suppressedPulledAt.millisecondsSinceEpoch);
+
+      // 1b) Pull DOWN the FIRs this account is scoped to. Sync used to be
+      // upload-only, so a newly issued station login opened an empty Crime
+      // Records list — the records were on the server, not on their PC. The
+      // server picks the scope from the account's assignment (one station, or
+      // every station in a zone); the app never asks for a station by name.
+      await _downloadScopedRecords(client, user.email, repo);
 
       // 2) One station = one spelling: fold Marathi/variant station names into
       // the canonical one before export, so the portal never shows the same
@@ -144,6 +159,45 @@ class CentralUploadController extends Notifier<CentralUploadState> {
       state = const CentralUploadState(phase: UploadPhase.failed);
     } finally {
       client.dispose();
+    }
+  }
+
+  /// Pages the account's scoped FIRs down from central into the local database.
+  ///
+  /// Resumes from a server-issued watermark so a repeat sync only carries what
+  /// changed — the first sync on a new station PC pulls its whole station, later
+  /// ones pull almost nothing. The watermark only advances on a page that fully
+  /// applied: a failure mid-run leaves it where it was so the next sync retries
+  /// rather than skipping records for good.
+  Future<void> _downloadScopedRecords(
+    CentralClient client,
+    String email,
+    CrimeRepository repo,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    var cursor = prefs.getString(_lastDownloadPrefKey);
+    var offset = 0;
+    // Bounded so a bad cursor can never spin forever; 200 pages x 500 rows is
+    // far more than a district holds.
+    for (var page = 0; page < 200; page++) {
+      final result =
+          await client.download(email: email, cursor: cursor, offset: offset);
+      if (result == null) return; // network/server failure — keep the watermark
+      if (result.records.isNotEmpty) {
+        await repo.importFromCentral(result.records);
+      }
+      if (result.cursor != null) {
+        cursor = result.cursor;
+        await prefs.setString(_lastDownloadPrefKey, cursor!);
+        // The cursor now covers everything applied so far, so the next page
+        // starts from the top of the remaining set.
+        offset = 0;
+      } else {
+        // Empty page (or a server without cursors): step past it by offset so
+        // paging still terminates.
+        offset += result.records.length;
+      }
+      if (!result.more) return;
     }
   }
 

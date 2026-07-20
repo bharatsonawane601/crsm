@@ -259,4 +259,145 @@ void main() {
     expect(item.matches('nonexistent'), isFalse);
     expect(item.matches(''), isTrue);
   });
+
+  // --- download half of sync (importFromCentral) ---------------------------
+  //
+  // Sync used to be upload-only, so a freshly issued station login opened an
+  // EMPTY Crime Records list: every FIR sat on the server with no way down.
+
+  Map<String, dynamic> centralRow({
+    required String uid,
+    String firNo = '77/2026',
+    int year = 2026,
+    String station = 'City Chowk',
+    required DateTime updatedAt,
+    Map<String, dynamic> extra = const {},
+  }) =>
+      {
+        'uid': uid,
+        'station': station,
+        'fir_no': firNo,
+        'year': year,
+        'updated_at': updatedAt.toUtc().toIso8601String(),
+        'data': {
+          'fir_no': firNo,
+          'year': year,
+          'police_station': station,
+          'crime_type': 'Theft',
+          'section': '303',
+          ...extra,
+        },
+      };
+
+  test('imports central records this PC has never seen', () async {
+    final res = await repo.importFromCentral([
+      centralRow(uid: 'c_aaa', updatedAt: DateTime.now()),
+      centralRow(uid: 'c_bbb', firNo: '78/2026', updatedAt: DateTime.now()),
+    ]);
+
+    expect(res.created, 2);
+    expect(res.updated, 0);
+    final list = await repo.watchCrimeList().first;
+    expect(list.map((e) => e.crime.firNo), containsAll(['77/2026', '78/2026']));
+  });
+
+  test('re-importing the same records creates no duplicates', () async {
+    final rows = [centralRow(uid: 'c_aaa', updatedAt: DateTime.now())];
+    await repo.importFromCentral(rows);
+    final second = await repo.importFromCentral(rows);
+
+    expect(second.created, 0);
+    expect((await repo.watchCrimeList().first).length, 1);
+  });
+
+  test('matches a legacy local record by FIR identity, not just uid', () async {
+    // Pre-v8 rows were uploaded under their local id and old imports have no
+    // uid at all — without identity matching the station would get a second
+    // copy of every FIR it already had.
+    final d = CrimeDraft(firNo: '77/2026', year: 2026);
+    d.policeStation = 'City Chowk';
+    await repo.saveDraft(d);
+
+    final res = await repo.importFromCentral(
+      [centralRow(uid: 'c_server', updatedAt: DateTime(2020))],
+    );
+
+    expect(res.created, 0);
+    expect((await repo.watchCrimeList().first).length, 1);
+  });
+
+  test('a local edit that has not uploaded yet is never overwritten', () async {
+    final d = CrimeDraft(firNo: '77/2026', year: 2026);
+    d.policeStation = 'City Chowk';
+    d.crimeType = 'Typed on this PC';
+    final id = await repo.saveDraft(d);
+
+    // Server copy is OLDER than the local row.
+    await repo.importFromCentral(
+      [centralRow(uid: 'c_srv', updatedAt: DateTime(2020))],
+    );
+
+    expect((await repo.loadDraft(id))!.crimeType, 'Typed on this PC');
+  });
+
+  test('a newer central copy updates the local record', () async {
+    final d = CrimeDraft(firNo: '77/2026', year: 2026);
+    d.policeStation = 'City Chowk';
+    d.crimeType = 'Stale';
+    final id = await repo.saveDraft(d);
+
+    final res = await repo.importFromCentral([
+      centralRow(
+        uid: 'c_srv',
+        updatedAt: DateTime.now().add(const Duration(days: 1)),
+        extra: {'crime_type': 'Corrected at the zone office'},
+      ),
+    ]);
+
+    expect(res.updated, 1);
+    expect((await repo.loadDraft(id))!.crimeType, 'Corrected at the zone office');
+  });
+
+  test('an update keeps accused detail central does not carry', () async {
+    // Central stores accused as bare names. Rewriting them wholesale would
+    // strip the aadhaar/address an officer typed on the station PC.
+    final d = CrimeDraft(firNo: '77/2026', year: 2026);
+    d.policeStation = 'City Chowk';
+    d.accused.add(AccusedDraft(name: 'Accused One', aadhaar: '999988887777'));
+    final id = await repo.saveDraft(d);
+
+    await repo.importFromCentral([
+      centralRow(
+        uid: 'c_srv',
+        updatedAt: DateTime.now().add(const Duration(days: 1)),
+        extra: {'accused_names': ['Accused One']},
+      ),
+    ]);
+
+    final loaded = await repo.loadDraft(id);
+    expect(loaded!.accused.single.aadhaar, '999988887777');
+  });
+
+  test('a downloaded record seeds accused names when this PC has none', () async {
+    await repo.importFromCentral([
+      centralRow(
+        uid: 'c_new',
+        updatedAt: DateTime.now(),
+        extra: {'accused_names': ['Accused One', 'Accused Two']},
+      ),
+    ]);
+
+    final id = (await repo.watchCrimeList().first).single.crime.id;
+    expect((await repo.loadDraft(id))!.accused.map((a) => a.name),
+        ['Accused One', 'Accused Two']);
+  });
+
+  test('rows with neither uid nor FIR number are ignored', () async {
+    final res = await repo.importFromCentral([
+      {'uid': '', 'fir_no': '', 'updated_at': '', 'data': const {}},
+    ]);
+
+    expect(res.created, 0);
+    expect((await repo.watchCrimeList().first), isEmpty);
+  });
 }

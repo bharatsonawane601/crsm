@@ -25,12 +25,17 @@ final assignedStationProvider = Provider<String?>((ref) {
 /// aliases, and records are filed under whichever spelling was typed. Relying
 /// on the built-in list alone hid a station's own records — e.g. FIRs filed as
 /// "एम.वाळूज" were invisible to the user assigned "MIDC Waluj".
+/// The server sends one flat alias list covering EVERY station the account may
+/// see — one station for a station user, all of a zone's stations for zone
+/// office staff — so this single filter serves both roles unchanged.
 final assignedStationKeysProvider = Provider<Set<String>?>((ref) {
   final scope = ref.watch(accessControllerProvider).scope;
-  final station = scope.station;
-  if (station == null || station.trim().isEmpty) return null;
+  final names = <String>[
+    ...scope.stationAliases,
+    if (scope.station != null) scope.station!,
+  ];
   final keys = <String>{
-    for (final alias in [station, ...scope.stationAliases])
+    for (final alias in names)
       if (stationKey(alias) != null) stationKey(alias)!,
   };
   return keys.isEmpty ? null : keys;

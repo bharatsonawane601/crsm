@@ -12,6 +12,26 @@ import '../access/access_config.dart';
 /// stable-uid migration were uploaded under their local row id ("1", "2", …),
 /// so the same uid means different FIRs on different devices. Matching
 /// [firNo]/[year] as well makes a purge safe on a restored or reinstalled PC.
+/// One page of downloaded central FIRs, plus the watermark to resume from.
+class CentralPage {
+  const CentralPage({
+    required this.records,
+    required this.more,
+    required this.cursor,
+  });
+
+  /// Raw central rows: `uid`, `station`, `fir_no`, `year`, `updated_at`, `data`.
+  final List<Map<String, dynamic>> records;
+
+  /// Whether the server has further pages beyond this one.
+  final bool more;
+
+  /// `updated_at` of the last row in this page — send it back as the next
+  /// `since`. Null when the page was empty. Always the SERVER's clock, so a
+  /// station PC with a wrong date can't skip records.
+  final String? cursor;
+}
+
 class SuppressedRecord {
   const SuppressedRecord({
     required this.uid,
@@ -117,6 +137,49 @@ class CentralClient {
       ];
     } catch (_) {
       return const [];
+    }
+  }
+
+  /// One page of the FIRs this account is scoped to, newest-changed last.
+  ///
+  /// The pull half of sync. Sync used to be upload-only, so a newly issued
+  /// station login opened an EMPTY Crime Records list: every FIR lived on the
+  /// server and the app had no way to fetch it. The server decides the scope
+  /// (one station, or every station in a zone) from the caller's assignment —
+  /// the app never asks for a station by name.
+  ///
+  /// Pass the [cursor] returned by the previous call to fetch only what has
+  /// changed since. Returns null on failure so the caller can leave its
+  /// watermark untouched and retry, rather than silently skipping records.
+  Future<CentralPage?> download({
+    required String email,
+    String? cursor,
+    int offset = 0,
+  }) async {
+    try {
+      final res = await _http
+          .post(_uri('download.php'),
+              headers: _headers,
+              body: jsonEncode({
+                'email': email,
+                'since': ?cursor,
+                'offset': offset,
+              }))
+          .timeout(const Duration(seconds: 120));
+      final json = jsonDecode(res.body) as Map<String, dynamic>;
+      if (json['ok'] != true) return null;
+      return CentralPage(
+        records: [
+          for (final raw in (json['records'] as List? ?? []))
+            if (raw is Map) raw.cast<String, dynamic>(),
+        ],
+        more: json['more'] == true,
+        cursor: (json['cursor'] as String?)?.trim().isEmpty ?? true
+            ? null
+            : json['cursor'] as String,
+      );
+    } catch (_) {
+      return null;
     }
   }
 

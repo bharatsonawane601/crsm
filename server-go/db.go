@@ -494,7 +494,11 @@ func (a *App) baseStationIDs(ctx context.Context, u *accessUser) ([]int64, error
 	switch u.Role {
 	case "cp", "hq":
 		return nil, nil
-	case "dcp":
+	// "zone" is zone-office staff: same app screens as a station user, but their
+	// data covers every station in the zone (Zone 1 office watches its 8
+	// stations). Read/write like a station user, just wider — unlike "dcp",
+	// which is a senior officer on the read-only portal.
+	case "dcp", "zone":
 		if u.ScopeZoneID == nil {
 			return []int64{}, nil
 		}
