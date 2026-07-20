@@ -519,6 +519,39 @@ func (a *App) adminAudit(w http.ResponseWriter, r *http.Request) {
 	}))
 }
 
+// actMirrorImport pulls once from the Hostinger site on the admin's command.
+// The automatic background pull is OFF (it kept re-importing rows deleted
+// here), so this is the only way data comes across — deliberately manual.
+func (a *App) actMirrorImport(w http.ResponseWriter, r *http.Request) {
+	if a.cfg.MirrorBaseURL == "" {
+		back(w, r, "/admin/org", "No Hostinger source configured (MIRROR_BASE_URL is empty).")
+		return
+	}
+	// Give the pull its own timeout: the admin's browser request may be gone
+	// long before a big import finishes, and cancelling mid-way would leave a
+	// half-imported set.
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+
+	start := time.Now()
+	if err := a.mirrorOnce(ctx); err != nil {
+		a.audit(r.Context(), auditEvent{
+			Actor: a.adminActor(r), Event: "admin.mirror_import_failed",
+			Detail: err.Error(), IP: clientIP(r),
+		})
+		back(w, r, "/admin/org", "Import failed: "+err.Error())
+		return
+	}
+	a.audit(r.Context(), auditEvent{
+		Actor: a.adminActor(r), Event: "admin.mirror_import",
+		Detail: "took " + time.Since(start).Round(time.Millisecond).String(),
+		IP:     clientIP(r),
+	})
+	back(w, r, "/admin/org", fmt.Sprintf(
+		"Imported from Hostinger in %s. Note: anything you deleted here that still exists there comes back.",
+		time.Since(start).Round(time.Millisecond)))
+}
+
 func nilIfEmpty(s string) any {
 	if strings.TrimSpace(s) == "" {
 		return nil

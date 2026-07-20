@@ -43,6 +43,7 @@ func (a *App) registerAdminActions(mux *http.ServeMux) {
 	mux.HandleFunc("POST /admin/org/station/add", a.adminAuth(a.actStationAdd))
 	mux.HandleFunc("POST /admin/health/relink", a.adminAuth(a.actRelink))
 	mux.HandleFunc("POST /admin/health/dedupe", a.adminAuth(a.actDedupe))
+	mux.HandleFunc("POST /admin/mirror/import", a.adminAuth(a.actMirrorImport))
 	mux.HandleFunc("POST /admin/release/upload", a.adminAuth(a.actReleaseUpload))
 }
 

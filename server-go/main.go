@@ -66,19 +66,30 @@ func main() {
 		w.Write([]byte("ok"))
 	})
 
-	// Background mirror from the Hostinger PHP server (until cutover).
-	if cfg.MirrorBaseURL != "" {
+	// Background mirror from the Hostinger PHP server. Off by default now that
+	// this server is primary: the automatic pull kept re-importing rows the
+	// admin had deleted here (a junk station reappeared after every cleanup).
+	// The base URL stays configured so the admin panel's "Import from
+	// Hostinger" button can still pull on demand. Set MIRROR_AUTO=1 to restore
+	// the periodic pull.
+	if cfg.MirrorBaseURL != "" && cfg.MirrorAuto {
 		go app.runMirror(context.Background())
 	}
 	// Hourly cleanup of already-applied suppression tombstones (janitor.go).
-	// Only once this server is standalone — while the mirror runs, Hostinger
-	// still owns the tombstone list and would re-import anything pruned.
-	if cfg.MirrorBaseURL == "" {
+	// Only when the automatic mirror is off — while it runs, Hostinger still
+	// owns the tombstone list and would re-import anything pruned.
+	if cfg.MirrorBaseURL == "" || !cfg.MirrorAuto {
 		go app.runJanitor(context.Background())
 	}
 
 	addr := ":" + cfg.Port
-	log.Printf("crms-server listening on %s (mirror: %v)", addr, cfg.MirrorBaseURL != "")
+	mirrorState := "off (manual import only)"
+	if cfg.MirrorBaseURL == "" {
+		mirrorState = "not configured"
+	} else if cfg.MirrorAuto {
+		mirrorState = "AUTO every " + cfg.MirrorInterval.String()
+	}
+	log.Printf("crms-server listening on %s (hostinger mirror: %s)", addr, mirrorState)
 	// Generous body timeouts: installer uploads (~20 MB) can crawl through a
 	// relayed tailnet path, and big station syncs stream slowly on BSNL lines.
 	srv := &http.Server{
@@ -119,6 +130,10 @@ type Config struct {
 	// how often to pull. Empty base URL disables mirroring (standalone mode).
 	MirrorBaseURL  string
 	MirrorInterval time.Duration
+	// Whether to pull from Hostinger automatically on MirrorInterval. Off by
+	// default: this server is primary, and the automatic pull kept resurrecting
+	// rows deleted here. The admin panel button imports on demand regardless.
+	MirrorAuto bool
 	// "full": Hostinger is master — overwrite and delete locally to match it.
 	// "transition": both servers take writes during the app rollout — only add
 	// missing rows / keep the newest FIR version, never delete locally.
@@ -149,6 +164,7 @@ func loadConfig() Config {
 		AdminPassword:     os.Getenv("ADMIN_PASSWORD"),
 		MirrorBaseURL:     os.Getenv("MIRROR_BASE_URL"),
 		MirrorInterval:    interval,
+		MirrorAuto:        env("MIRROR_AUTO", "0") == "1",
 		MirrorMode:        env("MIRROR_MODE", "full"),
 		ReleaseURLPrefix:  os.Getenv("RELEASE_URL_PREFIX"),
 	}

@@ -1290,6 +1290,11 @@ pre{background:rgba(11,17,32,.7);border:1px solid var(--line);border-radius:12px
 <div style="display:flex;gap:10px;margin-bottom:8px;flex-wrap:wrap">
 <form method="post" action="/admin/health/relink"><button>🔗 Re-link stations</button></form>
 <form method="post" action="/admin/health/dedupe" onsubmit="return confirm('Remove duplicate FIRs (same FIR no + year + station)? The newest copy of each is kept; the rest go to the recycle bin.')"><button class="gray">♻️ Remove duplicates</button></form>
+<form method="post" action="/admin/mirror/import" onsubmit="return confirm('Import now from the old Hostinger site?
+
+Automatic syncing is OFF. This pulls once, on demand.
+
+Warning: anything you deleted here that still exists there will come back.')"><button class="gray">⬇ Import from Hostinger</button></form>
 </div>
 <p style="color:var(--dim);font-size:13px;margin-bottom:14px">Edit the Marathi name or add an alias (any other spelling stations use, e.g. <i>chhavni</i>), press Save, then 🔗 Re-link to apply to existing FIRs.</p>
 {{range .Zones}}<h2>{{.Name}}</h2>
