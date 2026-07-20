@@ -16,6 +16,26 @@ final assignedStationProvider = Provider<String?>((ref) {
   return station;
 });
 
+/// Every normalised key the assigned station answers to (English, Marathi and
+/// the admin's alias/code, as sent by the server), or null when the user is
+/// unrestricted.
+///
+/// Matching MUST use the server's alias list, not just the app's built-in
+/// station names: an admin can name a station anything and add their own
+/// aliases, and records are filed under whichever spelling was typed. Relying
+/// on the built-in list alone hid a station's own records — e.g. FIRs filed as
+/// "एम.वाळूज" were invisible to the user assigned "MIDC Waluj".
+final assignedStationKeysProvider = Provider<Set<String>?>((ref) {
+  final scope = ref.watch(accessControllerProvider).scope;
+  final station = scope.station;
+  if (station == null || station.trim().isEmpty) return null;
+  final keys = <String>{
+    for (final alias in [station, ...scope.stationAliases])
+      if (stationKey(alias) != null) stationKey(alias)!,
+  };
+  return keys.isEmpty ? null : keys;
+});
+
 /// A comparable key for a station name: folds English/Marathi spellings,
 /// case, spacing, punctuation, Devanagari digits and "police station" tails
 /// onto one value, so "City Chowk", "city chowk" and "सिटी चौक पोलीस स्टेशन"
@@ -26,13 +46,16 @@ String? stationKey(String? raw) {
   return canon.toLowerCase().replaceAll(RegExp(r'[\s.\-_,()]+'), '');
 }
 
-/// Whether [recordStation] belongs to [assigned]. A null [assigned] means the
-/// user is unrestricted, so everything matches. Records with no station are
-/// hidden from a station-scoped user — they belong to no station, so showing
-/// them would leak rows the admin didn't grant.
-bool stationInScope(String? recordStation, String? assigned) {
-  if (assigned == null) return true;
-  final want = stationKey(assigned);
-  if (want == null) return true;
-  return stationKey(recordStation) == want;
+/// Whether [recordStation] belongs to the assigned station. A null [keys] means
+/// the user is unrestricted, so everything matches.
+///
+/// A record with NO station is shown to a station-scoped user: an unfiled
+/// record is work-in-progress on their own machine, and the server stamps it
+/// with their station on upload anyway — hiding it would make their own
+/// half-entered FIRs vanish.
+bool stationInScope(String? recordStation, Set<String>? keys) {
+  if (keys == null || keys.isEmpty) return true;
+  final key = stationKey(recordStation);
+  if (key == null) return true; // unfiled record — belongs to whoever holds it
+  return keys.contains(key);
 }

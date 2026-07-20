@@ -11,7 +11,7 @@ import 'models/crime_list_item.dart';
 /// A user pinned to one police station only ever sees that station's records —
 /// the same rule the Dashboard and Analytics use, so all three agree.
 final crimeListProvider = StreamProvider<List<CrimeListItem>>((ref) {
-  final assigned = ref.watch(assignedStationProvider);
+  final assigned = ref.watch(assignedStationKeysProvider);
   final stream = ref.watch(crimeRepositoryProvider).watchCrimeList();
   if (assigned == null) return stream;
   return stream.map((items) => [

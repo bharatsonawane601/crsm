@@ -193,9 +193,9 @@ class AuthController extends Notifier<AsyncValue<AuthUser?>> {
           'name': user.displayName,
           'role': user.role.name,
           'portal': user.portal,
-          'zone': user.scope.zone,
-          'division': user.scope.division,
-          'station': user.scope.station,
+          // Full scope incl. station aliases, so offline launches filter
+          // exactly like online ones.
+          'scope': user.scope.toJson(),
         }));
   }
 
@@ -213,11 +213,10 @@ class AuthController extends Notifier<AsyncValue<AuthUser?>> {
         displayName: j['name'] as String?,
         role: roleFromString(j['role'] as String?),
         portal: j['portal'] == true,
-        scope: OfficerScope(
-          zone: j['zone'] as String?,
-          division: j['division'] as String?,
-          station: j['station'] as String?,
-        ),
+        // Newer profiles nest the whole scope (with aliases); older ones stored
+        // the three names flat, so fall back to those.
+        scope: OfficerScope.fromJson(
+          (j['scope'] as Map?)?.cast<String, dynamic>() ?? j),
       );
     } catch (_) {
       return null;

@@ -5,6 +5,12 @@ import 'package:crms/features/access/station_scope.dart';
 // A station-scoped user must see and upload ONLY their assigned station's
 // records. These are access-control rules, so both directions matter: the
 // right rows must be let through, and every other station's must be blocked.
+/// The normalised key-set the app builds from a station's server aliases.
+Set<String> keys(List<String> aliases) => {
+      for (final a in aliases)
+        if (stationKey(a) != null) stationKey(a)!,
+    };
+
 void main() {
   group('stationInScope', () {
     test('unassigned user (null scope) sees everything', () {
@@ -14,32 +20,50 @@ void main() {
     });
 
     test('assigned user sees their own station', () {
-      expect(stationInScope('City Chowk', 'City Chowk'), isTrue);
+      expect(stationInScope('City Chowk', keys(['City Chowk'])), isTrue);
     });
 
     test('assigned user does NOT see another station', () {
-      expect(stationInScope('Begumpura', 'City Chowk'), isFalse);
-      expect(stationInScope('MIDC Waluj', 'Waluj'), isFalse);
-      expect(stationInScope('Waluj', 'MIDC Waluj'), isFalse);
+      expect(stationInScope('Begumpura', keys(['City Chowk'])), isFalse);
+      expect(stationInScope('MIDC Waluj', keys(['Waluj'])), isFalse);
+      expect(stationInScope('Waluj', keys(['MIDC Waluj'])), isFalse);
     });
 
     test('matching ignores case, spacing and punctuation', () {
-      expect(stationInScope('city chowk', 'City Chowk'), isTrue);
-      expect(stationInScope('  CITY  CHOWK  ', 'City Chowk'), isTrue);
-      expect(stationInScope('City-Chowk', 'City Chowk'), isTrue);
+      expect(stationInScope('city chowk', keys(['City Chowk'])), isTrue);
+      expect(stationInScope('  CITY  CHOWK  ', keys(['City Chowk'])), isTrue);
+      expect(stationInScope('City-Chowk', keys(['City Chowk'])), isTrue);
     });
 
     test('matching folds the "police station" tail', () {
-      expect(stationInScope('City Chowk Police Station', 'City Chowk'), isTrue);
-      expect(stationInScope('City Chowk', 'City Chowk police station'), isTrue);
+      expect(stationInScope('City Chowk Police Station', keys(['City Chowk'])), isTrue);
+      expect(stationInScope('City Chowk', keys(['City Chowk police station'])), isTrue);
     });
 
-    test('a record with no station is hidden from a scoped user', () {
-      // Station-less rows belong to no station — showing them would leak rows
-      // the admin never granted.
-      expect(stationInScope(null, 'City Chowk'), isFalse);
-      expect(stationInScope('', 'City Chowk'), isFalse);
-      expect(stationInScope('   ', 'City Chowk'), isFalse);
+    test('a record with no station stays VISIBLE to a scoped user', () {
+      // An unfiled record is work-in-progress on the user's own machine, and
+      // the server stamps it with their station on upload. Hiding it made
+      // people's own half-entered FIRs vanish.
+      expect(stationInScope(null, keys(['City Chowk'])), isTrue);
+      expect(stationInScope('', keys(['City Chowk'])), isTrue);
+      expect(stationInScope('   ', keys(['City Chowk'])), isTrue);
+    });
+
+    test('a server ALIAS of the assigned station matches (the real bug)', () {
+      // FIRs are filed as "एम.वाळूज" while the station is named "MIDC Waluj".
+      // The server sends both spellings; matching only the English name hid
+      // every one of that station's records.
+      final midcWaluj = keys(['MIDC Waluj', 'एम.वाळूज', 'MIDCWALUJ']);
+      expect(stationInScope('एम.वाळूज', midcWaluj), isTrue);
+      expect(stationInScope('MIDC Waluj', midcWaluj), isTrue);
+      expect(stationInScope('MIDCWALUJ', midcWaluj), isTrue);
+      // ...and a genuinely different station is still blocked.
+      expect(stationInScope('Waluj', midcWaluj), isFalse);
+      expect(stationInScope('City Chowk', midcWaluj), isFalse);
+    });
+
+    test('an empty alias set means unrestricted', () {
+      expect(stationInScope('Anything', <String>{}), isTrue);
     });
   });
 

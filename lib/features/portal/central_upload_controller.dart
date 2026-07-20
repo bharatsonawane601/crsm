@@ -109,7 +109,7 @@ class CentralUploadController extends Notifier<CentralUploadState> {
       // A user pinned to one police station uploads ONLY that station's
       // records, so a shared machine holding other stations' data can never
       // push it up under their account.
-      final assigned = ref.read(assignedStationProvider);
+      final assigned = ref.read(assignedStationKeysProvider);
       if (assigned != null) {
         records = [
           for (final r in records)

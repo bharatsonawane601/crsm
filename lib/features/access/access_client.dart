@@ -28,14 +28,52 @@ OfficerRole roleFromString(String? s) => switch (s) {
 /// The jurisdiction labels (zone / division / station names) for the portal
 /// header. Any may be null depending on the officer's role.
 class OfficerScope {
-  const OfficerScope({this.zone, this.division, this.station});
+  const OfficerScope({
+    this.zone,
+    this.division,
+    this.station,
+    this.stationAliases = const [],
+  });
   final String? zone;
   final String? division;
   final String? station;
 
+  /// Every spelling the assigned station is known by on the server (English,
+  /// Marathi, admin alias/code). Local records are matched against all of them,
+  /// so a FIR filed as "एम.वाळूज" still counts as "MIDC Waluj".
+  final List<String> stationAliases;
+
   /// A short label like "Zone 1" / "ACP City" / "All city" for the header.
   String labelOr(String allCity) =>
       division ?? zone ?? station ?? allCity;
+
+  /// Builds a scope from a server "scope" object (same shape from /check.php,
+  /// /auth_login.php and /auth_session.php). Falls back to the station name
+  /// alone when an older server sends no aliases.
+  factory OfficerScope.fromJson(Map<String, dynamic>? j) {
+    if (j == null) return const OfficerScope();
+    final station = j['station'] as String?;
+    final raw = j['station_aliases'] as List?;
+    final aliases = <String>[
+      for (final a in raw ?? const []) a.toString(),
+    ];
+    return OfficerScope(
+      zone: j['zone'] as String?,
+      division: j['division'] as String?,
+      station: station,
+      stationAliases: aliases.isNotEmpty
+          ? aliases
+          : [if (station != null && station.isNotEmpty) station],
+    );
+  }
+
+  /// The scope as JSON, for caching the profile for offline launch.
+  Map<String, dynamic> toJson() => {
+        'zone': zone,
+        'division': division,
+        'station': station,
+        'station_aliases': stationAliases,
+      };
 }
 
 class AccessResult {
@@ -115,11 +153,7 @@ class AccessClient {
         message: json['message'] as String?,
         role: roleFromString(json['role'] as String?),
         portal: json['portal'] == true,
-        scope: OfficerScope(
-          zone: scope?['zone'] as String?,
-          division: scope?['division'] as String?,
-          station: scope?['station'] as String?,
-        ),
+        scope: OfficerScope.fromJson(scope),
       );
     } on SocketException {
       return _network();

@@ -199,11 +199,7 @@ class AuthClient {
         displayName: json['name'] as String?,
         role: roleFromString(json['role'] as String?),
         portal: json['portal'] == true,
-        scope: OfficerScope(
-          zone: scope?['zone'] as String?,
-          division: scope?['division'] as String?,
-          station: scope?['station'] as String?,
-        ),
+        scope: OfficerScope.fromJson(scope),
       );
       return AuthResult(AuthOutcome.ok, user: user);
     } on SocketException {

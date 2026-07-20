@@ -109,7 +109,7 @@ final analyticsRepositoryProvider = Provider<AnalyticsRepository>(
 /// station only ever sees that station's rows, so their charts and totals match
 /// the Crime Records list exactly.
 final analyticsRowsProvider = StreamProvider<List<AnalyticsRow>>((ref) {
-  final assigned = ref.watch(assignedStationProvider);
+  final assigned = ref.watch(assignedStationKeysProvider);
   final stream = ref.watch(analyticsRepositoryProvider).watchRows();
   if (assigned == null) return stream;
   return stream.map((rows) => [

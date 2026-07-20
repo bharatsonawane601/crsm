@@ -108,15 +108,19 @@ func (a *App) handleCheck(w http.ResponseWriter, r *http.Request) {
 // scopeLabels resolves the user's zone/division/station scope ids to names for
 // the portal header.
 func (a *App) scopeLabels(ctx context.Context, email string) map[string]any {
-	out := map[string]any{"zone": nil, "division": nil, "station": nil}
-	var zone, division, station *string
+	out := map[string]any{
+		"zone": nil, "division": nil, "station": nil,
+		"station_aliases": []string{},
+	}
+	var zone, division, station, stationMr, stationCode *string
 	err := a.db.QueryRow(ctx, `
-		SELECT z.name, d.name, s.name
+		SELECT z.name, d.name, s.name, s.name_mr, s.code
 		  FROM access_users u
 		  LEFT JOIN org_zones z ON z.id = u.scope_zone_id
 		  LEFT JOIN org_divisions d ON d.id = u.scope_division_id
 		  LEFT JOIN org_stations s ON s.id = u.scope_station_id
-		 WHERE u.email = $1`, email).Scan(&zone, &division, &station)
+		 WHERE u.email = $1`, email).Scan(
+		&zone, &division, &station, &stationMr, &stationCode)
 	if err != nil {
 		return out
 	}
@@ -128,6 +132,19 @@ func (a *App) scopeLabels(ctx context.Context, email string) map[string]any {
 	}
 	if station != nil {
 		out["station"] = *station
+		// EVERY spelling this station is known by — English, Marathi and the
+		// admin's alias/code. A station-scoped app matches its local records
+		// against these, so a record filed as "एम.वाळूज" is recognised as
+		// "MIDC Waluj". Without them the app would fall back to its built-in
+		// name list, which does not know the aliases an admin added here, and
+		// would hide the user's own station's records.
+		aliases := []string{*station}
+		for _, alt := range []*string{stationMr, stationCode} {
+			if alt != nil && strings.TrimSpace(*alt) != "" {
+				aliases = append(aliases, strings.TrimSpace(*alt))
+			}
+		}
+		out["station_aliases"] = aliases
 	}
 	return out
 }
