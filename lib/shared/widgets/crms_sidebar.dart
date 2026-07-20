@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/colors.dart';
+import '../../core/theme/radii.dart';
+import '../../core/theme/shadows.dart';
 import '../../core/theme/spacing.dart';
 import '../../core/theme/typography.dart';
 
@@ -81,33 +83,58 @@ class _NavTileState extends State<_NavTile> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final dark = theme.brightness == Brightness.dark;
     final selected = widget.item.selected;
+    // Selected reads as a solid navy pill — the strongest single cue in the
+    // chrome, so the current section is obvious at a glance instead of being a
+    // pale tint you have to hunt for.
     final fg = selected
-        ? AppColors.policeNavy
-        : theme.colorScheme.onSurfaceVariant;
-    final bg = selected
-        ? AppColors.policeKhakiLight
-        : (_hover ? theme.colorScheme.surfaceContainerHighest : Colors.transparent);
+        ? Colors.white
+        : (_hover
+            ? (dark ? AppColors.darkInk : AppColors.ink900)
+            : theme.colorScheme.onSurfaceVariant);
 
-    final tile = Container(
-      height: 40,
+    final tile = AnimatedContainer(
+      duration: const Duration(milliseconds: 120),
+      curve: Curves.easeOut,
+      height: 42,
       margin: const EdgeInsets.symmetric(vertical: 2),
       decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(6),
-        border: Border(
-          left: BorderSide(
-            color: selected ? AppColors.policeKhaki : Colors.transparent,
-            width: 3,
-          ),
-        ),
+        gradient: selected
+            ? const LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [AppColors.policeNavy, AppColors.policeNavyDark],
+              )
+            : null,
+        color: selected
+            ? null
+            : (_hover
+                ? AppColors.tint(AppColors.policeNavy, dark ? 0.16 : 0.06)
+                : Colors.transparent),
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        boxShadow: selected ? AppShadows.card : null,
       ),
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s3),
+      padding: EdgeInsets.symmetric(
+          horizontal: widget.collapsed ? 0 : AppSpacing.s3),
       child: Row(
         mainAxisAlignment:
             widget.collapsed ? MainAxisAlignment.center : MainAxisAlignment.start,
         children: [
-          Icon(widget.item.icon, size: 20, color: fg),
+          // Khaki bead on the active item: the uniform accent still marks the
+          // selection, but as a detail on the pill rather than a stray edge.
+          if (!widget.collapsed)
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 120),
+              width: 3,
+              height: selected ? 18 : 0,
+              decoration: BoxDecoration(
+                color: AppColors.policeKhaki,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          if (!widget.collapsed) const SizedBox(width: AppSpacing.s2),
+          Icon(widget.item.icon, size: 19, color: fg),
           if (!widget.collapsed) ...[
             const SizedBox(width: AppSpacing.s2),
             Expanded(
@@ -117,7 +144,7 @@ class _NavTileState extends State<_NavTile> {
                 overflow: TextOverflow.ellipsis,
                 style: AppType.body.copyWith(
                   color: fg,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
             ),

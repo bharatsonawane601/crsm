@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:printing/printing.dart';
 
+import '../../core/theme/colors.dart';
 import '../../shared/widgets/crms.dart';
 import '../crime_entry/data/crime_types_data.dart';
 import 'analytics_model.dart';
@@ -219,48 +220,78 @@ class _AnalyticsDashboardBodyState extends State<AnalyticsDashboardBody> {
       spacing: 16,
       runSpacing: 16,
       children: [
-        KpiCard(label: 'analyzer.kpi.total'.tr(), value: '${s.total}'),
-        KpiCard(label: 'analyzer.kpi.today'.tr(), value: '${s.today}'),
-        KpiCard(label: 'analyzer.kpi.week'.tr(), value: '${s.thisWeek}'),
-        KpiCard(label: 'analyzer.kpi.month'.tr(), value: '${s.thisMonth}'),
-        KpiCard(label: 'analyzer.kpi.year'.tr(), value: '${s.thisYear}'),
+        // Volume tiles stay neutral; only tiles that carry a judgement
+        // (solved / unsolved / wanted / overdue) get a semantic colour, so
+        // colour on this board always means something.
+        KpiCard(
+          label: 'analyzer.kpi.total'.tr(),
+          value: '${s.total}',
+          icon: PhosphorIconsRegular.folders,
+        ),
+        KpiCard(
+          label: 'analyzer.kpi.today'.tr(),
+          value: '${s.today}',
+          icon: PhosphorIconsRegular.clock,
+        ),
+        KpiCard(
+          label: 'analyzer.kpi.week'.tr(),
+          value: '${s.thisWeek}',
+          icon: PhosphorIconsRegular.calendarBlank,
+        ),
+        KpiCard(
+          label: 'analyzer.kpi.month'.tr(),
+          value: '${s.thisMonth}',
+          icon: PhosphorIconsRegular.calendar,
+        ),
+        KpiCard(
+          label: 'analyzer.kpi.year'.tr(),
+          value: '${s.thisYear}',
+          icon: PhosphorIconsRegular.chartLineUp,
+        ),
         KpiCard(
           label: 'crime.status.undetected'.tr(),
           value:
               '${(s.statusCounts['undetected'] ?? 0) + (s.statusCounts['pending'] ?? 0) + (s.statusCounts['open'] ?? 0)}',
-          color: Colors.orange,
+          color: AppColors.warningAmber,
+          icon: PhosphorIconsRegular.magnifyingGlass,
         ),
         KpiCard(
           label: 'crime.status.detected'.tr(),
           value:
               '${(s.statusCounts['detected'] ?? 0) + (s.statusCounts['solved'] ?? 0) + (s.statusCounts['chargesheeted'] ?? 0)}',
-          color: Colors.green,
+          color: AppColors.successGreen,
+          icon: PhosphorIconsRegular.checkCircle,
         ),
         KpiCard(
           label: 'analyzer.kpi.arrested'.tr(),
           value: '${s.arrested}',
-          color: Colors.green,
+          color: AppColors.successGreen,
+          icon: PhosphorIconsRegular.prohibit,
         ),
         KpiCard(
           label: 'analyzer.kpi.wanted'.tr(),
           value: '${s.wanted}',
-          color: Colors.red,
+          color: AppColors.dangerRed,
+          icon: PhosphorIconsRegular.userFocus,
         ),
         KpiCard(
           label: 'analyzer.kpi.recovered'.tr(),
           value: '₹${_moneyFmt.format(s.recoveredValue)}',
+          icon: PhosphorIconsRegular.package,
         ),
         KpiCard(
           label: 'analyzer.kpi.avgChargesheet'.tr(),
           value: s.avgDaysToChargesheet == null
               ? '—'
               : s.avgDaysToChargesheet!.toStringAsFixed(0),
+          icon: PhosphorIconsRegular.hourglass,
         ),
         KpiCard(
           label: 'analyzer.kpi.chargesheetOverdue'.tr(),
           value:
               '${(s.chargesheetOverdue['60'] ?? 0) + (s.chargesheetOverdue['90'] ?? 0)}',
-          color: Colors.red,
+          color: AppColors.dangerRed,
+          icon: PhosphorIconsRegular.warningCircle,
         ),
       ],
     );

@@ -5,6 +5,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/theme/colors.dart';
+import '../../core/theme/radii.dart';
+import '../../core/theme/shadows.dart';
 import '../../core/theme/spacing.dart';
 import '../../core/theme/typography.dart';
 import '../../shared/widgets/crms.dart';
@@ -25,38 +27,142 @@ const List<Color> kChartPalette = [
   Color(0xFF827717), // olive
 ];
 
-/// A KPI tile: khaki top accent, caption label, large display number.
+/// A KPI tile: tinted icon chip, caption label, large display number, and a
+/// coloured rail down the left edge.
+///
+/// The rail is on the LEFT rather than the top: a dozen tiles with top bars
+/// read as one striped band, while left rails let the eye run down the numbers.
+/// Colour comes from [AppColors] semantics (never raw `Colors.*`), so a tile
+/// reads the same as the status pill for the same thing elsewhere.
 class KpiCard extends StatelessWidget {
-  const KpiCard({super.key, required this.label, required this.value, this.color});
+  const KpiCard({
+    super.key,
+    required this.label,
+    required this.value,
+    this.color,
+    this.icon,
+    this.hint,
+  });
 
   final String label;
   final String value;
   final Color? color;
+  final IconData? icon;
+
+  /// Optional sub-line under the number (e.g. "of 573 total").
+  final String? hint;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final dark = theme.brightness == Brightness.dark;
+    final accent = color ?? AppColors.policeNavy;
+    final onCard = dark ? AppColors.darkInk : AppColors.ink900;
+
     return SizedBox(
-      width: 180,
-      child: CrmsCard(
-        elevated: true,
-        accent: true,
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label.toUpperCase(),
-                style: AppType.caption.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  letterSpacing: 0.04 * 12,
-                )),
-            const SizedBox(height: 8),
-            Text(value,
-                style: AppType.display.copyWith(
-                  fontSize: 28,
-                  color: color ?? AppColors.policeNavy,
-                )),
-          ],
+      width: 208,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: AppRadii.brLg,
+          border: Border.all(color: theme.dividerColor),
+          boxShadow: AppShadows.card,
+        ),
+        child: ClipRRect(
+          borderRadius: AppRadii.brLg,
+          child: DecoratedBox(
+            // Barely-there wash of the accent so tinted tiles differ from plain
+            // ones without turning the board into a colour chart.
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppColors.tint(accent, dark ? 0.10 : 0.045),
+                  AppColors.tint(accent, 0),
+                ],
+              ),
+            ),
+            // The rail is a positioned overlay, not a border side or a stretched
+            // Row child: a rounded border must be one uniform colour, and a
+            // stretch Row demands a bounded height the tile does not always get.
+            // The Stack takes its size from the padded content below.
+            child: Stack(
+              children: [
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: Container(width: 3, color: accent),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(19, 14, 16, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              label.toUpperCase(),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppType.caption.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                                letterSpacing: 0.5,
+                                fontWeight: FontWeight.w600,
+                                height: 1.3,
+                              ),
+                            ),
+                          ),
+                          if (icon != null) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: AppColors.tint(
+                                  accent,
+                                  dark ? 0.22 : 0.12,
+                                ),
+                                borderRadius: AppRadii.brSm,
+                              ),
+                              child: Icon(icon, size: 14, color: accent),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        value,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppType.display.copyWith(
+                          fontSize: 30,
+                          height: 1.05,
+                          letterSpacing: -0.5,
+                          // Neutral ink for plain tiles; the accent only
+                          // colours numbers that carry a real signal.
+                          color: color == null ? onCard : accent,
+                        ),
+                      ),
+                      if (hint != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          hint!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppType.caption.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -86,9 +192,11 @@ class ChartCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(title,
-                    style: Theme.of(context).textTheme.titleMedium,
-                    overflow: TextOverflow.ellipsis),
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               IconButton(
                 tooltip: 'analyzer.chart.enlarge'.tr(),
@@ -100,8 +208,7 @@ class ChartCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.s2),
           InkWell(
-            onTap: () =>
-                showEnlargedChart(context, title: title, chart: child),
+            onTap: () => showEnlargedChart(context, title: title, chart: child),
             child: SizedBox(height: height, child: child),
           ),
         ],
@@ -115,12 +222,12 @@ enum ChartType { bar, columns, line, area, pie }
 
 extension _ChartTypeMeta on ChartType {
   IconData get icon => switch (this) {
-        ChartType.bar => Icons.bar_chart,
-        ChartType.columns => Icons.equalizer,
-        ChartType.line => Icons.show_chart,
-        ChartType.area => Icons.area_chart,
-        ChartType.pie => Icons.pie_chart,
-      };
+    ChartType.bar => Icons.bar_chart,
+    ChartType.columns => Icons.equalizer,
+    ChartType.line => Icons.show_chart,
+    ChartType.area => Icons.area_chart,
+    ChartType.pie => Icons.pie_chart,
+  };
   String get labelKey => 'analyzer.chartType.$name';
 }
 
@@ -200,9 +307,11 @@ Future<void> showEnlargedChart(
                 Row(
                   children: [
                     Expanded(
-                      child: Text(title,
-                          style: Theme.of(ctx).textTheme.titleLarge,
-                          overflow: TextOverflow.ellipsis),
+                      child: Text(
+                        title,
+                        style: Theme.of(ctx).textTheme.titleLarge,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     ...actions,
                     IconButton(
@@ -262,17 +371,17 @@ class _ConfigurableChartCardState extends State<ConfigurableChartCard> {
       buildChartFor(_type, widget.entries, emptyLabel: widget.emptyLabel);
 
   void _enlarge() => showEnlargedChart(
-        context,
-        title: widget.title,
-        chart: _chart(),
-        actions: [
-          chartTypeMenu(
-            current: _type,
-            types: widget.types,
-            onSelected: (t) => setState(() => _type = t),
-          ),
-        ],
-      );
+    context,
+    title: widget.title,
+    chart: _chart(),
+    actions: [
+      chartTypeMenu(
+        current: _type,
+        types: widget.types,
+        onSelected: (t) => setState(() => _type = t),
+      ),
+    ],
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -283,9 +392,11 @@ class _ConfigurableChartCardState extends State<ConfigurableChartCard> {
           Row(
             children: [
               Expanded(
-                child: Text(widget.title,
-                    style: Theme.of(context).textTheme.titleMedium,
-                    overflow: TextOverflow.ellipsis),
+                child: Text(
+                  widget.title,
+                  style: Theme.of(context).textTheme.titleMedium,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               IconButton(
                 tooltip: 'analyzer.chart.enlarge'.tr(),
@@ -352,17 +463,17 @@ class _CustomChartCardState extends State<CustomChartCard> {
       buildChartFor(_type, _entries, emptyLabel: widget.emptyLabel);
 
   void _enlarge() => showEnlargedChart(
-        context,
-        title: _metric,
-        chart: _chart(),
-        actions: [
-          chartTypeMenu(
-            current: _type,
-            types: _types,
-            onSelected: (t) => setState(() => _type = t),
-          ),
-        ],
-      );
+    context,
+    title: _metric,
+    chart: _chart(),
+    actions: [
+      chartTypeMenu(
+        current: _type,
+        types: _types,
+        onSelected: (t) => setState(() => _type = t),
+      ),
+    ],
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -375,9 +486,11 @@ class _CustomChartCardState extends State<CustomChartCard> {
               const Icon(Icons.tune, size: 18),
               const SizedBox(width: 6),
               Expanded(
-                child: Text('analyzer.chart.custom'.tr(),
-                    style: Theme.of(context).textTheme.titleMedium,
-                    overflow: TextOverflow.ellipsis),
+                child: Text(
+                  'analyzer.chart.custom'.tr(),
+                  style: Theme.of(context).textTheme.titleMedium,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               IconButton(
                 tooltip: 'analyzer.chart.enlarge'.tr(),
@@ -475,16 +588,22 @@ class RankedBars extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: Text(shown[i].key,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppType.bodySm
-                              .copyWith(color: theme.colorScheme.onSurfaceVariant)),
-                    ),
-                    Text('${shown[i].value}',
+                      child: Text(
+                        shown[i].key,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: AppType.bodySm.copyWith(
-                            fontWeight: FontWeight.w500,
-                            color: theme.colorScheme.onSurface)),
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '${shown[i].value}',
+                      style: AppType.bodySm.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 6),
@@ -532,9 +651,10 @@ class CountPie extends StatelessWidget {
                     radius: 56,
                     color: kChartPalette[i % kChartPalette.length],
                     titleStyle: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold),
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
               ],
             ),
@@ -553,16 +673,20 @@ class CountPie extends StatelessWidget {
                     child: Row(
                       children: [
                         Container(
-                            width: 12,
-                            height: 12,
-                            decoration: BoxDecoration(
-                              color: kChartPalette[i % kChartPalette.length],
-                              borderRadius: BorderRadius.circular(2),
-                            )),
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: kChartPalette[i % kChartPalette.length],
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
                         const SizedBox(width: 6),
                         Expanded(
-                          child: Text('${entries[i].key} (${entries[i].value})',
-                              maxLines: 1, overflow: TextOverflow.ellipsis),
+                          child: Text(
+                            '${entries[i].key} (${entries[i].value})',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ],
                     ),
@@ -611,10 +735,12 @@ class TrendLine extends StatelessWidget {
         gridData: const FlGridData(show: true),
         borderData: FlBorderData(show: false),
         titlesData: FlTitlesData(
-          topTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
           leftTitles: _intLeftTitles(maxY),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
@@ -627,8 +753,10 @@ class TrendLine extends StatelessWidget {
                 final k = entries[i].key;
                 return Padding(
                   padding: const EdgeInsets.only(top: 6),
-                  child: Text(rawLabels || k.length <= 2 ? k : k.substring(2),
-                      style: const TextStyle(fontSize: 10)),
+                  child: Text(
+                    rawLabels || k.length <= 2 ? k : k.substring(2),
+                    style: const TextStyle(fontSize: 10),
+                  ),
                 );
               },
             ),
@@ -665,10 +793,12 @@ class DayOfWeekBars extends StatelessWidget {
         gridData: const FlGridData(show: true),
         borderData: FlBorderData(show: false),
         titlesData: FlTitlesData(
-          topTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
           leftTitles: _intLeftTitles(maxY),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
@@ -679,8 +809,7 @@ class DayOfWeekBars extends StatelessWidget {
                 if (i < 0 || i >= labels.length) return const SizedBox();
                 return Padding(
                   padding: const EdgeInsets.only(top: 6),
-                  child:
-                      Text(labels[i], style: const TextStyle(fontSize: 10)),
+                  child: Text(labels[i], style: const TextStyle(fontSize: 10)),
                 );
               },
             ),
@@ -696,7 +825,8 @@ class DayOfWeekBars extends StatelessWidget {
                   color: kChartPalette[i % kChartPalette.length],
                   width: 16,
                   borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(4)),
+                    top: Radius.circular(4),
+                  ),
                 ),
               ],
             ),
@@ -722,15 +852,19 @@ class _LegendChip extends StatelessWidget {
           width: 10,
           height: 10,
           decoration: BoxDecoration(
-              color: color, borderRadius: BorderRadius.circular(2)),
+            color: color,
+            borderRadius: BorderRadius.circular(2),
+          ),
         ),
         const SizedBox(width: 4),
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 150),
-          child: Text(text,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 10)),
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 10),
+          ),
         ),
       ],
     );
@@ -760,21 +894,21 @@ class _IndexLegend extends StatelessWidget {
 
 /// Simple Mon..Sun / numbered x-axis title widget builder for index charts.
 AxisTitles _indexBottomTitles(int count) => AxisTitles(
-      sideTitles: SideTitles(
-        showTitles: true,
-        reservedSize: 20,
-        getTitlesWidget: (value, meta) {
-          final i = value.round();
-          if (i < 0 || i >= count || value != i.toDouble()) {
-            return const SizedBox();
-          }
-          return Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text('${i + 1}', style: const TextStyle(fontSize: 10)),
-          );
-        },
-      ),
-    );
+  sideTitles: SideTitles(
+    showTitles: true,
+    reservedSize: 20,
+    getTitlesWidget: (value, meta) {
+      final i = value.round();
+      if (i < 0 || i >= count || value != i.toDouble()) {
+        return const SizedBox();
+      }
+      return Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Text('${i + 1}', style: const TextStyle(fontSize: 10)),
+      );
+    },
+  ),
+);
 
 /// Filled area chart of a monthly trend ("yyyy-MM" -> count).
 class AreaTrend extends StatelessWidget {
@@ -802,10 +936,12 @@ class AreaTrend extends StatelessWidget {
         gridData: const FlGridData(show: true),
         borderData: FlBorderData(show: false),
         titlesData: FlTitlesData(
-          topTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
           leftTitles: _intLeftTitles(maxY),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
@@ -817,8 +953,10 @@ class AreaTrend extends StatelessWidget {
                 if (i < 0 || i >= entries.length) return const SizedBox();
                 return Padding(
                   padding: const EdgeInsets.only(top: 6),
-                  child: Text(entries[i].key.substring(2),
-                      style: const TextStyle(fontSize: 10)),
+                  child: Text(
+                    entries[i].key.substring(2),
+                    style: const TextStyle(fontSize: 10),
+                  ),
                 );
               },
             ),
@@ -880,9 +1018,11 @@ class ColumnChart extends StatelessWidget {
               borderData: FlBorderData(show: false),
               titlesData: FlTitlesData(
                 topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false)),
+                  sideTitles: SideTitles(showTitles: false),
+                ),
                 rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false)),
+                  sideTitles: SideTitles(showTitles: false),
+                ),
                 leftTitles: _intLeftTitles(maxY),
                 bottomTitles: _indexBottomTitles(shown.length),
               ),
@@ -896,7 +1036,8 @@ class ColumnChart extends StatelessWidget {
                         color: kChartPalette[i % kChartPalette.length],
                         width: 16,
                         borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(4)),
+                          top: Radius.circular(4),
+                        ),
                       ),
                     ],
                   ),
@@ -953,9 +1094,11 @@ class StackedColumn extends StatelessWidget {
               borderData: FlBorderData(show: false),
               titlesData: FlTitlesData(
                 topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false)),
+                  sideTitles: SideTitles(showTitles: false),
+                ),
                 rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false)),
+                  sideTitles: SideTitles(showTitles: false),
+                ),
                 leftTitles: _intLeftTitles(maxY),
                 bottomTitles: _indexBottomTitles(shown.length),
               ),
@@ -971,12 +1114,19 @@ class StackedColumn extends StatelessWidget {
                           toY: solved + open,
                           width: 16,
                           borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(4)),
+                            top: Radius.circular(4),
+                          ),
                           rodStackItems: [
                             BarChartRodStackItem(
-                                0, solved, AppColors.successGreen),
+                              0,
+                              solved,
+                              AppColors.successGreen,
+                            ),
                             BarChartRodStackItem(
-                                solved, solved + open, AppColors.dangerRed),
+                              solved,
+                              solved + open,
+                              AppColors.dangerRed,
+                            ),
                           ],
                         ),
                       ],
@@ -1042,9 +1192,11 @@ class ComparisonColumns extends StatelessWidget {
               borderData: FlBorderData(show: false),
               titlesData: FlTitlesData(
                 topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false)),
+                  sideTitles: SideTitles(showTitles: false),
+                ),
                 rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false)),
+                  sideTitles: SideTitles(showTitles: false),
+                ),
                 leftTitles: _intLeftTitles(maxY),
                 bottomTitles: _indexBottomTitles(shown.length),
               ),
@@ -1059,14 +1211,16 @@ class ComparisonColumns extends StatelessWidget {
                         color: AppColors.successGreen,
                         width: 10,
                         borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(3)),
+                          top: Radius.circular(3),
+                        ),
                       ),
                       BarChartRodData(
                         toY: (openByType[shown[i]] ?? 0).toDouble(),
                         color: AppColors.dangerRed,
                         width: 10,
                         borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(3)),
+                          top: Radius.circular(3),
+                        ),
                       ),
                     ],
                   ),
@@ -1134,9 +1288,11 @@ class ChargesheetWindowChart extends StatelessWidget {
               borderData: FlBorderData(show: false),
               titlesData: FlTitlesData(
                 topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false)),
+                  sideTitles: SideTitles(showTitles: false),
+                ),
                 rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false)),
+                  sideTitles: SideTitles(showTitles: false),
+                ),
                 leftTitles: _intLeftTitles(maxY),
                 bottomTitles: AxisTitles(
                   sideTitles: SideTitles(
@@ -1147,8 +1303,10 @@ class ChargesheetWindowChart extends StatelessWidget {
                       if (i < 0 || i >= windows.length) return const SizedBox();
                       return Padding(
                         padding: const EdgeInsets.only(top: 6),
-                        child: Text('${windows[i]} ${'analyzer.chargesheet.days'.tr()}',
-                            style: const TextStyle(fontSize: 10)),
+                        child: Text(
+                          '${windows[i]} ${'analyzer.chargesheet.days'.tr()}',
+                          style: const TextStyle(fontSize: 10),
+                        ),
                       );
                     },
                   ),
@@ -1164,22 +1322,25 @@ class ChargesheetWindowChart extends StatelessWidget {
                         toY: (within[windows[i]] ?? 0).toDouble(),
                         color: AppColors.successGreen,
                         width: 12,
-                        borderRadius:
-                            const BorderRadius.vertical(top: Radius.circular(3)),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(3),
+                        ),
                       ),
                       BarChartRodData(
                         toY: (overdue[windows[i]] ?? 0).toDouble(),
                         color: AppColors.dangerRed,
                         width: 12,
-                        borderRadius:
-                            const BorderRadius.vertical(top: Radius.circular(3)),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(3),
+                        ),
                       ),
                       BarChartRodData(
                         toY: (filed[windows[i]] ?? 0).toDouble(),
                         color: AppColors.infoBlue,
                         width: 12,
-                        borderRadius:
-                            const BorderRadius.vertical(top: Radius.circular(3)),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(3),
+                        ),
                       ),
                     ],
                   ),
@@ -1228,17 +1389,15 @@ class RadarCrime extends StatelessWidget {
             RadarChartData(
               radarShape: RadarShape.polygon,
               tickCount: 4,
-              ticksTextStyle:
-                  const TextStyle(color: Colors.transparent, fontSize: 8),
-              radarBorderData:
-                  const BorderSide(color: Colors.transparent),
-              gridBorderData:
-                  BorderSide(color: Colors.grey.shade300, width: 1),
-              tickBorderData:
-                  BorderSide(color: Colors.grey.shade300, width: 1),
+              ticksTextStyle: const TextStyle(
+                color: Colors.transparent,
+                fontSize: 8,
+              ),
+              radarBorderData: const BorderSide(color: Colors.transparent),
+              gridBorderData: BorderSide(color: Colors.grey.shade300, width: 1),
+              tickBorderData: BorderSide(color: Colors.grey.shade300, width: 1),
               titlePositionPercentageOffset: 0.12,
-              getTitle: (index, angle) =>
-                  RadarChartTitle(text: '${index + 1}'),
+              getTitle: (index, angle) => RadarChartTitle(text: '${index + 1}'),
               dataSets: [
                 RadarDataSet(
                   fillColor: AppColors.policeNavy.withValues(alpha: 0.25),
@@ -1246,7 +1405,8 @@ class RadarCrime extends StatelessWidget {
                   borderWidth: 2,
                   entryRadius: 3,
                   dataEntries: [
-                    for (final e in shown) RadarEntry(value: e.value.toDouble()),
+                    for (final e in shown)
+                      RadarEntry(value: e.value.toDouble()),
                   ],
                 ),
               ],
@@ -1292,9 +1452,11 @@ class BubbleCrime extends StatelessWidget {
               borderData: FlBorderData(show: false),
               titlesData: FlTitlesData(
                 topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false)),
+                  sideTitles: SideTitles(showTitles: false),
+                ),
                 rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false)),
+                  sideTitles: SideTitles(showTitles: false),
+                ),
                 leftTitles: _intLeftTitles(maxV),
                 bottomTitles: _indexBottomTitles(shown.length),
               ),
@@ -1304,8 +1466,9 @@ class BubbleCrime extends StatelessWidget {
                     i.toDouble(),
                     shown[i].value.toDouble(),
                     dotPainter: FlDotCirclePainter(
-                      color: kChartPalette[i % kChartPalette.length]
-                          .withValues(alpha: 0.7),
+                      color: kChartPalette[i % kChartPalette.length].withValues(
+                        alpha: 0.7,
+                      ),
                       radius: 8 + 22 * (shown[i].value / maxV),
                     ),
                   ),
@@ -1352,9 +1515,11 @@ class ScatterCrime extends StatelessWidget {
               borderData: FlBorderData(show: false),
               titlesData: FlTitlesData(
                 topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false)),
+                  sideTitles: SideTitles(showTitles: false),
+                ),
                 rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false)),
+                  sideTitles: SideTitles(showTitles: false),
+                ),
                 leftTitles: _intLeftTitles(maxV),
                 bottomTitles: _indexBottomTitles(shown.length),
               ),
@@ -1410,14 +1575,18 @@ class GaugeChart extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 24),
-                Text('${pct.toStringAsFixed(0)}%',
-                    style: AppType.display
-                        .copyWith(fontSize: 32, color: color)),
+                Text(
+                  '${pct.toStringAsFixed(0)}%',
+                  style: AppType.display.copyWith(fontSize: 32, color: color),
+                ),
                 const SizedBox(height: 2),
-                Text(label,
-                    textAlign: TextAlign.center,
-                    style: AppType.caption.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant)),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: AppType.caption.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           ),
@@ -1428,8 +1597,11 @@ class GaugeChart extends StatelessWidget {
 }
 
 class _GaugePainter extends CustomPainter {
-  _GaugePainter(
-      {required this.percent, required this.color, required this.track});
+  _GaugePainter({
+    required this.percent,
+    required this.color,
+    required this.track,
+  });
 
   final double percent;
   final Color color;
