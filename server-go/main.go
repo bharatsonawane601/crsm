@@ -27,6 +27,14 @@ func main() {
 
 	app := &App{cfg: cfg, db: pool}
 
+	// Heal any id sequence left behind by an import that carried source ids
+	// (see resyncSequences). A database that is already in that state cannot
+	// fix itself otherwise: the failure only shows up later as a duplicate-key
+	// error on an ordinary insert, which is how release uploads broke.
+	seqCtx, seqCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	app.resyncSequences(seqCtx)
+	seqCancel()
+
 	mux := http.NewServeMux()
 	// Same file-style paths as the PHP server so the app's base-URL swap works.
 	mux.HandleFunc("POST /check.php", app.gated(app.handleCheck))

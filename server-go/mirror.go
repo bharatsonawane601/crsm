@@ -31,6 +31,43 @@ func (a *App) runMirror(ctx context.Context) {
 	}
 }
 
+// resyncSequences points every id sequence at its table's real MAX(id).
+//
+// Any import that carries source ids (the Hostinger mirror, a restore) leaves
+// the sequence behind the data, and the next local INSERT then reuses a taken
+// id and dies on the primary key. That is what silently broke release uploads:
+// app_release's sequence read 18 while the table held id 30.
+//
+// Driven off pg_depend rather than a hand-kept list, so a newly mirrored table
+// is covered automatically. Idempotent and cheap — safe to run on every import
+// and at startup. Best-effort: a failure here must never abort a good import.
+func (a *App) resyncSequences(ctx context.Context) {
+	const sql = `
+		DO $$
+		DECLARE r RECORD;
+		BEGIN
+		  FOR r IN
+		    SELECT s.relname AS seq, t.relname AS tbl, c.attname AS col
+		      FROM pg_class s
+		      JOIN pg_depend d
+		        ON d.objid = s.oid
+		       AND d.classid = 'pg_class'::regclass
+		       AND d.deptype = 'a'
+		      JOIN pg_class t ON t.oid = d.refobjid
+		      JOIN pg_attribute c
+		        ON c.attrelid = t.oid AND c.attnum = d.refobjsubid
+		     WHERE s.relkind = 'S'
+		  LOOP
+		    EXECUTE format(
+		      'SELECT setval(%L, GREATEST((SELECT COALESCE(MAX(%I), 0) FROM %I), 1))',
+		      r.seq, r.col, r.tbl);
+		  END LOOP;
+		END $$;`
+	if _, err := a.db.Exec(ctx, sql); err != nil {
+		log.Printf("resync sequences: %v", err)
+	}
+}
+
 func (a *App) mirrorOnce(ctx context.Context) error {
 	// Order matters: org tree before crimes (station_id references), users
 	// before everything user-scoped.
@@ -64,10 +101,17 @@ func (a *App) mirrorOnce(ctx context.Context) error {
 			return fmt.Errorf("%s: %w", t.table, err)
 		}
 	}
-	// Local station deletions insert into central_trash via the sequence; keep
-	// it above the mirrored source ids so the two can never collide.
-	_, _ = a.db.Exec(ctx, `SELECT setval(pg_get_serial_sequence('central_trash','id'),
-		GREATEST((SELECT COALESCE(MAX(id), 0) FROM central_trash), 1))`)
+	// The import above writes rows with their SOURCE ids (org tree, app_release,
+	// central_trash), which leaves each table's own id sequence pointing at
+	// whatever it was before — well behind the ids now in the table. The next
+	// local insert then reuses a taken id and fails on the primary key.
+	//
+	// This really happened: app_release's sequence sat at 18 while the table
+	// held id 30, so EVERY release upload failed with a duplicate-key error
+	// until the sequence was reset by hand. Only central_trash was being fixed
+	// here, one table at a time, which is exactly how app_release got missed.
+	// Resync them all, so adding a mirrored table can't reintroduce this.
+	a.resyncSequences(ctx)
 	// central_deletions is append-only: pull all, insert the ones we miss.
 	if err := a.mirrorDeletions(ctx); err != nil {
 		return fmt.Errorf("central_deletions: %w", err)
