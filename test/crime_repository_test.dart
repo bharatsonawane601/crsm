@@ -392,6 +392,71 @@ void main() {
         ['Accused One', 'Accused Two']);
   });
 
+  test('the same FIR from two accounts imports once, newest wins', () async {
+    // Central stores one row per uploading account (unique on owner_email +
+    // remote_uid), so two accounts that synced the same station each hold a
+    // copy. On the live server that is 504 FIRs. Both copies arrive in the
+    // same download batch and must collapse to one local record.
+    final res = await repo.importFromCentral([
+      centralRow(
+        uid: 'c_ownerA',
+        updatedAt: DateTime(2026, 1, 1),
+        extra: {'crime_type': 'Older copy'},
+      ),
+      centralRow(
+        uid: 'c_ownerB',
+        updatedAt: DateTime(2026, 6, 1),
+        extra: {'crime_type': 'Newer copy'},
+      ),
+    ]);
+
+    expect(res.created, 1, reason: 'second copy must not create a record');
+    final list = await repo.watchCrimeList().first;
+    expect(list.length, 1);
+    expect((await repo.loadDraft(list.single.crime.id))!.crimeType,
+        'Newer copy');
+  });
+
+  test('duplicate copies arriving newest-first keep the newest', () async {
+    // Same as above but the older copy is second — it must not overwrite.
+    await repo.importFromCentral([
+      centralRow(
+        uid: 'c_ownerB',
+        updatedAt: DateTime(2026, 6, 1),
+        extra: {'crime_type': 'Newer copy'},
+      ),
+      centralRow(
+        uid: 'c_ownerA',
+        updatedAt: DateTime(2026, 1, 1),
+        extra: {'crime_type': 'Older copy'},
+      ),
+    ]);
+
+    final list = await repo.watchCrimeList().first;
+    expect(list.length, 1);
+    expect((await repo.loadDraft(list.single.crime.id))!.crimeType,
+        'Newer copy');
+  });
+
+  test('a downloaded record keeps the server time, not "now"', () async {
+    // If an import stamped updatedAt = now(), the whole downloaded set would
+    // look locally edited and the next sync would upload it all back under
+    // this account -- central keys rows by (owner_email, remote_uid), so that
+    // is a second copy of every FIR. Every station would duplicate its own
+    // register on its first sync.
+    final serverAt = DateTime.utc(2026, 3, 4, 5, 6, 7);
+    final res = await repo.importFromCentral(
+      [centralRow(uid: 'c_srv', updatedAt: serverAt)],
+    );
+
+    expect(res.uids, {'c_srv'}, reason: 'caller needs this to skip re-upload');
+    final exported = await repo.exportForCentral(
+      since: serverAt.add(const Duration(seconds: 1)),
+    );
+    expect(exported, isEmpty,
+        reason: 'an untouched downloaded record is not pending upload');
+  });
+
   test('rows with neither uid nor FIR number are ignored', () async {
     final res = await repo.importFromCentral([
       {'uid': '', 'fir_no': '', 'updated_at': '', 'data': const {}},

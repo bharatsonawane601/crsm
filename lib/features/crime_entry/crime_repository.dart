@@ -26,10 +26,16 @@ class CrimeRepository {
   /// Insert (new) or update (existing) a crime and all its child rows in one
   /// transaction. Returns the crime id. For edits, child rows are replaced
   /// wholesale (simpler and correct for this form-driven model).
-  Future<int> saveDraft(CrimeDraft d) {
+  /// [updatedAt] overrides the change stamp. Only the central importer passes
+  /// it, so a downloaded FIR keeps the SERVER's last-changed time instead of
+  /// looking like it was just edited here. Stamping "now" would make the whole
+  /// downloaded set look locally modified, and the next sync would upload all
+  /// of it straight back under this station's account — central keys rows by
+  /// (owner_email, remote_uid), so that is a fresh duplicate of every record.
+  Future<int> saveDraft(CrimeDraft d, {DateTime? updatedAt}) {
     final wasNew = d.isNew;
     return _db.transaction(() async {
-      final crimeId = await _upsertCrime(d);
+      final crimeId = await _upsertCrime(d, updatedAt: updatedAt);
       // A freshly-inserted crime has no child rows yet — skipping the eight
       // wholesale deletes makes bulk imports noticeably faster.
       if (!wasNew) await _deleteChildren(crimeId);
@@ -92,7 +98,7 @@ class CrimeRepository {
     }
   }
 
-  Future<int> _upsertCrime(CrimeDraft d) async {
+  Future<int> _upsertCrime(CrimeDraft d, {DateTime? updatedAt}) async {
     // Assign a stable uid once, on first save; keep it on later edits.
     d.remoteUid ??= _newRemoteUid();
     final companion = CrimesCompanion(
@@ -139,7 +145,7 @@ class CrimeRepository {
       outsidePsDistrict: Value(d.outsidePsDistrict),
       delayReason: Value(d.delayReason),
       inquestUdNo: Value(d.inquestUdNo),
-      updatedAt: Value(DateTime.now()),
+      updatedAt: Value(updatedAt ?? DateTime.now()),
     );
 
     if (d.isNew) {
@@ -683,23 +689,39 @@ class CrimeRepository {
   /// record already has them.
   ///
   /// Returns (created, updated).
-  Future<({int created, int updated})> importFromCentral(
+  Future<({int created, int updated, Set<String> uids})> importFromCentral(
     List<Map<String, dynamic>> records,
   ) async {
-    if (records.isEmpty) return (created: 0, updated: 0);
+    if (records.isEmpty) {
+      return (created: 0, updated: 0, uids: <String>{});
+    }
+    // Central uids written by this import. The caller excludes them from the
+    // same cycle's upload: they came FROM the server, so pushing them back
+    // would file a second copy under this account.
+    final touched = <String>{};
 
     final existing = await _db.select(_db.crimes).get();
-    final byUid = <String, Crime>{
+    // Index of what this PC already holds, keyed by central uid and by FIR
+    // identity. It is MUTATED as rows are imported: the same FIR really can
+    // arrive twice in one batch, because central stores one row per uploading
+    // account (unique on owner_email + remote_uid). Two accounts that synced
+    // the same station therefore each hold a copy — on this server that is 504
+    // FIRs. Matching against a snapshot taken before the loop would import
+    // both copies and leave the station with duplicate records.
+    final idByUid = <String, int>{
       for (final c in existing)
-        if ((c.remoteUid ?? '').isNotEmpty) c.remoteUid!: c,
+        if ((c.remoteUid ?? '').isNotEmpty) c.remoteUid!: c.id,
     };
     // Pre-v8 records were uploaded under their local row id and legacy imports
     // have no uid at all, so fall back to FIR identity — otherwise a station
     // would end up with two copies of every FIR it already had.
-    final byIdentity = <String, Crime>{
+    final idByIdentity = <String, int>{
       for (final c in existing)
         if (firIdentityKey(c.firNo, c.year, c.policeStation) != null)
-          firIdentityKey(c.firNo, c.year, c.policeStation)!: c,
+          firIdentityKey(c.firNo, c.year, c.policeStation)!: c.id,
+    };
+    final updatedAtById = <int, DateTime>{
+      for (final c in existing) c.id: c.updatedAt,
     };
 
     var created = 0;
@@ -717,31 +739,50 @@ class CrimeRepository {
         if (uid.isEmpty && firNo.trim().isEmpty) continue;
 
         final identity = firIdentityKey(firNo, year, station);
-        final local = byUid[uid] ?? (identity == null ? null : byIdentity[identity]);
+        final localId =
+            idByUid[uid] ?? (identity == null ? null : idByIdentity[identity]);
         final serverAt = DateTime.tryParse((row['updated_at'] ?? '').toString());
 
-        if (local == null) {
+        void remember(int id, DateTime? at) {
+          if (uid.isNotEmpty) {
+            idByUid[uid] = id;
+            touched.add(uid);
+          }
+          if (identity != null) idByIdentity[identity] = id;
+          updatedAtById[id] = at ?? DateTime.now();
+        }
+
+        if (localId == null) {
           final draft = CrimeDraft(firNo: firNo);
           draft.remoteUid = uid.isEmpty ? null : uid;
           _applyCentral(draft, data, station: station, year: year);
-          await saveDraft(draft);
+          // Keep the SERVER's change time, not "now" — see saveDraft.
+          final newId = await saveDraft(draft, updatedAt: serverAt);
+          // Register it immediately so the duplicate copy of this same FIR,
+          // later in this very batch, updates it instead of adding a second.
+          remember(newId, serverAt);
           created++;
           continue;
         }
-        // Local is at least as fresh as the server's copy — keep it.
-        if (serverAt == null || !serverAt.isAfter(local.updatedAt)) continue;
+        // Local is at least as fresh as the server's copy — keep it. Covers
+        // both an un-uploaded local edit and the older of two central copies.
+        final localAt = updatedAtById[localId];
+        if (serverAt == null || localAt == null || !serverAt.isAfter(localAt)) {
+          continue;
+        }
 
-        final draft = await loadDraft(local.id);
+        final draft = await loadDraft(localId);
         if (draft == null) continue;
         // Adopt the central uid so this record stops being matched by FIR
         // identity on later syncs (and so delete-markers land on it correctly).
         if (uid.isNotEmpty) draft.remoteUid = uid;
         _applyCentral(draft, data, station: station, year: year);
-        await saveDraft(draft);
+        await saveDraft(draft, updatedAt: serverAt);
+        remember(localId, serverAt);
         updated++;
       }
     });
-    return (created: created, updated: updated);
+    return (created: created, updated: updated, uids: touched);
   }
 
   /// Overlays a central `data_json` payload onto [d]. Only fields the server

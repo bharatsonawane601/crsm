@@ -105,7 +105,8 @@ class CentralUploadController extends Notifier<CentralUploadState> {
       // Records list — the records were on the server, not on their PC. The
       // server picks the scope from the account's assignment (one station, or
       // every station in a zone); the app never asks for a station by name.
-      await _downloadScopedRecords(client, user.email, repo);
+      final justDownloaded =
+          await _downloadScopedRecords(client, user.email, repo);
 
       // 2) One station = one spelling: fold Marathi/variant station names into
       // the canonical one before export, so the portal never shows the same
@@ -129,6 +130,16 @@ class CentralUploadController extends Notifier<CentralUploadState> {
         records = [
           for (final r in records)
             if (stationInScope(r['police_station'] as String?, assigned)) r,
+        ];
+      }
+      // Never push back what we just pulled down. Central keys rows by
+      // (owner_email, remote_uid), so re-uploading a downloaded FIR files a
+      // SECOND copy of it under this account — every station would duplicate
+      // its whole register on the server on its first sync.
+      if (justDownloaded.isNotEmpty) {
+        records = [
+          for (final r in records)
+            if (!justDownloaded.contains(r['uid'] as String?)) r,
         ];
       }
       if (records.isEmpty) {
@@ -169,11 +180,14 @@ class CentralUploadController extends Notifier<CentralUploadState> {
   /// ones pull almost nothing. The watermark only advances on a page that fully
   /// applied: a failure mid-run leaves it where it was so the next sync retries
   /// rather than skipping records for good.
-  Future<void> _downloadScopedRecords(
+  /// Returns the central uids written by this pull, so the caller can keep them
+  /// out of the same cycle's upload.
+  Future<Set<String>> _downloadScopedRecords(
     CentralClient client,
     String email,
     CrimeRepository repo,
   ) async {
+    final imported = <String>{};
     final prefs = await SharedPreferences.getInstance();
     var cursor = prefs.getString(_lastDownloadPrefKey);
     var offset = 0;
@@ -182,9 +196,10 @@ class CentralUploadController extends Notifier<CentralUploadState> {
     for (var page = 0; page < 200; page++) {
       final result =
           await client.download(email: email, cursor: cursor, offset: offset);
-      if (result == null) return; // network/server failure — keep the watermark
+      // Network/server failure — keep the watermark and return what applied.
+      if (result == null) return imported;
       if (result.records.isNotEmpty) {
-        await repo.importFromCentral(result.records);
+        imported.addAll((await repo.importFromCentral(result.records)).uids);
       }
       if (result.cursor != null) {
         cursor = result.cursor;
@@ -197,8 +212,9 @@ class CentralUploadController extends Notifier<CentralUploadState> {
         // paging still terminates.
         offset += result.records.length;
       }
-      if (!result.more) return;
+      if (!result.more) return imported;
     }
+    return imported;
   }
 
   /// Lightweight: pulls down only the server-side deletions and removes the
