@@ -61,9 +61,13 @@ macos/build/
 linux/build/
 windows/build/
 
-# This repo is Linux-only — Windows build files stay on the dev machine, not here.
-/windows/
-/installer/crms.iss
+# Windows build OUTPUT stays on the dev machine — but the runner SOURCE is
+# tracked. It was all ignored, which meant the hand-written native code
+# (marathi_editor.*, the close-confirmation handler in win32_window.cpp) and
+# the installer script existed on exactly one PC and in no backup.
+/windows/build/
+/windows/flutter/ephemeral/
+/installer/output/
 /installer/redist/
 
 # Local build secrets for install.sh (real keys live here, never committed).
