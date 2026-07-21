@@ -21,5 +21,5 @@ abstract final class Branding {
   /// Maharashtra Police emblem, shown in the app-shell sidebar header. Drop the
   /// official round emblem PNG here; until then a shield icon stands in, so the
   /// build never breaks on a missing file.
-  static const String policeLogoAsset = 'assets/images/maharashtra_police.png';
+  static const String policeLogoAsset = 'assets/images/maharashtra_police.jpg';
 }

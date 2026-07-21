@@ -69,11 +69,17 @@ class PoweredByStrip extends StatelessWidget {
                 size: logoSize,
                 color: onDark ? AppColors.policeKhaki : AppColors.policeNavy),
             const SizedBox(width: AppSpacing.s2),
-            Text(
-              Branding.companyName,
-              style: AppType.bodySm.copyWith(
-                color: nameColor,
-                fontWeight: FontWeight.w600,
+            // Flexible so a larger logo can't push the name into an overflow in
+            // the narrow sidebar footer.
+            Flexible(
+              child: Text(
+                Branding.companyName,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: AppType.bodySm.copyWith(
+                  color: nameColor,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],

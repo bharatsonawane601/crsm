@@ -182,7 +182,7 @@ class _PinGateScreenState extends ConsumerState<PinGateScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const CrmsLogo(size: 200),
+                const CrmsLogo(size: 260),
                 const SizedBox(height: AppSpacing.s6),
                 Icon(PhosphorIconsRegular.lockKey,
                     size: 32,

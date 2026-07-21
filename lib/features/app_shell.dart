@@ -639,7 +639,7 @@ class _SidebarFooter extends ConsumerWidget {
           const Padding(
             padding: EdgeInsets.symmetric(
                 vertical: AppSpacing.s3, horizontal: AppSpacing.s3),
-            child: PoweredByStrip(logoSize: 34),
+            child: PoweredByStrip(logoSize: 54),
           ),
         ],
         const SizedBox(height: AppSpacing.s2),
