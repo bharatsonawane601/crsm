@@ -17,4 +17,9 @@ abstract final class Branding {
   /// Asset path for the company logo. Drop the real file here; a styled
   /// fallback is shown until it exists.
   static const String companyLogoAsset = 'assets/images/company_logo.webp';
+
+  /// Maharashtra Police emblem, shown in the app-shell sidebar header. Drop the
+  /// official round emblem PNG here; until then a shield icon stands in, so the
+  /// build never breaks on a missing file.
+  static const String policeLogoAsset = 'assets/images/maharashtra_police.png';
 }

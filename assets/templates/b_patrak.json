@@ -14,7 +14,7 @@
     { "sr": 8, "label": "गुन्हयात वापरलेले हत्यार", "value": "" },
     { "sr": 9, "label": "गेला माल", "value": "{#stolen_property}{summary}{/stolen_property} {stolen_total_label}", "fallback": "निरंक" },
     { "sr": 10, "label": "मिळाला माल", "value": "{#recovered_property}{summary}{/recovered_property}", "fallback": "निरंक" },
-    { "sr": 11, "label": "आरोपीचे नांव", "value": "{#accused}{name}{/accused}", "fallback": "अनोळखी" },
+    { "sr": 11, "label": "आरोपीचे नांव", "value": "{#accused}{sn}) {name}{/accused}", "fallback": "अनोळखी" },
     { "sr": 12, "label": "दाखल करणार", "value": "{investigation.filed_by}" },
     { "sr": 13, "label": "तपास अधिकारी", "value": "{investigation.officer_full}" },
     { "sr": 14, "label": "गुन्हयाची सद्या स्थिती", "value": "{crime.status_label}" },

@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import '../core/branding.dart';
 import '../core/theme/colors.dart';
 import '../core/theme/spacing.dart';
 import '../core/theme/typography.dart';
@@ -536,15 +537,17 @@ class _SidebarHeader extends StatelessWidget {
         mainAxisAlignment:
             collapsed ? MainAxisAlignment.center : MainAxisAlignment.start,
         children: [
+          // Maharashtra Police emblem (see Branding.policeLogoAsset). Shield
+          // icon stands in until the official PNG is dropped in place.
           Image.asset(
-            'assets/images/crms_logo.png',
-            height: 32,
-            width: 32,
+            Branding.policeLogoAsset,
+            height: 40,
+            width: 40,
             fit: BoxFit.contain,
             errorBuilder: (_, _, _) => const Icon(
                 PhosphorIconsRegular.shieldCheck,
                 color: AppColors.policeNavy,
-                size: 28),
+                size: 32),
           ),
           if (!collapsed) ...[
             const SizedBox(width: AppSpacing.s3),
@@ -636,7 +639,7 @@ class _SidebarFooter extends ConsumerWidget {
           const Padding(
             padding: EdgeInsets.symmetric(
                 vertical: AppSpacing.s3, horizontal: AppSpacing.s3),
-            child: PoweredByStrip(logoSize: 18),
+            child: PoweredByStrip(logoSize: 34),
           ),
         ],
         const SizedBox(height: AppSpacing.s2),

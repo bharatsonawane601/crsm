@@ -43,6 +43,29 @@ void main() {
       expect(out, 'Suresh वय-30, Mahesh वय-25');
     });
 
+    test('{sn} numbers each accused in the loop (ब पत्रक serial)', () {
+      final ctx = ReportContext.fromDraft(draft());
+      final out = engine.renderValue('{#accused}{sn}) {name}{/accused}', ctx);
+      expect(out, '1) Suresh, 2) Mahesh');
+    });
+
+    test('station.name_marathi folds an English station to Marathi', () {
+      final ctx = ReportContext.fromDraft(
+        draft(),
+        station: const {'name_english': 'City Chowk'},
+      );
+      expect(engine.renderValue('{station.name_marathi}', ctx), 'सिटी चौक');
+    });
+
+    test('station.name_marathi passes an unknown name through unchanged', () {
+      final ctx = ReportContext.fromDraft(
+        draft(),
+        station: const {'name_english': 'Somewhere Else'},
+      );
+      expect(engine.renderValue('{station.name_marathi}', ctx),
+          'Somewhere Else');
+    });
+
     test('loop over stolen property descriptions', () {
       final ctx = ReportContext.fromDraft(draft());
       final out = engine.renderValue(

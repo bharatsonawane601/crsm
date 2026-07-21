@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 
+import '../crime_entry/data/bns_data.dart';
 import '../crime_entry/models/crime_draft.dart';
 import 'models/report_template.dart';
 
@@ -62,11 +63,15 @@ class ReportContext {
       'station': {
         // Pick whichever station name was filled (Marathi or English), falling
         // back to the per-crime police station, so the name always prints.
-        'name_marathi': _pick([
+        // The 'ब' पत्रक title must read in Marathi. Whatever name was filled
+        // (or the per-crime station, which is stored in English like "City
+        // Chowk"), fold it to its Marathi spelling so the header never prints
+        // English. Unknown names pass through unchanged.
+        'name_marathi': _toMarathi(_pick([
           station?['name_marathi'],
           station?['name_english'],
           d.policeStation,
-        ]),
+        ])),
         'name_english': _pick([
           station?['name_english'],
           station?['name_marathi'],
@@ -268,6 +273,16 @@ class ReportContext {
     }
     return '';
   }
+
+  /// The Marathi spelling of a station name. Canonicalises any spelling to its
+  /// English key, then looks up the Marathi name; an unknown name (or one
+  /// already in Marathi) is returned unchanged, so nothing is ever blanked.
+  static String _toMarathi(String name) {
+    if (name.isEmpty) return name;
+    final canon = canonicalStationName(name);
+    if (canon == null) return name;
+    return kPoliceStationsMr[canon] ?? name;
+  }
 }
 
 /// Renders template strings against a data context. Supports:
@@ -313,9 +328,14 @@ class TemplateEngine {
       final list = context[key];
       if (list is! List || list.isEmpty) return '';
       final parts = <String>[];
+      var n = 0;
       for (final item in list) {
+        n++;
         final itemContext =
             item is Map ? Map<String, dynamic>.from(item) : <String, dynamic>{};
+        // 1-based position within the loop, so a template can number its items
+        // (the 'ब' पत्रक prints "{sn}) {name}" to count the accused).
+        itemContext['sn'] = '$n';
         final rendered = _renderPlaceholders(inner, itemContext).trim();
         if (rendered.isNotEmpty) parts.add(rendered);
       }

@@ -889,6 +889,19 @@ h2{margin:26px 0 12px;font-size:16.5px;font-weight:700}
  .duo>.c{padding:14px 12px}
  input,select{font-size:16px}
  pre{font-size:12px}
+ /* Responsive tables (class="resp"): a wide 7-column admin table is unusable
+    on a phone even with sideways scroll, so each row becomes a stacked card
+    with its column header shown inline as a label. */
+ table.resp{white-space:normal;border:none;background:transparent}
+ table.resp thead{display:none}
+ table.resp tr{display:block;border:1px solid var(--line);border-radius:14px;background:var(--card);margin-bottom:12px;padding:6px 12px}
+ table.resp td{display:block;border:none;border-bottom:1px dashed var(--line);padding:9px 0}
+ table.resp tr td:last-child{border-bottom:none}
+ table.resp td::before{content:attr(data-label);display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--dim);margin-bottom:5px}
+ table.resp td[data-label=""]::before,table.resp td:empty{display:none}
+ table.resp form.inline{display:flex;flex-wrap:wrap;gap:6px;align-items:stretch;margin:6px 0}
+ table.resp form.inline button{flex:1 1 auto}
+ table.resp select,table.resp input[type=text],table.resp input[type=password]{width:100%!important;max-width:100%!important;box-sizing:border-box}
 }
 
 /* ---- Alerts / banners ---- */
@@ -1190,17 +1203,17 @@ pre{background:rgba(11,17,32,.7);border:1px solid var(--line);border-radius:12px
 {{define "users"}}{{template "head" .}}{{template "nav" .}}
 {{$zones := .Data.Zones}}{{$divs := .Data.Divisions}}{{$sts := .Data.Stations}}
 <p style="color:var(--dim);font-size:13px;margin-bottom:14px">Set an officer's <b>username</b> and <b>password</b> in the Credentials box, pick an access period, and press Save. Type a password to choose it yourself (you'll know it — shown 🔑) or leave it blank for a one-time password the officer changes on first sign-in (then only they know it — shown 🔒). One login works on one device only. Passwords are stored encrypted and can't be read back, only re-set.</p>
-<div class="scrolly"><table><tr><th>Login / user</th><th>Status &amp; access</th><th>Credentials</th><th>Role &amp; scope</th><th>Details</th><th>Device / IP</th><th>Last seen</th></tr>
+<div class="scrolly"><table class="resp"><thead><tr><th>Login / user</th><th>Status &amp; access</th><th>Credentials</th><th>Role &amp; scope</th><th>Details</th><th>Device / IP</th><th>Last seen</th></tr></thead><tbody>
 {{range .Data.Users}}<tr{{if .IsRequest}} style="background:rgba(251,191,36,.06)"{{end}}>
-<td>{{if .LoginID}}<b>{{.LoginID}}</b><br>{{end}}<small>{{.Email}}</small>{{if .Name}}<br>{{.Name}}{{end}}{{if .IsRequest}}<br><span class="tag warn">new request</span>{{end}}</td>
-<td>{{if eq .Status "approved"}}<span class="tag ok">approved</span>{{else if eq .Status "pending"}}<span class="tag warn">pending</span>{{else}}<span class="tag bad">{{.Status}}</span>{{end}}
+<td data-label="Login / user">{{if .LoginID}}<b>{{.LoginID}}</b><br>{{end}}<small>{{.Email}}</small>{{if .Name}}<br>{{.Name}}{{end}}{{if .IsRequest}}<br><span class="tag warn">new request</span>{{end}}</td>
+<td data-label="Status &amp; access">{{if eq .Status "approved"}}<span class="tag ok">approved</span>{{else if eq .Status "pending"}}<span class="tag warn">pending</span>{{else}}<span class="tag bad">{{.Status}}</span>{{end}}
 {{if .Scope}}<br><small>{{.Scope}}</small>{{end}}
 {{if .HasLogin}}<br><small>Access: {{if .Expires}}{{if .Expired}}<span class="tag bad">expired {{.Expires}}</span>{{else}}until {{.Expires}}{{end}}{{else}}permanent{{end}}</small>{{end}}
 <form class="inline" method="post" action="/admin/user/set_expiry" style="margin-top:4px">
 <input type="hidden" name="email" value="{{.Email}}">
 <select name="period" class="sm"><option value="1m">1 month</option><option value="3m">3 months</option><option value="6m">6 months</option><option value="1y">1 year</option><option value="perm">permanent</option></select>
 <button class="sm gray">Set access</button></form></td>
-<td>
+<td data-label="Credentials">
 {{if .HasLogin}}<div style="margin-bottom:4px">{{if .PwKnown}}<span class="tag ok" title="You set this password, so you know it">🔑 password set by admin</span>{{else}}<span class="tag dim" title="The user changed their own password — only they know it now">🔒 changed by user</span>{{end}}</div>{{end}}
 <form class="inline" method="post" action="/admin/user/issue_login">
 <input type="hidden" name="email" value="{{.Email}}">
@@ -1216,7 +1229,7 @@ pre{background:rgba(11,17,32,.7);border:1px solid var(--line);border-radius:12px
 {{if eq .Status "denied"}}<form class="inline" method="post" action="/admin/user/status"><input type="hidden" name="email" value="{{.Email}}"><input type="hidden" name="status" value="approved"><button class="sm">✓ Re-approve</button></form>{{end}}
 <form class="inline" method="post" action="/admin/user/delete" onsubmit="return confirm('Delete {{.Email}} completely? They are removed from this list (their uploaded FIRs are kept). If they request access again from the app, they reappear as a new request.')"><input type="hidden" name="email" value="{{.Email}}"><button class="sm danger">🗑 Delete</button></form>
 </td>
-<td><form class="inline" method="post" action="/admin/user/role">
+<td data-label="Role &amp; scope"><form class="inline" method="post" action="/admin/user/role">
 <input type="hidden" name="email" value="{{.Email}}">
 <select name="role" class="sm">
 <option value="station" {{if eq .Role "station"}}selected{{end}}>station</option>
@@ -1240,9 +1253,9 @@ pre{background:rgba(11,17,32,.7);border:1px solid var(--line);border-radius:12px
 </optgroup>
 </select>
 <button class="sm">Save</button></form></td>
-<td><small>{{if .Designation}}{{.Designation}}<br>{{end}}{{if .Gender}}{{.Gender}}<br>{{end}}{{if .Phone}}📞 {{.Phone}}<br>{{end}}{{if .RecoveryEmail}}✉ {{.RecoveryEmail}}<br>{{end}}{{if .StationText}}🏢 {{.StationText}}<br>{{end}}{{if .Note}}<i>{{.Note}}</i>{{end}}</small></td>
-<td>{{.Device}}{{if .OS}}<br><small>{{.OS}}{{if .Platform}} · {{.Platform}}{{end}}</small>{{end}}{{if .IP}}<br><small class="num">{{.IP}}</small>{{end}}<br><small>{{.AppVer}}</small></td>
-<td>{{.LastSeen}}</td></tr>{{end}}</table></div>
+<td data-label="Details"><small>{{if .Designation}}{{.Designation}}<br>{{end}}{{if .Gender}}{{.Gender}}<br>{{end}}{{if .Phone}}📞 {{.Phone}}<br>{{end}}{{if .RecoveryEmail}}✉ {{.RecoveryEmail}}<br>{{end}}{{if .StationText}}🏢 {{.StationText}}<br>{{end}}{{if .Note}}<i>{{.Note}}</i>{{end}}</small></td>
+<td data-label="Device / IP">{{.Device}}{{if .OS}}<br><small>{{.OS}}{{if .Platform}} · {{.Platform}}{{end}}</small>{{end}}{{if .IP}}<br><small class="num">{{.IP}}</small>{{end}}<br><small>{{.AppVer}}</small></td>
+<td data-label="Last seen">{{.LastSeen}}</td></tr>{{end}}</tbody></table></div>
 {{template "foot" .}}{{end}}
 
 {{define "admins"}}{{template "head" .}}{{template "nav" .}}

@@ -20,7 +20,7 @@
 
 #define MyAppName "CRMS - Crime Records Management System"
 #define MyAppShortName "CRMS"
-#define MyAppVersion "1.15.7"
+#define MyAppVersion "1.15.8"
 #define MyAppPublisher "DB Square Technology"
 #define MyAppURL "https://dbsquaretechnology.com"
 #define MyAppExeName "crms.exe"

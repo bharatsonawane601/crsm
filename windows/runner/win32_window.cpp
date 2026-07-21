@@ -191,7 +191,7 @@ Win32Window::MessageHandler(HWND hwnd,
     // drop an officer out of a half-typed FIR.
     case WM_CLOSE: {
       if (closing_without_prompt_) {
-        break;  // installer / shutdown — fall through to the default handler
+        break;  // installer / shutdown -- fall through to the default handler
       }
       // Re-entrancy guard: the modal box pumps messages, so a second click on
       // X while it is open must not stack a second prompt.
@@ -199,10 +199,16 @@ Win32Window::MessageHandler(HWND hwnd,
         return 0;
       }
       close_prompt_open_ = true;
+      // The Marathi is written with \u escapes, NOT raw Devanagari bytes. MSVC
+      // compiles this runner without /utf-8, so a literal Devanagari string is
+      // read in the system code page and reaches MessageBoxW as mojibake (the
+      // box showed "a-A-currency..."). The escapes are plain ASCII in the source
+      // and expand to the exact UTF-16, so the glyphs are correct regardless of
+      // compiler charset. Text: "Do you really want to close CRMS?" in Marathi.
       const int answer = MessageBoxW(
           hwnd,
           L"Do you really want to close CRMS?\r\n"
-          L"तुम्हाला खरोखर CRMS बंद करायचे आहे का?",
+          L"\u0924\u0941\u092E\u094D\u0939\u093E\u0932\u093E \u0916\u0930\u094B\u0916\u0930 CRMS \u092C\u0902\u0926 \u0915\u0930\u093E\u092F\u091A\u0947 \u0906\u0939\u0947 \u0915\u093E?",
           L"CRMS", MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2);
       close_prompt_open_ = false;
       if (answer != IDYES) {
