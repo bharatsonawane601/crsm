@@ -51,7 +51,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -190,6 +190,23 @@ class AppDatabase extends _$AppDatabase {
           if (from < 11) {
             await _addColumnIfMissing(
                 'io_cases', 'data_json', () => m.addColumn(ioCases, ioCases.dataJson));
+          }
+          // v12: investigation outcome / final disposition on the verdict row
+          // (charge sheet / A-B-C-HC final / abated / pending) + its dates and
+          // remarks. All nullable.
+          if (from < 12) {
+            await _addColumnIfMissing('verdict', 'investigation_outcome',
+                () => m.addColumn(verdict, verdict.investigationOutcome));
+            await _addColumnIfMissing('verdict', 'status_date',
+                () => m.addColumn(verdict, verdict.statusDate));
+            await _addColumnIfMissing('verdict', 'submitted_date',
+                () => m.addColumn(verdict, verdict.submittedDate));
+            await _addColumnIfMissing('verdict', 'court_date',
+                () => m.addColumn(verdict, verdict.courtDate));
+            await _addColumnIfMissing('verdict', 'approval_date',
+                () => m.addColumn(verdict, verdict.approvalDate));
+            await _addColumnIfMissing('verdict', 'remarks',
+                () => m.addColumn(verdict, verdict.remarks));
           }
         },
         beforeOpen: (details) async {

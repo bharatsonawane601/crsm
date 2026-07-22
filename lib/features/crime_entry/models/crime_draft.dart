@@ -150,6 +150,12 @@ class VerdictDraft {
     this.finalOrder,
     this.foundGuilty,
     this.punishment,
+    this.investigationOutcome,
+    this.statusDate,
+    this.submittedDate,
+    this.courtDate,
+    this.approvalDate,
+    this.remarks,
   });
 
   int? id;
@@ -159,7 +165,30 @@ class VerdictDraft {
   String? finalOrder;
   bool? foundGuilty;
   String? punishment;
+
+  // Investigation outcome / final disposition of the case. One of the codes in
+  // kInvestigationOutcomes (chargesheet, aFinal, bFinal, cFinal, hcFinal,
+  // abated, pending) — null until the officer records the outcome.
+  String? investigationOutcome;
+  DateTime? statusDate;
+  DateTime? submittedDate;
+  DateTime? courtDate;
+  DateTime? approvalDate;
+  String? remarks;
 }
+
+/// The final-disposition statuses a case can be closed/marked with. Code →
+/// label is localized (crime.verdict.outcomes.<code>). Order matches the paper
+/// register: chargesheet, then the A/B/C/HC finals, abated, pending.
+const List<String> kInvestigationOutcomes = [
+  'chargesheet',
+  'aFinal',
+  'bFinal',
+  'cFinal',
+  'hcFinal',
+  'abated',
+  'pending',
+];
 
 class AttachmentDraft {
   AttachmentDraft({this.id, this.filePath = '', this.fileType, this.description});

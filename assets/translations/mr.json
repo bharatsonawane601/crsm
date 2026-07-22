@@ -901,7 +901,24 @@
       "rccNo": "आर.सी.सी. क्रमांक",
       "finalOrder": "अंतिम आदेश",
       "foundGuilty": "दोषी आढळले",
-      "punishment": "शिक्षा"
+      "punishment": "शिक्षा",
+      "outcomeTitle": "तपासाचा निकाल",
+      "investigationOutcome": "स्थिती",
+      "statusDate": "स्थिती तारीख",
+      "submittedDate": "सादर तारीख",
+      "courtDate": "न्यायालय तारीख",
+      "approvalDate": "मंजुरी तारीख",
+      "remarks": "शेरा",
+      "outcomes": {
+        "none": "— निवडलेले नाही —",
+        "chargesheet": "दोषारोपपत्र (Charge Sheet)",
+        "aFinal": "अ अंतिम (A Final)",
+        "bFinal": "ब अंतिम (B Final)",
+        "cFinal": "क अंतिम (C Final)",
+        "hcFinal": "एच.सी. अंतिम (HC Final)",
+        "abated": "समाप्त (Abated)",
+        "pending": "तपास प्रलंबित (Pending)"
+      }
     },
     "attachments": {
       "addButton": "संलग्नक जोडा",

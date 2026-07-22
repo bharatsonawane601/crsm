@@ -186,6 +186,15 @@ class Verdict extends Table {
   TextColumn get finalOrder => text().nullable()();
   BoolColumn get foundGuilty => boolean().nullable()();
   TextColumn get punishment => text().nullable()();
+  // --- Investigation outcome / final disposition (added in v12, all nullable) -
+  // Disposition code: chargesheet | aFinal | bFinal | cFinal | hcFinal |
+  // abated | pending (see kInvestigationOutcomes).
+  TextColumn get investigationOutcome => text().nullable()();
+  DateTimeColumn get statusDate => dateTime().nullable()();
+  DateTimeColumn get submittedDate => dateTime().nullable()();
+  DateTimeColumn get courtDate => dateTime().nullable()();
+  DateTimeColumn get approvalDate => dateTime().nullable()();
+  TextColumn get remarks => text().nullable()();
 }
 
 class Attachments extends Table {

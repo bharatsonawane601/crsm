@@ -917,6 +917,53 @@ class VerdictTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final v = model.draft.verdict;
     return _TabBody(children: [
+      // --- Investigation outcome (final disposition) -------------------------
+      Text('crime.verdict.outcomeTitle'.tr(),
+          style: Theme.of(context).textTheme.titleLarge),
+      const SizedBox(height: 8),
+      AppDropdownField<String?>(
+        label: 'crime.verdict.investigationOutcome'.tr(),
+        value: v.investigationOutcome,
+        items: [
+          DropdownMenuItem(
+              value: null, child: Text('crime.verdict.outcomes.none'.tr())),
+          for (final code in kInvestigationOutcomes)
+            DropdownMenuItem(
+                value: code, child: Text('crime.verdict.outcomes.$code'.tr())),
+        ],
+        onChanged: (val) => model.edit((_) => v.investigationOutcome = val),
+      ),
+      FieldRow(children: [
+        AppDateField(
+          label: 'crime.verdict.statusDate'.tr(),
+          value: v.statusDate,
+          onChanged: (val) => model.edit((_) => v.statusDate = val),
+        ),
+        AppDateField(
+          label: 'crime.verdict.submittedDate'.tr(),
+          value: v.submittedDate,
+          onChanged: (val) => model.edit((_) => v.submittedDate = val),
+        ),
+      ]),
+      FieldRow(children: [
+        AppDateField(
+          label: 'crime.verdict.courtDate'.tr(),
+          value: v.courtDate,
+          onChanged: (val) => model.edit((_) => v.courtDate = val),
+        ),
+        AppDateField(
+          label: 'crime.verdict.approvalDate'.tr(),
+          value: v.approvalDate,
+          onChanged: (val) => model.edit((_) => v.approvalDate = val),
+        ),
+      ]),
+      AppTextField(
+        label: 'crime.verdict.remarks'.tr(),
+        initialValue: v.remarks,
+        maxLines: 2,
+        onChanged: (val) => v.remarks = val,
+      ),
+      const Divider(height: 40),
       FieldRow(children: [
         AppTextField(
           label: 'crime.verdict.chargesheetNo'.tr(),

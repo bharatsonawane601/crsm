@@ -309,6 +309,12 @@ class CrimeRepository {
               finalOrder: Value(v.finalOrder),
               foundGuilty: Value(v.foundGuilty),
               punishment: Value(v.punishment),
+              investigationOutcome: Value(v.investigationOutcome),
+              statusDate: Value(v.statusDate),
+              submittedDate: Value(v.submittedDate),
+              courtDate: Value(v.courtDate),
+              approvalDate: Value(v.approvalDate),
+              remarks: Value(v.remarks),
             ),
           );
     }
@@ -505,6 +511,12 @@ class CrimeRepository {
               finalOrder: verdictRow.finalOrder,
               foundGuilty: verdictRow.foundGuilty,
               punishment: verdictRow.punishment,
+              investigationOutcome: verdictRow.investigationOutcome,
+              statusDate: verdictRow.statusDate,
+              submittedDate: verdictRow.submittedDate,
+              courtDate: verdictRow.courtDate,
+              approvalDate: verdictRow.approvalDate,
+              remarks: verdictRow.remarks,
             ),
       attachments: [
         for (final at in attachmentRows)
@@ -839,6 +851,13 @@ class CrimeRepository {
     d.verdict.punishment = s('punishment') ?? d.verdict.punishment;
     d.verdict.chargesheetDate =
         dt('chargesheet_date') ?? d.verdict.chargesheetDate;
+    d.verdict.investigationOutcome =
+        s('investigation_outcome') ?? d.verdict.investigationOutcome;
+    d.verdict.statusDate = dt('status_date') ?? d.verdict.statusDate;
+    d.verdict.submittedDate = dt('submitted_date') ?? d.verdict.submittedDate;
+    d.verdict.courtDate = dt('court_date') ?? d.verdict.courtDate;
+    d.verdict.approvalDate = dt('approval_date') ?? d.verdict.approvalDate;
+    d.verdict.remarks = s('verdict_remarks') ?? d.verdict.remarks;
 
     // Central keeps accused as bare names only. Seed them when this PC has none
     // (so a downloaded FIR still shows who was booked); never overwrite the
@@ -1093,6 +1112,13 @@ class CrimeRepository {
               'investigating_officer': inv?.officerName,
               'final_order': v?.finalOrder,
               'punishment': v?.punishment,
+              // Investigation outcome / final disposition + its dates & remarks.
+              'investigation_outcome': v?.investigationOutcome,
+              'status_date': d(v?.statusDate),
+              'submitted_date': d(v?.submittedDate),
+              'court_date': d(v?.courtDate),
+              'approval_date': d(v?.approvalDate),
+              'verdict_remarks': v?.remarks,
               // Analytic fields for the officer-portal dashboard.
               'officer_name': inv?.officerName,
               'chargesheet_date': d(v?.chargesheetDate),
@@ -1154,9 +1180,15 @@ class CrimeRepository {
         v.rccNo,
         v.finalOrder,
         v.punishment,
+        v.investigationOutcome,
+        v.remarks,
       ].any((e) => (e ?? '').trim().isNotEmpty) ||
       v.chargesheetDate != null ||
-      v.foundGuilty != null;
+      v.foundGuilty != null ||
+      v.statusDate != null ||
+      v.submittedDate != null ||
+      v.courtDate != null ||
+      v.approvalDate != null;
 }
 
 /// Identity of a FIR that was just deleted, used to report the deletion to the

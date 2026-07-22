@@ -10,6 +10,7 @@
 /// STARTING POINT the officer confirms, never an automatic legal decision.
 library;
 
+import '../crime_entry/data/crime_types_data.dart';
 import 'fuzzy.dart';
 
 class OffenceInfo {
@@ -434,9 +435,32 @@ const Map<String, String> kIpcToBns = {
   '279': '281', '337': '125(a)', '338': '125(b)', '174': 'BNSS 194',
 };
 
+/// Resolves a crime-type label to the offence whose sections normally apply.
+///
+/// The entry form stores a fine-grained SUB-TYPE (e.g. "Vehicle Theft / वाहन
+/// चोरी", "Contract Killing (Supari) / सुपारी हत्या"), while [kOffences] is
+/// keyed by the broader category ("Theft / चोरी", "Murder / खून"). So a direct
+/// match is tried first (some sub-types like "Rape", "Acid Attack" line up with
+/// an offence exactly), then the sub-type's PARENT category is resolved and
+/// looked up — that is what makes the section suggestion fire for every listed
+/// sub-type instead of only the top-level ones.
 OffenceInfo? offenceForType(String crimeType) {
   final t = crimeType.trim();
   if (t.isEmpty) return null;
+  final direct = _lookupOffence(t);
+  if (direct != null) return direct;
+  // Fall back to the sub-type's parent category (e.g. any Theft sub-type →
+  // "Theft / चोरी"), so drilling into a specific sub-type still gets sections.
+  final category = crimeCategoryOf(t);
+  if (category != null && category != t) {
+    final byCategory = _lookupOffence(category);
+    if (byCategory != null) return byCategory;
+  }
+  return null;
+}
+
+/// Exact → fuzzy → synonym match of a single label against [kOffences].
+OffenceInfo? _lookupOffence(String t) {
   for (final o in kOffences) {
     if (o.type == t) return o;
   }

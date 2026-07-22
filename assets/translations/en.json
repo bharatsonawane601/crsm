@@ -901,7 +901,24 @@
       "rccNo": "RCC no.",
       "finalOrder": "Final order",
       "foundGuilty": "Found guilty",
-      "punishment": "Punishment"
+      "punishment": "Punishment",
+      "outcomeTitle": "Investigation outcome",
+      "investigationOutcome": "Status",
+      "statusDate": "Status date",
+      "submittedDate": "Submitted date",
+      "courtDate": "Court date",
+      "approvalDate": "Approval date",
+      "remarks": "Remarks",
+      "outcomes": {
+        "none": "— Not set —",
+        "chargesheet": "Charge Sheet",
+        "aFinal": "A Final",
+        "bFinal": "B Final",
+        "cFinal": "C Final",
+        "hcFinal": "HC Final",
+        "abated": "Abated",
+        "pending": "Pending Investigation"
+      }
     },
     "attachments": {
       "addButton": "Add attachment",

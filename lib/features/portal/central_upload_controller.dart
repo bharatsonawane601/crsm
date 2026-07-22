@@ -37,6 +37,12 @@ const kCentralLastSuppressedPref = 'central_last_suppressed_millis';
 /// clock), so a station machine with a wrong date cannot skip records.
 const kCentralLastDownloadPref = 'central_last_download_cursor';
 
+/// Version of the one-time download self-heal already applied on this device.
+/// When it lags the current heal version the download watermark is reset once,
+/// forcing a full (idempotent) re-pull to recover records an earlier buggy
+/// paging run skipped. See [CentralUploadController._downloadScopedRecords].
+const kCentralDownloadHealPref = 'central_download_heal_version';
+
 /// Pushes this station's crime records to the central officer-portal store.
 /// Runs quietly in the background for station (data-entry) users so senior
 /// officers always see up-to-date data. No-op when the server isn't configured.
@@ -51,6 +57,9 @@ class CentralUploadController extends Notifier<CentralUploadState> {
 
   /// How far the download half of sync has got (see [kCentralLastDownloadPref]).
   static const _lastDownloadPrefKey = kCentralLastDownloadPref;
+
+  /// One-time download self-heal marker (see [kCentralDownloadHealPref]).
+  static const _downloadHealPrefKey = kCentralDownloadHealPref;
 
   /// Mass-delete fuse: the most local records one sync may delete on the
   /// server's say-so without the user explicitly confirming. A server that was
@@ -189,30 +198,57 @@ class CentralUploadController extends Notifier<CentralUploadState> {
   ) async {
     final imported = <String>{};
     final prefs = await SharedPreferences.getInstance();
-    var cursor = prefs.getString(_lastDownloadPrefKey);
+
+    // One-time self-heal for stations updated from a build with the paging bug
+    // below: their watermark was advanced PAST records that were never actually
+    // downloaded, so an incremental sync can never reach them. Clearing it once
+    // makes the next run re-pull the whole scope from scratch (imports are
+    // idempotent, so nothing duplicates) and fill every gap. Bump the version to
+    // force the heal again if a future paging change needs it.
+    const healVersion = 2;
+    if (prefs.getInt(_downloadHealPrefKey) != healVersion) {
+      await prefs.remove(_lastDownloadPrefKey);
+      await prefs.setInt(_downloadHealPrefKey, healVersion);
+    }
+
+    // The watermark stays FIXED for the whole run. Paging walks the remaining
+    // set by offset; the watermark only moves forward once the run has fully
+    // applied.
+    //
+    // Why not advance it per page: the server orders by `updated_at ASC` and
+    // filters `updated_at > since`. When hundreds of rows share ONE timestamp (a
+    // mirror / bulk import stamps a whole batch identically — City Chowk had 463
+    // FIRs at a single instant), that tied block straddles a 500-row page
+    // boundary. Advancing `since` to the last row's timestamp then made page 2
+    // ask for `updated_at > that`, skipping the rest of the block for good —
+    // hundreds of FIRs silently missing from the station's list.
+    final since = prefs.getString(_lastDownloadPrefKey);
     var offset = 0;
-    // Bounded so a bad cursor can never spin forever; 200 pages x 500 rows is
-    // far more than a district holds.
-    for (var page = 0; page < 200; page++) {
+    String? newest; // newest updated_at applied this run → next run's watermark
+    var completed = false;
+    // Bounded so a bad response can never spin forever; 400 x 500 = 200k rows,
+    // far more than any district holds.
+    for (var page = 0; page < 400; page++) {
       final result =
-          await client.download(email: email, cursor: cursor, offset: offset);
-      // Network/server failure — keep the watermark and return what applied.
+          await client.download(email: email, cursor: since, offset: offset);
+      // Network/server failure — leave the watermark untouched and return what
+      // applied so a later sync retries from the same point.
       if (result == null) return imported;
       if (result.records.isNotEmpty) {
         imported.addAll((await repo.importFromCentral(result.records)).uids);
-      }
-      if (result.cursor != null) {
-        cursor = result.cursor;
-        await prefs.setString(_lastDownloadPrefKey, cursor!);
-        // The cursor now covers everything applied so far, so the next page
-        // starts from the top of the remaining set.
-        offset = 0;
-      } else {
-        // Empty page (or a server without cursors): step past it by offset so
-        // paging still terminates.
         offset += result.records.length;
+        if (result.cursor != null) newest = result.cursor;
       }
-      if (!result.more) return imported;
+      if (!result.more) {
+        completed = true;
+        break;
+      }
+    }
+    // Advance the watermark only after the whole scoped set applied cleanly, so
+    // an interrupted run re-pulls from the same point next time rather than
+    // stepping over the rows it never reached.
+    if (completed && newest != null) {
+      await prefs.setString(_lastDownloadPrefKey, newest);
     }
     return imported;
   }

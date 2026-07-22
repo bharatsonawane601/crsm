@@ -6152,6 +6152,73 @@ class $VerdictTable extends Verdict with TableInfo<$VerdictTable, VerdictData> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _investigationOutcomeMeta =
+      const VerificationMeta('investigationOutcome');
+  @override
+  late final GeneratedColumn<String> investigationOutcome =
+      GeneratedColumn<String>(
+        'investigation_outcome',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _statusDateMeta = const VerificationMeta(
+    'statusDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> statusDate = GeneratedColumn<DateTime>(
+    'status_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _submittedDateMeta = const VerificationMeta(
+    'submittedDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> submittedDate =
+      GeneratedColumn<DateTime>(
+        'submitted_date',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _courtDateMeta = const VerificationMeta(
+    'courtDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> courtDate = GeneratedColumn<DateTime>(
+    'court_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _approvalDateMeta = const VerificationMeta(
+    'approvalDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> approvalDate = GeneratedColumn<DateTime>(
+    'approval_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _remarksMeta = const VerificationMeta(
+    'remarks',
+  );
+  @override
+  late final GeneratedColumn<String> remarks = GeneratedColumn<String>(
+    'remarks',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -6162,6 +6229,12 @@ class $VerdictTable extends Verdict with TableInfo<$VerdictTable, VerdictData> {
     finalOrder,
     foundGuilty,
     punishment,
+    investigationOutcome,
+    statusDate,
+    submittedDate,
+    courtDate,
+    approvalDate,
+    remarks,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -6231,6 +6304,51 @@ class $VerdictTable extends Verdict with TableInfo<$VerdictTable, VerdictData> {
         punishment.isAcceptableOrUnknown(data['punishment']!, _punishmentMeta),
       );
     }
+    if (data.containsKey('investigation_outcome')) {
+      context.handle(
+        _investigationOutcomeMeta,
+        investigationOutcome.isAcceptableOrUnknown(
+          data['investigation_outcome']!,
+          _investigationOutcomeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('status_date')) {
+      context.handle(
+        _statusDateMeta,
+        statusDate.isAcceptableOrUnknown(data['status_date']!, _statusDateMeta),
+      );
+    }
+    if (data.containsKey('submitted_date')) {
+      context.handle(
+        _submittedDateMeta,
+        submittedDate.isAcceptableOrUnknown(
+          data['submitted_date']!,
+          _submittedDateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('court_date')) {
+      context.handle(
+        _courtDateMeta,
+        courtDate.isAcceptableOrUnknown(data['court_date']!, _courtDateMeta),
+      );
+    }
+    if (data.containsKey('approval_date')) {
+      context.handle(
+        _approvalDateMeta,
+        approvalDate.isAcceptableOrUnknown(
+          data['approval_date']!,
+          _approvalDateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('remarks')) {
+      context.handle(
+        _remarksMeta,
+        remarks.isAcceptableOrUnknown(data['remarks']!, _remarksMeta),
+      );
+    }
     return context;
   }
 
@@ -6272,6 +6390,30 @@ class $VerdictTable extends Verdict with TableInfo<$VerdictTable, VerdictData> {
         DriftSqlType.string,
         data['${effectivePrefix}punishment'],
       ),
+      investigationOutcome: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}investigation_outcome'],
+      ),
+      statusDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}status_date'],
+      ),
+      submittedDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}submitted_date'],
+      ),
+      courtDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}court_date'],
+      ),
+      approvalDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}approval_date'],
+      ),
+      remarks: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remarks'],
+      ),
     );
   }
 
@@ -6290,6 +6432,12 @@ class VerdictData extends DataClass implements Insertable<VerdictData> {
   final String? finalOrder;
   final bool? foundGuilty;
   final String? punishment;
+  final String? investigationOutcome;
+  final DateTime? statusDate;
+  final DateTime? submittedDate;
+  final DateTime? courtDate;
+  final DateTime? approvalDate;
+  final String? remarks;
   const VerdictData({
     required this.id,
     required this.crimeId,
@@ -6299,6 +6447,12 @@ class VerdictData extends DataClass implements Insertable<VerdictData> {
     this.finalOrder,
     this.foundGuilty,
     this.punishment,
+    this.investigationOutcome,
+    this.statusDate,
+    this.submittedDate,
+    this.courtDate,
+    this.approvalDate,
+    this.remarks,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -6322,6 +6476,24 @@ class VerdictData extends DataClass implements Insertable<VerdictData> {
     }
     if (!nullToAbsent || punishment != null) {
       map['punishment'] = Variable<String>(punishment);
+    }
+    if (!nullToAbsent || investigationOutcome != null) {
+      map['investigation_outcome'] = Variable<String>(investigationOutcome);
+    }
+    if (!nullToAbsent || statusDate != null) {
+      map['status_date'] = Variable<DateTime>(statusDate);
+    }
+    if (!nullToAbsent || submittedDate != null) {
+      map['submitted_date'] = Variable<DateTime>(submittedDate);
+    }
+    if (!nullToAbsent || courtDate != null) {
+      map['court_date'] = Variable<DateTime>(courtDate);
+    }
+    if (!nullToAbsent || approvalDate != null) {
+      map['approval_date'] = Variable<DateTime>(approvalDate);
+    }
+    if (!nullToAbsent || remarks != null) {
+      map['remarks'] = Variable<String>(remarks);
     }
     return map;
   }
@@ -6348,6 +6520,24 @@ class VerdictData extends DataClass implements Insertable<VerdictData> {
       punishment: punishment == null && nullToAbsent
           ? const Value.absent()
           : Value(punishment),
+      investigationOutcome: investigationOutcome == null && nullToAbsent
+          ? const Value.absent()
+          : Value(investigationOutcome),
+      statusDate: statusDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(statusDate),
+      submittedDate: submittedDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(submittedDate),
+      courtDate: courtDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(courtDate),
+      approvalDate: approvalDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(approvalDate),
+      remarks: remarks == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remarks),
     );
   }
 
@@ -6365,6 +6555,14 @@ class VerdictData extends DataClass implements Insertable<VerdictData> {
       finalOrder: serializer.fromJson<String?>(json['finalOrder']),
       foundGuilty: serializer.fromJson<bool?>(json['foundGuilty']),
       punishment: serializer.fromJson<String?>(json['punishment']),
+      investigationOutcome: serializer.fromJson<String?>(
+        json['investigationOutcome'],
+      ),
+      statusDate: serializer.fromJson<DateTime?>(json['statusDate']),
+      submittedDate: serializer.fromJson<DateTime?>(json['submittedDate']),
+      courtDate: serializer.fromJson<DateTime?>(json['courtDate']),
+      approvalDate: serializer.fromJson<DateTime?>(json['approvalDate']),
+      remarks: serializer.fromJson<String?>(json['remarks']),
     );
   }
   @override
@@ -6379,6 +6577,12 @@ class VerdictData extends DataClass implements Insertable<VerdictData> {
       'finalOrder': serializer.toJson<String?>(finalOrder),
       'foundGuilty': serializer.toJson<bool?>(foundGuilty),
       'punishment': serializer.toJson<String?>(punishment),
+      'investigationOutcome': serializer.toJson<String?>(investigationOutcome),
+      'statusDate': serializer.toJson<DateTime?>(statusDate),
+      'submittedDate': serializer.toJson<DateTime?>(submittedDate),
+      'courtDate': serializer.toJson<DateTime?>(courtDate),
+      'approvalDate': serializer.toJson<DateTime?>(approvalDate),
+      'remarks': serializer.toJson<String?>(remarks),
     };
   }
 
@@ -6391,6 +6595,12 @@ class VerdictData extends DataClass implements Insertable<VerdictData> {
     Value<String?> finalOrder = const Value.absent(),
     Value<bool?> foundGuilty = const Value.absent(),
     Value<String?> punishment = const Value.absent(),
+    Value<String?> investigationOutcome = const Value.absent(),
+    Value<DateTime?> statusDate = const Value.absent(),
+    Value<DateTime?> submittedDate = const Value.absent(),
+    Value<DateTime?> courtDate = const Value.absent(),
+    Value<DateTime?> approvalDate = const Value.absent(),
+    Value<String?> remarks = const Value.absent(),
   }) => VerdictData(
     id: id ?? this.id,
     crimeId: crimeId ?? this.crimeId,
@@ -6404,6 +6614,16 @@ class VerdictData extends DataClass implements Insertable<VerdictData> {
     finalOrder: finalOrder.present ? finalOrder.value : this.finalOrder,
     foundGuilty: foundGuilty.present ? foundGuilty.value : this.foundGuilty,
     punishment: punishment.present ? punishment.value : this.punishment,
+    investigationOutcome: investigationOutcome.present
+        ? investigationOutcome.value
+        : this.investigationOutcome,
+    statusDate: statusDate.present ? statusDate.value : this.statusDate,
+    submittedDate: submittedDate.present
+        ? submittedDate.value
+        : this.submittedDate,
+    courtDate: courtDate.present ? courtDate.value : this.courtDate,
+    approvalDate: approvalDate.present ? approvalDate.value : this.approvalDate,
+    remarks: remarks.present ? remarks.value : this.remarks,
   );
   VerdictData copyWithCompanion(VerdictCompanion data) {
     return VerdictData(
@@ -6425,6 +6645,20 @@ class VerdictData extends DataClass implements Insertable<VerdictData> {
       punishment: data.punishment.present
           ? data.punishment.value
           : this.punishment,
+      investigationOutcome: data.investigationOutcome.present
+          ? data.investigationOutcome.value
+          : this.investigationOutcome,
+      statusDate: data.statusDate.present
+          ? data.statusDate.value
+          : this.statusDate,
+      submittedDate: data.submittedDate.present
+          ? data.submittedDate.value
+          : this.submittedDate,
+      courtDate: data.courtDate.present ? data.courtDate.value : this.courtDate,
+      approvalDate: data.approvalDate.present
+          ? data.approvalDate.value
+          : this.approvalDate,
+      remarks: data.remarks.present ? data.remarks.value : this.remarks,
     );
   }
 
@@ -6438,7 +6672,13 @@ class VerdictData extends DataClass implements Insertable<VerdictData> {
           ..write('rccNo: $rccNo, ')
           ..write('finalOrder: $finalOrder, ')
           ..write('foundGuilty: $foundGuilty, ')
-          ..write('punishment: $punishment')
+          ..write('punishment: $punishment, ')
+          ..write('investigationOutcome: $investigationOutcome, ')
+          ..write('statusDate: $statusDate, ')
+          ..write('submittedDate: $submittedDate, ')
+          ..write('courtDate: $courtDate, ')
+          ..write('approvalDate: $approvalDate, ')
+          ..write('remarks: $remarks')
           ..write(')'))
         .toString();
   }
@@ -6453,6 +6693,12 @@ class VerdictData extends DataClass implements Insertable<VerdictData> {
     finalOrder,
     foundGuilty,
     punishment,
+    investigationOutcome,
+    statusDate,
+    submittedDate,
+    courtDate,
+    approvalDate,
+    remarks,
   );
   @override
   bool operator ==(Object other) =>
@@ -6465,7 +6711,13 @@ class VerdictData extends DataClass implements Insertable<VerdictData> {
           other.rccNo == this.rccNo &&
           other.finalOrder == this.finalOrder &&
           other.foundGuilty == this.foundGuilty &&
-          other.punishment == this.punishment);
+          other.punishment == this.punishment &&
+          other.investigationOutcome == this.investigationOutcome &&
+          other.statusDate == this.statusDate &&
+          other.submittedDate == this.submittedDate &&
+          other.courtDate == this.courtDate &&
+          other.approvalDate == this.approvalDate &&
+          other.remarks == this.remarks);
 }
 
 class VerdictCompanion extends UpdateCompanion<VerdictData> {
@@ -6477,6 +6729,12 @@ class VerdictCompanion extends UpdateCompanion<VerdictData> {
   final Value<String?> finalOrder;
   final Value<bool?> foundGuilty;
   final Value<String?> punishment;
+  final Value<String?> investigationOutcome;
+  final Value<DateTime?> statusDate;
+  final Value<DateTime?> submittedDate;
+  final Value<DateTime?> courtDate;
+  final Value<DateTime?> approvalDate;
+  final Value<String?> remarks;
   const VerdictCompanion({
     this.id = const Value.absent(),
     this.crimeId = const Value.absent(),
@@ -6486,6 +6744,12 @@ class VerdictCompanion extends UpdateCompanion<VerdictData> {
     this.finalOrder = const Value.absent(),
     this.foundGuilty = const Value.absent(),
     this.punishment = const Value.absent(),
+    this.investigationOutcome = const Value.absent(),
+    this.statusDate = const Value.absent(),
+    this.submittedDate = const Value.absent(),
+    this.courtDate = const Value.absent(),
+    this.approvalDate = const Value.absent(),
+    this.remarks = const Value.absent(),
   });
   VerdictCompanion.insert({
     this.id = const Value.absent(),
@@ -6496,6 +6760,12 @@ class VerdictCompanion extends UpdateCompanion<VerdictData> {
     this.finalOrder = const Value.absent(),
     this.foundGuilty = const Value.absent(),
     this.punishment = const Value.absent(),
+    this.investigationOutcome = const Value.absent(),
+    this.statusDate = const Value.absent(),
+    this.submittedDate = const Value.absent(),
+    this.courtDate = const Value.absent(),
+    this.approvalDate = const Value.absent(),
+    this.remarks = const Value.absent(),
   }) : crimeId = Value(crimeId);
   static Insertable<VerdictData> custom({
     Expression<int>? id,
@@ -6506,6 +6776,12 @@ class VerdictCompanion extends UpdateCompanion<VerdictData> {
     Expression<String>? finalOrder,
     Expression<bool>? foundGuilty,
     Expression<String>? punishment,
+    Expression<String>? investigationOutcome,
+    Expression<DateTime>? statusDate,
+    Expression<DateTime>? submittedDate,
+    Expression<DateTime>? courtDate,
+    Expression<DateTime>? approvalDate,
+    Expression<String>? remarks,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -6516,6 +6792,13 @@ class VerdictCompanion extends UpdateCompanion<VerdictData> {
       if (finalOrder != null) 'final_order': finalOrder,
       if (foundGuilty != null) 'found_guilty': foundGuilty,
       if (punishment != null) 'punishment': punishment,
+      if (investigationOutcome != null)
+        'investigation_outcome': investigationOutcome,
+      if (statusDate != null) 'status_date': statusDate,
+      if (submittedDate != null) 'submitted_date': submittedDate,
+      if (courtDate != null) 'court_date': courtDate,
+      if (approvalDate != null) 'approval_date': approvalDate,
+      if (remarks != null) 'remarks': remarks,
     });
   }
 
@@ -6528,6 +6811,12 @@ class VerdictCompanion extends UpdateCompanion<VerdictData> {
     Value<String?>? finalOrder,
     Value<bool?>? foundGuilty,
     Value<String?>? punishment,
+    Value<String?>? investigationOutcome,
+    Value<DateTime?>? statusDate,
+    Value<DateTime?>? submittedDate,
+    Value<DateTime?>? courtDate,
+    Value<DateTime?>? approvalDate,
+    Value<String?>? remarks,
   }) {
     return VerdictCompanion(
       id: id ?? this.id,
@@ -6538,6 +6827,12 @@ class VerdictCompanion extends UpdateCompanion<VerdictData> {
       finalOrder: finalOrder ?? this.finalOrder,
       foundGuilty: foundGuilty ?? this.foundGuilty,
       punishment: punishment ?? this.punishment,
+      investigationOutcome: investigationOutcome ?? this.investigationOutcome,
+      statusDate: statusDate ?? this.statusDate,
+      submittedDate: submittedDate ?? this.submittedDate,
+      courtDate: courtDate ?? this.courtDate,
+      approvalDate: approvalDate ?? this.approvalDate,
+      remarks: remarks ?? this.remarks,
     );
   }
 
@@ -6568,6 +6863,26 @@ class VerdictCompanion extends UpdateCompanion<VerdictData> {
     if (punishment.present) {
       map['punishment'] = Variable<String>(punishment.value);
     }
+    if (investigationOutcome.present) {
+      map['investigation_outcome'] = Variable<String>(
+        investigationOutcome.value,
+      );
+    }
+    if (statusDate.present) {
+      map['status_date'] = Variable<DateTime>(statusDate.value);
+    }
+    if (submittedDate.present) {
+      map['submitted_date'] = Variable<DateTime>(submittedDate.value);
+    }
+    if (courtDate.present) {
+      map['court_date'] = Variable<DateTime>(courtDate.value);
+    }
+    if (approvalDate.present) {
+      map['approval_date'] = Variable<DateTime>(approvalDate.value);
+    }
+    if (remarks.present) {
+      map['remarks'] = Variable<String>(remarks.value);
+    }
     return map;
   }
 
@@ -6581,7 +6896,13 @@ class VerdictCompanion extends UpdateCompanion<VerdictData> {
           ..write('rccNo: $rccNo, ')
           ..write('finalOrder: $finalOrder, ')
           ..write('foundGuilty: $foundGuilty, ')
-          ..write('punishment: $punishment')
+          ..write('punishment: $punishment, ')
+          ..write('investigationOutcome: $investigationOutcome, ')
+          ..write('statusDate: $statusDate, ')
+          ..write('submittedDate: $submittedDate, ')
+          ..write('courtDate: $courtDate, ')
+          ..write('approvalDate: $approvalDate, ')
+          ..write('remarks: $remarks')
           ..write(')'))
         .toString();
   }
@@ -16858,6 +17179,12 @@ typedef $$VerdictTableCreateCompanionBuilder =
       Value<String?> finalOrder,
       Value<bool?> foundGuilty,
       Value<String?> punishment,
+      Value<String?> investigationOutcome,
+      Value<DateTime?> statusDate,
+      Value<DateTime?> submittedDate,
+      Value<DateTime?> courtDate,
+      Value<DateTime?> approvalDate,
+      Value<String?> remarks,
     });
 typedef $$VerdictTableUpdateCompanionBuilder =
     VerdictCompanion Function({
@@ -16869,6 +17196,12 @@ typedef $$VerdictTableUpdateCompanionBuilder =
       Value<String?> finalOrder,
       Value<bool?> foundGuilty,
       Value<String?> punishment,
+      Value<String?> investigationOutcome,
+      Value<DateTime?> statusDate,
+      Value<DateTime?> submittedDate,
+      Value<DateTime?> courtDate,
+      Value<DateTime?> approvalDate,
+      Value<String?> remarks,
     });
 
 final class $$VerdictTableReferences
@@ -16934,6 +17267,36 @@ class $$VerdictTableFilterComposer
 
   ColumnFilters<String> get punishment => $composableBuilder(
     column: $table.punishment,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get investigationOutcome => $composableBuilder(
+    column: $table.investigationOutcome,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get statusDate => $composableBuilder(
+    column: $table.statusDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get submittedDate => $composableBuilder(
+    column: $table.submittedDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get courtDate => $composableBuilder(
+    column: $table.courtDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get approvalDate => $composableBuilder(
+    column: $table.approvalDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get remarks => $composableBuilder(
+    column: $table.remarks,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -17005,6 +17368,36 @@ class $$VerdictTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get investigationOutcome => $composableBuilder(
+    column: $table.investigationOutcome,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get statusDate => $composableBuilder(
+    column: $table.statusDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get submittedDate => $composableBuilder(
+    column: $table.submittedDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get courtDate => $composableBuilder(
+    column: $table.courtDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get approvalDate => $composableBuilder(
+    column: $table.approvalDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get remarks => $composableBuilder(
+    column: $table.remarks,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$CrimesTableOrderingComposer get crimeId {
     final $$CrimesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -17069,6 +17462,32 @@ class $$VerdictTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get investigationOutcome => $composableBuilder(
+    column: $table.investigationOutcome,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get statusDate => $composableBuilder(
+    column: $table.statusDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get submittedDate => $composableBuilder(
+    column: $table.submittedDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get courtDate =>
+      $composableBuilder(column: $table.courtDate, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get approvalDate => $composableBuilder(
+    column: $table.approvalDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get remarks =>
+      $composableBuilder(column: $table.remarks, builder: (column) => column);
+
   $$CrimesTableAnnotationComposer get crimeId {
     final $$CrimesTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -17129,6 +17548,12 @@ class $$VerdictTableTableManager
                 Value<String?> finalOrder = const Value.absent(),
                 Value<bool?> foundGuilty = const Value.absent(),
                 Value<String?> punishment = const Value.absent(),
+                Value<String?> investigationOutcome = const Value.absent(),
+                Value<DateTime?> statusDate = const Value.absent(),
+                Value<DateTime?> submittedDate = const Value.absent(),
+                Value<DateTime?> courtDate = const Value.absent(),
+                Value<DateTime?> approvalDate = const Value.absent(),
+                Value<String?> remarks = const Value.absent(),
               }) => VerdictCompanion(
                 id: id,
                 crimeId: crimeId,
@@ -17138,6 +17563,12 @@ class $$VerdictTableTableManager
                 finalOrder: finalOrder,
                 foundGuilty: foundGuilty,
                 punishment: punishment,
+                investigationOutcome: investigationOutcome,
+                statusDate: statusDate,
+                submittedDate: submittedDate,
+                courtDate: courtDate,
+                approvalDate: approvalDate,
+                remarks: remarks,
               ),
           createCompanionCallback:
               ({
@@ -17149,6 +17580,12 @@ class $$VerdictTableTableManager
                 Value<String?> finalOrder = const Value.absent(),
                 Value<bool?> foundGuilty = const Value.absent(),
                 Value<String?> punishment = const Value.absent(),
+                Value<String?> investigationOutcome = const Value.absent(),
+                Value<DateTime?> statusDate = const Value.absent(),
+                Value<DateTime?> submittedDate = const Value.absent(),
+                Value<DateTime?> courtDate = const Value.absent(),
+                Value<DateTime?> approvalDate = const Value.absent(),
+                Value<String?> remarks = const Value.absent(),
               }) => VerdictCompanion.insert(
                 id: id,
                 crimeId: crimeId,
@@ -17158,6 +17595,12 @@ class $$VerdictTableTableManager
                 finalOrder: finalOrder,
                 foundGuilty: foundGuilty,
                 punishment: punishment,
+                investigationOutcome: investigationOutcome,
+                statusDate: statusDate,
+                submittedDate: submittedDate,
+                courtDate: courtDate,
+                approvalDate: approvalDate,
+                remarks: remarks,
               ),
           withReferenceMapper: (p0) => p0
               .map(
