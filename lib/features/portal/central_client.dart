@@ -183,6 +183,25 @@ class CentralClient {
     }
   }
 
+  /// How many records the server says this account is scoped to. The app
+  /// compares it against its local total to notice when its copy has fallen
+  /// behind (a drifted download watermark) and re-pull the whole scope. Returns
+  /// null on failure, so a network blip just skips the completeness check.
+  Future<int?> scopeTotal({required String email}) async {
+    try {
+      final res = await _http
+          .post(_uri('download.php'),
+              headers: _headers,
+              body: jsonEncode({'email': email, 'count_only': true}))
+          .timeout(const Duration(seconds: 30));
+      final json = jsonDecode(res.body) as Map<String, dynamic>;
+      if (json['ok'] != true) return null;
+      return (json['scope_total'] as num?)?.toInt();
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Reports that a FIR was deleted on this station, so the central copy is
   /// removed and the deletion is logged (who / what / which device) for the
   /// admin. Best-effort: returns true on success, false on any failure.

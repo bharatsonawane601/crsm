@@ -926,6 +926,17 @@ class CrimeRepository {
     return changed;
   }
 
+  /// How many crimes this device holds locally. Compared against the server's
+  /// scoped total each sync: a station/zone PC that holds fewer than the server
+  /// says it should is missing records (a drifted download watermark), and the
+  /// sync re-pulls its whole scope to recover them.
+  Future<int> countAllCrimes() async {
+    final count = _db.crimes.id.count();
+    final row =
+        await (_db.selectOnly(_db.crimes)..addColumns([count])).getSingle();
+    return row.read(count) ?? 0;
+  }
+
   /// Identity keys of every stored crime, for the Excel importer to skip
   /// records that already exist instead of creating duplicates.
   Future<Set<String>> existingFirKeys() async {

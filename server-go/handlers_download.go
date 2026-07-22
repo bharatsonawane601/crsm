@@ -46,6 +46,28 @@ func (a *App) handleDownload(w http.ResponseWriter, r *http.Request) {
 		respondStatus(w, 500, map[string]any{"ok": false, "message": "access.error.server"})
 		return
 	}
+	// A count-only probe: return how many records this account is scoped to,
+	// with no rows. The app compares this against its local total every sync and
+	// re-pulls the whole scope whenever it is short — the permanent guard against
+	// a drifted incremental watermark leaving a station stuck with partial data
+	// (an old build's paging bug, a reinstall, a half-finished sync). Cheap: one
+	// indexed COUNT.
+	if co := bodyStr(b, "count_only"); co == "true" || co == "1" {
+		total := 0
+		cWhere := []string{"c.data_json IS NOT NULL"}
+		cArgs := []any{}
+		if clause, extra := scopeClause(stationIDs, len(cArgs)+1); clause != "" {
+			cWhere = append(cWhere, clause)
+			cArgs = append(cArgs, extra...)
+		}
+		_ = a.db.QueryRow(ctx,
+			"SELECT COUNT(*) FROM central_crimes c WHERE "+strings.Join(cWhere, " AND "),
+			cArgs...).Scan(&total)
+		respond(w, map[string]any{
+			"ok": true, "scope_total": total, "records": []any{}, "more": false})
+		return
+	}
+
 	// A scoped role with no assignment reads nothing — fail closed rather than
 	// handing a mis-configured account the whole district.
 	if stationIDs != nil && len(stationIDs) == 0 {
